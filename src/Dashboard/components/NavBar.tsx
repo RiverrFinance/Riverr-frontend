@@ -40,7 +40,7 @@ export const NavBar = () => {
     return location.pathname === path ? 'text-blue-500 font-medium text-sm' : 'text-gray-400 hover:text-white transition-colors duration-200 text-sm';
   };
 
-const HorizontalSidebar = ({ animation, direction, visible }: { animation: string, direction: string, visible: boolean }) => (
+const HorizontalSidebar = ({ animation, direction, visible }: { animation: string, direction: string, visible: boolean }) => ( 
   <Sidebar
     as={Segment}
     animation={animation as "overlay" | "push" | "scale down" | "uncover" | "slide out" | "slide along"}

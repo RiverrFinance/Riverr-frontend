@@ -1,10 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Icon, Menu } from 'semantic-ui-react';
+import { ConnectWalletButton } from './ConnectWalletButton';
 
 interface SidebarProps {
   children: React.ReactNode;
 }
+
+  // Navigation links configuration
+  const navLinks = [
+    { path: '/dashboard', label: 'Dashboard', icon: <Icon name="home" className="mr-4" /> },
+    { path: '/trade', label: 'Trade', icon: <Icon name="chart line" className="mr-4" /> },
+    { path: '/earn', label: 'Earn', icon: <Icon name="money" className="mr-4" /> },
+    { path: '/support', label: 'Support', icon: <Icon name="help circle" className="mr-4" /> },
+    { path: '/leaderboard', label: 'Leaderboard', icon: <Icon name="trophy" className="mr-4" /> },
+  ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [visible, setVisible] = useState(false);
@@ -12,8 +22,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
   const [offsetY, setOffsetY] = useState(0);
+  const [startX, setStartX] = useState(0);
+  const [offsetX, setOffsetX] = useState(0);
   const drawerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const checkIfMobile = () => {
@@ -24,12 +37,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
 
+  const isActiveLink = (path: string): string => {
+    return location.pathname === path ? 'text-blue-500 font-medium text-md border border-blue-500 rounded-2xl px-4 py-1 transition-all duration-200' : 'text-gray-400 hover:text-white transition-colors duration-200 text-md';
+  };
+
   const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
     setIsDragging(true);
     if ('touches' in e) {
       setStartY(e.touches[0].clientY);
+      setStartX(e.touches[0].clientX);
     } else {
       setStartY(e.clientY);
+      setStartX(e.clientX);
     }
   };
 
@@ -37,19 +56,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     if (!isDragging) return;
     
     const currentY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    const diff = currentY - startY;
+    const currentX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     
-    if (diff > 0) { // Only allow dragging downwards
-      setOffsetY(diff);
+    const diffY = currentY - startY;
+    const diffX = currentX - startX;
+    
+    if (diffY > 0) { // Dragging downwards
+      setOffsetY(diffY);
+    }
+    if (Math.abs(diffX) > 0) { // Horizontal dragging
+      setOffsetX(diffX);
     }
   };
 
   const handleTouchEnd = () => {
     setIsDragging(false);
-    if (offsetY > 50) { // If dragged more than 50px, close the drawer
+    if (offsetY > 50 || Math.abs(offsetX) > 100) { // Close if dragged down or sideways enough
       setVisible(false);
     }
     setOffsetY(0);
+    setOffsetX(0);
   };
 
   const handleNavigation = (path: string) => {
@@ -59,75 +85,98 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     }
   };
 
+  const Logo = () => (
+    <Link to="/" className="flex items-center space-x-1">
+      <span className="text-5xl font-bold bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent">Q</span>
+      <span className="text-lg hidden sm:inline">UOTEX</span>
+    </Link>
+  );
+
   const HeaderContent = () => (
     <>
-      {/* Logo */}
-      <div className="flex items-center cursor-pointer" onClick={() => handleNavigation('/')}>
-        <Icon name="question circle" size="large" inverted />
-        <span className="text-white text-xl font-bold ml-1">UOTEX</span>
-      </div>
-
       {/* Right side with actions */}
-      <div className="flex items-center space-x-4">
-        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-          Connect wallet
-        </button>
-        <Icon name="globe" inverted style={{ cursor: 'pointer' }} />
-        <Icon name="bell outline" inverted style={{ cursor: 'pointer' }} />
-        <div className="w-8 h-8 rounded-full bg-gray-400 flex items-center justify-center">
-          <Icon name="user" inverted />
+      <div className="flex items-center space-x-2 md:space-x-4">
+        <div className="hidden sm:block">
+          <ConnectWalletButton />
         </div>
+
+        {/* Language Globe Icon */}
+        <button 
+          title="Language" 
+          type="button" 
+          className="p-2 hover:bg-gray-800 rounded-lg transition-colors duration-200"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+          </svg>
+        </button>        
+            
+        {/* Notification Bell Icon */}
+        <button 
+          title="Notifications" 
+          type="button" 
+          className="p-2 hover:bg-gray-800 rounded-lg transition-colors duration-200 relative"
+        >
+          <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+        </button>
       </div>
     </>
   );
 
   return (
-    <div className="min-h-screen bg-[#13131F]">
+    <div className="min-h-screen bg-[#13131F] text-white px-4 md:px-6 py-4 border-b border-gray-800">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 z-50">
-        <div className="flex items-center justify-between p-4 bg-[#1C1C28]">
+      <div className="bg-[#13131F] sticky top-0 left-0 right-0 z-50">
+        <div className="flex items-center justify-between p-6 border-b border-gray-800">
+          
+          {/* Mobile Header */}
           {isMobile ? (
             <div className="container mx-auto flex items-center justify-between">
+              <Logo />
               <HeaderContent />
-              <div className="relative w-6 h-3 cursor-pointer" onClick={() => setVisible(!visible)}>
-                {/* Top bar */}
-                <div className={`absolute w-6 h-0.5 bg-white transition-all duration-300 ease-in-out ${
-                  visible 
-                    ? 'top-1/2 -translate-y-1/2 rotate-45' 
-                    : 'top-0'
-                }`} />
-                
-                {/* Bottom bar */}
-                <div className={`absolute w-6 h-0.5 bg-white transition-all duration-300 ease-in-out ${
-                  visible 
-                    ? 'top-1/2 -translate-y-1/2 -rotate-45' 
-                    : 'bottom-0'
-                }`} />
+
+              {/* Mobile Menu Button */}
+              <div className="w-10 h-10 flex items-center justify-center p-2 hover:bg-gray-800 rounded-lg transition-colors duration-200" onClick={() => setVisible(!visible)}>
+                <div className="relative w-6 h-3 cursor-pointer">
+                  {/* Top bar */}
+                  <div className={`absolute w-6 h-0.5 bg-white transition-all duration-300 ease-in-out ${
+                    visible 
+                      ? 'top-1/2 -translate-y-1/2 rotate-45' 
+                      : 'top-0'
+                  }`} />
+                  
+                  {/* Bottom bar */}
+                  <div className={`absolute w-6 h-0.5 bg-white transition-all duration-300 ease-in-out ${
+                    visible 
+                      ? 'top-1/2 -translate-y-1/2 -rotate-45' 
+                      : 'bottom-0'
+                  }`} />
+                </div>                
               </div>
+
             </div>
           ) : (
-            <div className="flex items-center justify-between w-full">
-              <div className="flex items-center space-x-8">
-                <HeaderContent />
-                
+            // Desktop Header
+            <div className="w-full">
+              <div className="flex items-center justify-between space-x-10">
+                <Logo />
                 {/* Primary Navigation */}
-                <div className="flex space-x-6">
-                  <span className="text-blue-500 cursor-pointer hover:text-blue-400" onClick={() => handleNavigation('/trade')}>
-                    Trade
-                  </span>
-                  <span className="text-gray-400 cursor-pointer hover:text-white" onClick={() => handleNavigation('/markets')}>
-                    Markets
-                  </span>
-                  <span className="text-gray-400 cursor-pointer hover:text-white" onClick={() => handleNavigation('/leaderboard')}>
-                    Leaderboard
-                  </span>
-                  <span className="text-gray-400 cursor-pointer hover:text-white" onClick={() => handleNavigation('/support')}>
-                    Support
-                  </span>
-                  <span className="text-gray-400 cursor-pointer hover:text-white" onClick={() => handleNavigation('/doc')}>
-                    Doc
-                  </span>
+                <div className="flex items-center space-x-10">
+                  {navLinks.map((link) => (
+                    <Link
+                    key={link.path}
+                    to={link.path}
+                    className={`${isActiveLink(link.path)} py-2`}
+                  >
+                    {link.label}
+                    </Link>
+                  ))}                    
                 </div>
+   
+                <HeaderContent /> 
               </div>
             </div>
           )}
@@ -137,13 +186,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         {isMobile && (
           <div 
             ref={drawerRef}
-            className={`absolute top-full left-0 right-0 w-full bg-[#1C1C28] overflow-hidden transition-all duration-300 ease-in-out origin-top ${
+            className={`absolute top-full left-0 right-0 w-full bg-[#13131f] px-4 md:px-6 py-4 border border-gray-800 rounded-b-lg overflow-hidden transition-all duration-300 ease-in-out origin-top select-none ${
               visible 
                 ? 'max-h-[400px] opacity-100' 
                 : 'max-h-0 opacity-0'
-            }`}
+            }`} 
             style={{
-              transform: isDragging ? `translateY(${offsetY}px)` : undefined
+              transform: isDragging 
+                ? `translate(${offsetX}px, ${offsetY}px)` 
+                : undefined,
+              touchAction: 'none', // Prevents default touch behaviors
+              userSelect: 'none', // Prevents text selection
             }}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
@@ -153,36 +206,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
             onMouseUp={handleTouchEnd}
             onMouseLeave={handleTouchEnd}
           >
-            {/* Drawer Handle */}
-            <div className="w-full flex justify-center p-4 cursor-grab active:cursor-grabbing">
-              <div className="w-12 h-1 bg-gray-600 rounded-full hover:bg-gray-500 transition-colors" />
+            {/* Drawer Handle - add handles on all sides */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="w-full flex justify-center p-4 border-b border-gray-800">
+                <div className="w-12 h-1 bg-gray-600 rounded-full pointer-events-auto cursor-grab active:cursor-grabbing hover:bg-gray-500 transition-colors" />
+              </div>
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-transparent pointer-events-auto cursor-grab active:cursor-grabbing hover:bg-gray-500 transition-colors" />
+              <div className="absolute right-0 top-0 bottom-0 w-1 bg-transparent pointer-events-auto cursor-grab active:cursor-grabbing hover:bg-gray-500 transition-colors" />
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-transparent pointer-events-auto cursor-grab active:cursor-grabbing hover:bg-gray-500 transition-colors" />
             </div>
 
-            <div className="px-16 pb-8 space-y-4">
-              <Menu.Item as="div" className="block py-3 text-lg text-white hover:text-blue-400 cursor-pointer" onClick={() => handleNavigation('/')}>
-                <Icon name="home" className="mr-4" />
-                Dashboard
-              </Menu.Item>
-              <Menu.Item as="div" className="block py-3 text-lg text-white hover:text-blue-400 cursor-pointer" onClick={() => handleNavigation('/trade')}>
-                <Icon name="chart line" className="mr-4" />
-                Trade
-              </Menu.Item>
-              <Menu.Item as="div" className="block py-3 text-lg text-white hover:text-blue-400 cursor-pointer" onClick={() => handleNavigation('/markets')}>
-                <Icon name="globe" className="mr-4" />
-                Markets
-              </Menu.Item>
-              <Menu.Item as="div" className="block py-3 text-lg text-white hover:text-blue-400 cursor-pointer" onClick={() => handleNavigation('/leaderboard')}>
-                <Icon name="trophy" className="mr-4" />
-                Leaderboard
-              </Menu.Item>
-              <Menu.Item as="div" className="block py-3 text-lg text-white hover:text-blue-400 cursor-pointer" onClick={() => handleNavigation('/support')}>
-                <Icon name="help circle" className="mr-4" />
-                Support
-              </Menu.Item>
-              <Menu.Item as="div" className="block py-3 text-lg text-white hover:text-blue-400 cursor-pointer" onClick={() => handleNavigation('/doc')}>
-                <Icon name="book" className="mr-4" />
-                Doc
-              </Menu.Item>
+            <div className="px-16 pb-8 pt-12 space-y-4">
+              
+              {navLinks.map((link) => (
+                <Menu.Item
+                  as="div"
+                  key={link.path}
+                  className={`${isActiveLink(link.path)} block py-3 text-lg text-white-100 hover:text-blue-00 cursor-pointer`}
+                  onClick={() => handleNavigation(link.path)}
+                >
+                  {link.icon}
+                  {link.label}
+                </Menu.Item>
+              ))}   
             </div>
           </div>
         )}
@@ -192,7 +238,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       <div 
         className={`pt-20 transition-all duration-300 ease-in-out ${
           visible && isMobile 
-            ? 'transform scale-95 opacity-50' 
+            ? 'transform scale-90 opacity-50' 
             : 'transform scale-100 opacity-100'
         }`}
       >

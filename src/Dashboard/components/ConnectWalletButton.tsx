@@ -1,15 +1,24 @@
-import React from 'react';
+import { Icon } from "semantic-ui-react";
 
 export const ConnectWalletButton = () => {
   return (
-    <button type='button' 
-      className="bg-[#0D0C52] text-white px-3 sm:px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-[#1A1945] transition-colors duration-200 text-sm sm:text-base w-full sm:w-auto justify-center"
+    <button 
+      type='button' 
+      className="group relative px-3 sm:px-5 py-3 rounded-3xl flex items-center gap-2 text-lg w-full sm:w-auto justify-center overflow-hidden backdrop-blur-sm transition-all duration-300 hover:rounded-[28px_8px_28px_8px] origin-bottom-right border border-blue-500 hover:shadow-[-4px_4px_0_0_rgba(0,0,0,1)]"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <rect x="2" y="4" width="20" height="16" rx="2" strokeWidth="2"/>
-        <path d="M16 12h.01" strokeWidth="3"/>
-      </svg>
-      <span>Connect Wallet</span>
+      {/* Glass background with hover effect */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-blue-900/50 backdrop-blur-md transition-transform duration-300 group-hover:scale-[1.6] group-hover:rotate-[-10deg]" />
+      
+      {/* Content */}
+      <div className="relative flex items-center gap-2 z-10 pl-2">
+        <Icon name="credit card outline" className="text-blue-100 text-md" /> 
+        <span className="text-blue-100">Connect Wallet</span>
+      </div>
+
+      {/* Gradient border with glass effect */}
+      <div className="absolute inset-0 rounded-3xl group-hover:rounded-[28px_8px_28px_8px] transition-all duration-300 p-[1px] bg-gradient-to-r from-blue-500/20 via-blue-400/40 to-blue-500/20">
+        <div className="h-full w-full rounded-3xl group-hover:rounded-[28px_8px_28px_8px] transition-all duration-300 bg-black/40 backdrop-blur-xl" />
+      </div>
     </button>
   );
 }; 
