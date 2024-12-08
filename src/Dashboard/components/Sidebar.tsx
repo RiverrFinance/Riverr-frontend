@@ -16,6 +16,30 @@ interface SidebarProps {
     { path: '/leaderboard', label: 'Leaderboard', icon: <Icon name="trophy" className="mr-4" /> },
   ];
 
+const IconButton = ({ children, title }: { children: React.ReactNode; title?: string }) => (
+  <button 
+    title={title}
+    type="button" 
+    className="group relative p-2 rounded-[20px] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:translate-x-1 hover:shadow-[0_4px_0_0_rgba(30,58,138,0.8)] bg-transparent"
+  >
+    {/* Content */}
+    <div className="relative z-10">
+      {children}
+    </div>
+
+    {/* Border */}
+    <div className="absolute hover:inset-0 rounded-[20px] hover:border hover:border-blue-400/50 transition-all duration-300" />
+
+    {/* Hover gradient overlay */}
+    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-blue-900/30 to-blue-800/30 rounded-[20px]" />
+
+    {/* Shine effect */}
+    {/* <div className="absolute inset-0 opacity-0 transition-all duration-300 rounded-[20px]">
+      <div className="absolute inset-[-100%] bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:animate-[shine_1.5s_ease-in-out]" />
+    </div> */}
+  </button>
+);
+
 export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [visible, setVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -30,7 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 
   useEffect(() => {
     const checkIfMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+      setIsMobile(window.innerWidth <= 1000);
     };
     checkIfMobile();
     window.addEventListener('resize', checkIfMobile);
@@ -86,9 +110,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   };
 
   const Logo = () => (
-    <Link to="/" className="flex items-center space-x-1">
+    <Link to="/" className="logo flex items-center space-x-1 pl-5">
       <span className="text-5xl font-bold bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent">Q</span>
-      <span className="text-lg hidden sm:inline">UOTEX</span>
+      <span className="text-lg hidden sm:inline tracking-wider">UOTEX</span>
     </Link>
   );
 
@@ -96,40 +120,34 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     <>
       {/* Right side with actions */}
       <div className="flex items-center space-x-2 md:space-x-4">
-        <div className="hidden sm:block">
+        <div className="block">
           <ConnectWalletButton />
         </div>
 
         {/* Language Globe Icon */}
-        <button 
-          title="Language" 
-          type="button" 
-          className="p-2 hover:bg-gray-800 rounded-lg transition-colors duration-200"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <IconButton title="Language">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
           </svg>
-        </button>        
-            
+        </IconButton>
+
         {/* Notification Bell Icon */}
-        <button 
-          title="Notifications" 
-          type="button" 
-          className="p-2 hover:bg-gray-800 rounded-lg transition-colors duration-200 relative"
-        >
-          <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></div>
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-          </svg>
-        </button>
+        <IconButton title="Notifications">
+          <div className="relative">
+            <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+          </div>
+        </IconButton>
       </div>
     </>
   );
 
   return (
-    <div className="min-h-screen bg-[#13131F] text-white px-4 md:px-6 py-4 border-b border-gray-800">
+    <div className="min-h-screen w-full overflow-hidden bg-[#13131F] text-white px-4 md:px-6 py-10 ">
       {/* Header */}
-      <div className="bg-[#13131F] sticky top-0 left-0 right-0 z-50">
+      <div className="bg-[#13131ffb] fixed top-0 left-0 right-0 z-50">
         <div className="flex items-center justify-between p-6 border-b border-gray-800">
           
           {/* Mobile Header */}
@@ -186,7 +204,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         {isMobile && (
           <div 
             ref={drawerRef}
-            className={`absolute top-full left-0 right-0 w-full bg-[#13131f] px-4 md:px-6 py-4 border border-gray-800 rounded-b-lg overflow-hidden transition-all duration-300 ease-in-out origin-top select-none ${
+            className={`absolute top-full left-0 right-0 w-full bg-[#13131f] px-0 md:px-6 py-4 border border-gray-800 rounded-b-lg overflow-hidden transition-all duration-300 ease-in-out origin-top select-none ${
               visible 
                 ? 'max-h-[400px] opacity-100' 
                 : 'max-h-0 opacity-0'

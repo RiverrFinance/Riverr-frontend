@@ -2,7 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
+.logo {
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #00b5fd);
+  scale: 1.1;
+  transition: scale 300ms;
+}
+
+
+/* body {
   font-family: sans-serif;
   font-size: 1.5rem;
 }
@@ -38,4 +49,4 @@ button[type="submit"] {
 
 #greeting:empty {
   display: none;
-}
+} */
