@@ -2,41 +2,28 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Icon, Menu } from 'semantic-ui-react';
 import { ConnectWalletButton } from './ConnectWalletButton';
+import {SidebarProps } from '../../types/trading';
 
-interface SidebarProps {
-  children: React.ReactNode;
-}
 
-  // Navigation links configuration
-  const navLinks = [
-    { path: '/dashboard', label: 'Dashboard', icon: <Icon name="home" className="mr-4" /> },
-    { path: '/trade', label: 'Trade', icon: <Icon name="chart line" className="mr-4" /> },
-    { path: '/earn', label: 'Earn', icon: <Icon name="money" className="mr-4" /> },
-    { path: '/support', label: 'Support', icon: <Icon name="help circle" className="mr-4" /> },
-    { path: '/leaderboard', label: 'Leaderboard', icon: <Icon name="trophy" className="mr-4" /> },
-  ];
+// Navigation links configuration
+const navLinks = [
+  { path: '/dashboard', label: 'Dashboard', icon: <Icon name="home" className="mr-4" /> },
+  { path: '/trade', label: 'Trade', icon: <Icon name="chart line" className="mr-4" /> },
+  { path: '/earn', label: 'Earn', icon: <Icon name="money" className="mr-4" /> },
+  { path: '/support', label: 'Support', icon: <Icon name="help circle" className="mr-4" /> },
+  { path: '/leaderboard', label: 'Leaderboard', icon: <Icon name="trophy" className="mr-4" /> },
+];
 
 const IconButton = ({ children, title }: { children: React.ReactNode; title?: string }) => (
-  <button 
+  <button
     title={title}
-    type="button" 
-    className="group relative p-2 rounded-[20px] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:translate-x-1 hover:shadow-[0_4px_0_0_rgba(30,58,138,0.8)] bg-transparent"
+    type="button"
+    className="group relative p-2 rounded-[20px] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:translate-x-1 hover:shadow-[0_4px_0_0_rgba(30,58,138,0.8)] bg-transparent hover:border-t hover:border-b hover:border-blue-400/50"
   >
     {/* Content */}
     <div className="relative z-10">
       {children}
     </div>
-
-    {/* Border */}
-    <div className="absolute hover:inset-0 rounded-[20px] hover:border hover:border-blue-400/50 transition-all duration-300" />
-
-    {/* Hover gradient overlay */}
-    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-blue-900/30 to-blue-800/30 rounded-[20px]" />
-
-    {/* Shine effect */}
-    {/* <div className="absolute inset-0 opacity-0 transition-all duration-300 rounded-[20px]">
-      <div className="absolute inset-[-100%] bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:animate-[shine_1.5s_ease-in-out]" />
-    </div> */}
   </button>
 );
 
@@ -53,16 +40,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const location = useLocation();
 
   useEffect(() => {
-    const checkIfMobile = () => {
-      setIsMobile(window.innerWidth <= 1000);
-    };
+    const checkIfMobile = () => setIsMobile(window.innerWidth <= 1000);
     checkIfMobile();
     window.addEventListener('resize', checkIfMobile);
+
+    // Redirect to dashboard if on root path
+    if (location.pathname === '/') navigate('/dashboard');
+
     return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
 
+  // Active link styling
   const isActiveLink = (path: string): string => {
-    return location.pathname === path ? 'text-blue-500 font-medium text-md border border-blue-500 rounded-2xl px-4 py-1 transition-all duration-200' : 'text-gray-400 hover:text-white transition-colors duration-200 text-md';
+    const isActive = (path === '/dashboard') ? ['/', '/dashboard'].includes(location.pathname) : (location.pathname === path);
+    return isActive
+      ? 'text-blue-500 font-medium text-md border border-blue-500 rounded-2xl px-4 py-1 transition-all duration-200'
+      : 'text-gray-400 hover:text-white transition-colors duration-200 text-md';
   };
 
   const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
@@ -78,13 +71,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 
   const handleTouchMove = (e: React.TouchEvent | React.MouseEvent) => {
     if (!isDragging) return;
-    
+
     const currentY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     const currentX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    
+
     const diffY = currentY - startY;
     const diffX = currentX - startX;
-    
+
     if (diffY > 0) { // Dragging downwards
       setOffsetY(diffY);
     }
@@ -109,19 +102,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     }
   };
 
+  // Logo component
   const Logo = () => (
-    <Link to="/" className="logo flex items-center space-x-1 pl-5">
+    <Link to="/" className="logo flex items-center space-x-1 p-0 md:pl-5">
       <span className="text-5xl font-bold bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent">Q</span>
       <span className="text-lg hidden sm:inline tracking-wider">UOTEX</span>
     </Link>
   );
 
+  // Header content component
   const HeaderContent = () => (
     <>
       {/* Right side with actions */}
       <div className="flex items-center space-x-2 md:space-x-4">
         <div className="block">
-          <ConnectWalletButton />
+          <ConnectWalletButton isConnected={true} isIconConnected={true} />
         </div>
 
         {/* Language Globe Icon */}
@@ -145,11 +140,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   );
 
   return (
-    <div className="min-h-screen w-full overflow-hidden bg-[#13131F] text-white px-4 md:px-6 py-10 ">
+    <div className="min-h-screen w-full overflow-hidden bg-[#13131F] text-white px-0 md:px-6 py-10 ">
       {/* Header */}
       <div className="bg-[#13131ffb] fixed top-0 left-0 right-0 z-50">
         <div className="flex items-center justify-between p-6 border-b border-gray-800">
-          
+
           {/* Mobile Header */}
           {isMobile ? (
             <div className="container mx-auto flex items-center justify-between">
@@ -157,22 +152,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
               <HeaderContent />
 
               {/* Mobile Menu Button */}
-              <div className="w-10 h-10 flex items-center justify-center p-2 hover:bg-gray-800 rounded-lg transition-colors duration-200" onClick={() => setVisible(!visible)}>
+              <div className="w-10 h-10 flex items-center justify-center p-2  hover:-translate-y-1 hover:shadow-[0_4px_0_0_rgba(30,58,138,0.8)] bg-transparent rounded-lg transition-all duration-300 hover:border-t hover:border-b hover:border-blue-400/50" onClick={() => setVisible(!visible)}>
                 <div className="relative w-6 h-3 cursor-pointer">
                   {/* Top bar */}
-                  <div className={`absolute w-6 h-0.5 bg-white transition-all duration-300 ease-in-out ${
-                    visible 
-                      ? 'top-1/2 -translate-y-1/2 rotate-45' 
+                  <div className={`absolute w-6 h-0.5 bg-white transition-all duration-300 ease-in-out ${visible
+                      ? 'top-1/2 -translate-y-1/2 rotate-45'
                       : 'top-0'
-                  }`} />
-                  
+                    }`} />
+
                   {/* Bottom bar */}
-                  <div className={`absolute w-6 h-0.5 bg-white transition-all duration-300 ease-in-out ${
-                    visible 
-                      ? 'top-1/2 -translate-y-1/2 -rotate-45' 
+                  <div className={`absolute w-6 h-0.5 bg-white transition-all duration-300 ease-in-out ${visible
+                      ? 'top-1/2 -translate-y-1/2 -rotate-45'
                       : 'bottom-0'
-                  }`} />
-                </div>                
+                    }`} />
+                </div>
               </div>
 
             </div>
@@ -185,16 +178,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
                 <div className="flex items-center space-x-10">
                   {navLinks.map((link) => (
                     <Link
-                    key={link.path}
-                    to={link.path}
-                    className={`${isActiveLink(link.path)} py-2`}
-                  >
-                    {link.label}
+                      key={link.path}
+                      to={link.path}
+                      className={`${isActiveLink(link.path)} py-2`}
+                    >
+                      {link.label}
                     </Link>
-                  ))}                    
+                  ))}
                 </div>
-   
-                <HeaderContent /> 
+
+                <HeaderContent />
               </div>
             </div>
           )}
@@ -202,16 +195,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 
         {/* Mobile Menu Drawer */}
         {isMobile && (
-          <div 
+          <div
             ref={drawerRef}
-            className={`absolute top-full left-0 right-0 w-full bg-[#13131f] px-0 md:px-6 py-4 border border-gray-800 rounded-b-lg overflow-hidden transition-all duration-300 ease-in-out origin-top select-none ${
-              visible 
-                ? 'max-h-[400px] opacity-100' 
+            className={`absolute top-full left-0 right-0 w-full bg-[#13131f] px-0 md:px-6 py-4 border border-gray-800 rounded-b-lg overflow-hidden transition-all duration-300 ease-in-out origin-top select-none ${visible
+                ? 'max-h-[400px] opacity-100'
                 : 'max-h-0 opacity-0'
-            }`} 
+              }`}
             style={{
-              transform: isDragging 
-                ? `translate(${offsetX}px, ${offsetY}px)` 
+              transform: isDragging
+                ? `translate(${offsetX}px, ${offsetY}px)`
                 : undefined,
               touchAction: 'none', // Prevents default touch behaviors
               userSelect: 'none', // Prevents text selection
@@ -235,7 +227,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
             </div>
 
             <div className="px-16 pb-8 pt-12 space-y-4">
-              
+
               {navLinks.map((link) => (
                 <Menu.Item
                   as="div"
@@ -246,26 +238,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
                   {link.icon}
                   {link.label}
                 </Menu.Item>
-              ))}   
+              ))}
             </div>
           </div>
         )}
       </div>
 
       {/* Main Content with Scale Animation */}
-      <div 
-        className={`pt-20 transition-all duration-300 ease-in-out ${
-          visible && isMobile 
-            ? 'transform scale-90 opacity-50' 
+      <div
+        className={`pt-20 transition-all duration-300 ease-in-out ${visible && isMobile
+            ? 'transform scale-90 opacity-50'
             : 'transform scale-100 opacity-100'
-        }`}
+          }`}
       >
         {children}
       </div>
 
       {/* Overlay */}
       {isMobile && visible && (
-        <div 
+        <div
           className="fixed inset-0 bg-black transition-opacity duration-300 ease-in-out opacity-50 z-40"
           onClick={() => setVisible(false)}
         />

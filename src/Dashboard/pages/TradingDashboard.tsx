@@ -2,7 +2,6 @@ import React from 'react';
 import { TradingChart } from '../components/TradingChart';
 import { OrderBook } from '../components/OrderBook';
 import { TradingForm } from '../components/TradingForm';
-import { NavBar } from '../components/NavBar';
 
 export const TradingDashboard: React.FC = () => {
   // Sample data for order book

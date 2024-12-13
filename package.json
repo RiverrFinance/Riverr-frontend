@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@radix-ui/react-toast": "^1.2.2",
+    "@radix-ui/react-tooltip": "^1.1.4",
     "@web3-react/core": "^8.2.3",
     "@web3-react/injected-connector": "^6.0.7",
     "ethers": "^5.7.2",
