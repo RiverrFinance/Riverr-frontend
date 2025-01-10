@@ -24,3 +24,15 @@ export interface ConnectWalletButtonProps {
 export interface SidebarProps {
   children: React.ReactNode;
 }
+export interface CurrencyPair {
+  id: string;
+  symbol: string;
+  name: string;
+  current_price: number;
+  price_change_percentage_24h: number;
+  image: string;
+  isFavorite?: boolean;
+  high_24h: number;
+  low_24h: number;
+  total_volume: number;
+}

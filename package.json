@@ -16,12 +16,15 @@
     "@web3-react/core": "^8.2.3",
     "@web3-react/injected-connector": "^6.0.7",
     "ethers": "^5.7.2",
+    "lightweight-charts": "^4.2.2",
     "react": "^18.3.1",
+    "react-chartjs-2": "^5.3.0",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.0.2",
     "semantic-ui-css": "^2.5.0",
     "semantic-ui-react": "^2.1.5",
-    "sonner": "^1.7.1"
+    "sonner": "^1.7.1",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",

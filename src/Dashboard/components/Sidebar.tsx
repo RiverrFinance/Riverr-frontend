@@ -145,7 +145,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       <div className="bg-[#13131ffb] fixed top-0 left-0 right-0 z-50">
         <div className="flex items-center justify-between p-6 border-b border-gray-800">
 
-          {/* Mobile Header */}
+          {/* Mobile Header view */}
           {isMobile ? (
             <div className="container mx-auto flex items-center justify-between">
               <Logo />
@@ -170,7 +170,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 
             </div>
           ) : (
-            // Desktop Header
+            // Desktop Header view
             <div className="w-full">
               <div className="flex items-center justify-between space-x-10">
                 <Logo />

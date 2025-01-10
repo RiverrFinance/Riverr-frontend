@@ -1,15 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Icon } from 'semantic-ui-react';
-
-export interface CurrencyPair {
-  id: string;
-  symbol: string;
-  name: string;
-  current_price: number;
-  price_change_percentage_24h: number;
-  image: string;
-  isFavorite?: boolean;
-}
+import { Pairs } from './Pairs';
+import { CurrencyPair } from '../../types/trading';
+// import { toast } from 'sonner';
 
 interface CurrencyPairSelectorProps {
   onPairSelect?: (pair: CurrencyPair | null) => void;
@@ -37,29 +30,108 @@ export const CurrencyPairSelector: React.FC<CurrencyPairSelectorProps> = ({ onPa
   const [loading, setLoading] = useState(false);
   const [selectedPair, setSelectedPair] = useState<CurrencyPair | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
-  const [selectedStableCoin, setSelectedStableCoin] = useState('USD');
+  const [selectedQuoteCurrency, setSelectedQuoteCurrency] = useState('USD');
 
   const tabs = ['All', 'Favorites', 'Top Volume', 'New Listing', 'Memecoins'];
-  const stableCoins = ['USD', 'USDT', 'USDC', 'ETH', 'BTC'];
+  const stableCoins = ['USD', 'USDT', 'USDC', 'ETH', 'BTC', 'ICP'];
+
+  useEffect(() => {
+    fetchCryptoPairs();
+
+    const intervalId = setInterval(() => {
+      fetchCryptoPairs();
+    }, 10000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [selectedQuoteCurrency]);
 
   const fetchCryptoPairs = async () => {
     try {
       setLoading(true);
       const response = await fetch(
-        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${selectedStableCoin.toLowerCase()}&order=market_cap_desc&per_page=50&page=1&sparkline=false`
+        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${selectedQuoteCurrency.toLowerCase()}&order=market_cap_desc&per_page=50&page=1&sparkline=false`
       );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
+      console.log('data', data);
+      // console.log('data', data[0])
+
       setPairs(data);
+
+      if (selectedPair) {
+        const updatedPair = data.find((pair: CurrencyPair) => pair.id === selectedPair.id);
+        if (updatedPair) {
+          const updatedPairWithFavorite = {
+            ...updatedPair,
+            isFavorite: favorites.has(updatedPair.id)
+          };
+          setSelectedPair(updatedPairWithFavorite);
+          onPairSelect?.(updatedPairWithFavorite);
+        }
+      }
     } catch (error) {
-      console.error('Error fetching crypto pairs:', error);
+      console.error('ERROR FETCHING CRYPTO PAIRS:', error);
+      // toast.error('Failed to fetch data', {
+      //   description: 'Please try again later',
+      //   duration: 4000,
+      //   style: {
+      //     background: 'rgba(28, 28, 40, 0.9)',
+      //     backdropFilter: 'blur(8px)',
+      //   },
+      // });
+
+      // If it's a 400 error, reset to USD and retry
+      // if (error instanceof Error && error.message.includes('400')) {
+      //   setSelectedStableCoin('USD');
+      //   setTimeout(() => {
+      //     window.location.reload();
+      //   }, 1500);
+      // }
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchCryptoPairs();
-  }, [selectedStableCoin]);
+
+
+  // const fetchCryptoPairs = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${selectedStableCoin.toLowerCase()}`);
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! status: ${response.status}`);
+  //     }
+  //     const data = await response.json();
+
+  //     const formattedPairs = data.pairs.map((pair: any) => ({
+  //       id: pair.id,
+  //       symbol: pair.baseToken.symbol,
+  //       name: `${pair.baseToken.name} / ${pair.quoteToken.symbol}`,
+  //       current_price: parseFloat(pair.priceUsd),
+  //       price_change_percentage_24h: parseFloat(pair.priceChange24h ?? 0),
+  //       image: pair.baseToken.logoURI || '',  // If available
+  //       isFavorite: favorites.has(pair.id)
+  //     }));
+
+  //     setPairs(formattedPairs);
+  //   } catch (error) {
+  //     console.error('ERROR FETCHING CRYPTO PAIRS:', error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };  
+
+
+
+  // useEffect(() => {
+  //   fetchCryptoPairs();
+  // }, [selectedStableCoin]);
 
   const toggleFavorite = (pairId: string) => {
     setFavorites(prev => {
@@ -93,14 +165,10 @@ export const CurrencyPairSelector: React.FC<CurrencyPairSelectorProps> = ({ onPa
     isFavorite: favorites.has(pair.id)
   }));
 
-  const formatPrice = (price: number) => {
-    return price < 1 ? price.toFixed(4) : price.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-  };
-
   const handlePairSelect = (pair: CurrencyPair) => {
+    // console.log(pair.id)
+    console.log(filteredPairs[33])
+
     const selectedPairWithFavorite = {
       ...pair,
       isFavorite: favorites.has(pair.id)
@@ -111,10 +179,17 @@ export const CurrencyPairSelector: React.FC<CurrencyPairSelectorProps> = ({ onPa
   };
 
   const handleStableCoinSelect = (coin: string) => {
-    setSelectedStableCoin(coin);
+    setSelectedQuoteCurrency(coin);
     // Clear selected pair when changing base currency
     setSelectedPair(null);
   };
+
+  // const formatPrice = (price: number) => {
+  //   return price < 1 ? price.toFixed(4) : price.toLocaleString(undefined, {
+  //     minimumFractionDigits: 2,
+  //     maximumFractionDigits: 2
+  //   });
+  // };
 
   return (
     <div className="relative">
@@ -140,7 +215,7 @@ export const CurrencyPairSelector: React.FC<CurrencyPairSelectorProps> = ({ onPa
                     <img src={selectedPair.image} alt={selectedPair.name} className="w-5 h-5 sm:w-7 sm:h-7" />
                     <div className="flex flex-col">
                       <span className="font-semibold text-base sm:text-lg text-white">
-                        {selectedPair.symbol.toUpperCase()}/{selectedStableCoin}
+                        {selectedPair.symbol.toUpperCase()}/{selectedQuoteCurrency}
                       </span>
                       <span className="text-xs text-gray-400 hidden sm:block">{selectedPair.name}</span>
                     </div>
@@ -189,11 +264,10 @@ export const CurrencyPairSelector: React.FC<CurrencyPairSelectorProps> = ({ onPa
 
       {/* Modal */}
       <div
-        className={`fixed sm:absolute top-0 sm:top-full left-0 mt-0 sm:mt-2 w-full sm:w-[400px] h-full sm:h-auto bg-[#13131F] border-0 sm:border sm:border-gray-800 sm:rounded-lg shadow-lg z-50 transform transition-all duration-300 origin-top ${
-          isOpen
-            ? 'opacity-100 translate-y-0'
-            : 'opacity-0 -translate-y-4 pointer-events-none'
-        }`}
+        className={`fixed sm:absolute top-0 sm:top-full left-0 mt-0 sm:mt-2 w-full sm:w-[400px] h-full sm:h-auto bg-[#13131F] border-0 sm:border sm:border-gray-800 sm:rounded-lg shadow-lg z-50 transform transition-all duration-300 origin-top ${isOpen
+          ? 'opacity-100 translate-y-0'
+          : 'opacity-0 -translate-y-4 pointer-events-none'
+          }`}
       >
         <div className="h-[500px] sm:h-auto overflow-y-auto">
           <div className="sticky top-20 md:top-0 bg-[#13131F] p-4 border-b border-gray-800">
@@ -215,6 +289,7 @@ export const CurrencyPairSelector: React.FC<CurrencyPairSelectorProps> = ({ onPa
                     <Icon name="refresh" className="text-sm text-gray-400 group-hover:text-white" />
                   )}
                 </button>
+
                 {/* Close Button */}
                 <button
                   onClick={() => setIsOpen(false)}
@@ -243,11 +318,10 @@ export const CurrencyPairSelector: React.FC<CurrencyPairSelectorProps> = ({ onPa
                 <button
                   key={coin}
                   onClick={() => handleStableCoinSelect(coin)}
-                  className={`px-3 py-1 text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${
-                    selectedStableCoin === coin
-                      ? 'text-blue-500 font-medium border border-blue-500'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
+                  className={`px-3 py-1 text-sm rounded-lg transition-all duration-200 whitespace-nowrap ${selectedQuoteCurrency === coin
+                    ? 'text-blue-500 font-medium border border-blue-500'
+                    : 'text-gray-400 hover:text-white'
+                    }`}
                 >
                   {coin}
                 </button>
@@ -260,11 +334,10 @@ export const CurrencyPairSelector: React.FC<CurrencyPairSelectorProps> = ({ onPa
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-3 py-1 text-sm rounded-lg whitespace-nowrap transition-all duration-200 ${
-                    activeTab === tab
-                      ? 'text-blue-500 font-medium border border-blue-500'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
+                  className={`px-3 py-1 text-sm rounded-lg whitespace-nowrap transition-all duration-200 ${activeTab === tab
+                    ? 'text-blue-500 font-medium border border-blue-500'
+                    : 'text-gray-400 hover:text-white'
+                    }`}
                 >
                   {tab}
                 </button>
@@ -281,38 +354,25 @@ export const CurrencyPairSelector: React.FC<CurrencyPairSelectorProps> = ({ onPa
                 </div>
               ) : (
                 filteredPairs.map((pair) => (
-                  <div
+                  <Pairs
                     key={pair.id}
-                    onClick={() => handlePairSelect(pair)}
-                    className={`flex items-center justify-between p-3 hover:bg-[#1C1C28] rounded-lg cursor-pointer group ${
-                      selectedPair?.id === pair.id ? 'bg-[#1C1C28]' : ''
-                    }`}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <button
-                        className="hover:scale-110 transition-transform"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleFavorite(pair.id);
-                        }}
-                      >
-                        <StarIcon filled={favorites.has(pair.id)} />
-                      </button>
-                      <img src={pair.image} alt={pair.name} className="w-6 h-6" />
-                      <div>
-                        <div className="font-medium">
-                          {pair.symbol.toUpperCase()}/{selectedStableCoin}
-                        </div>
-                        <div className="text-sm text-gray-400">{pair.name}</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div>${formatPrice(pair.current_price)}</div>
-                      <div className={pair.price_change_percentage_24h >= 0 ? 'text-green-500' : 'text-red-500'}>
-                        {pair.price_change_percentage_24h.toFixed(2)}%
-                      </div>
-                    </div>
-                  </div>
+                    basePriceDetails={{
+                      price: pair.current_price,
+                      symbol: pair.symbol,
+                      percent: pair.price_change_percentage_24h,
+                      name: pair.name,
+                      image: pair.image,
+                      id: pair.id,
+                      high_24h: pair.high_24h,
+                      low_24h: pair.low_24h,
+                      volume: pair.total_volume,
+                    }}
+                    selectedQuoteCurrency={selectedQuoteCurrency}
+                    favorites={favorites}
+                    onToggleFavorite={toggleFavorite}
+                    onSelect={(selectedPair) => handlePairSelect(selectedPair)}
+                    isSelected={selectedPair?.id === pair.id}
+                  />
                 ))
               )}
             </div>
@@ -322,3 +382,124 @@ export const CurrencyPairSelector: React.FC<CurrencyPairSelectorProps> = ({ onPa
     </div>
   );
 };
+
+
+// import { useState, useEffect } from 'react';
+// import { Icon } from 'semantic-ui-react';
+
+// export interface CurrencyPair {
+//   id: string;
+//   symbol: string;
+//   name: string;
+//   current_price: number;
+//   price_change_percentage_24h: number;
+//   image: string;
+//   isFavorite?: boolean;
+// }
+
+// interface CurrencyPairSelectorProps {
+//   onPairSelect?: (pair: CurrencyPair | null) => void;
+// }
+
+// const StarIcon = ({ filled }: { filled: boolean }) => (
+//   <svg
+//     width="16"
+//     height="16"
+//     viewBox="0 0 24 24"
+//     fill={filled ? "currentColor" : "none"}
+//     stroke="currentColor"
+//     strokeWidth="2"
+//     className="text-blue-500 transition-colors"
+//   >
+//     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+//   </svg>
+// );
+
+// // Component for fetching and displaying currency pairs
+// const CurrencyPairList: React.FC<{ onPairSelect: (pair: CurrencyPair) => void }> = ({ onPairSelect }) => {
+//   const [pairs, setPairs] = useState<CurrencyPair[]>([]);
+//   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+//   const [searchQuery, setSearchQuery] = useState('');
+//   const [selectedStableCoin, setSelectedStableCoin] = useState('USD');
+
+//   const fetchCryptoPairs = async () => {
+//     try {
+//       const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${selectedStableCoin}`);
+//       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+//       const data = await response.json();
+//       const formattedPairs = data.pairs.map((pair: any) => ({
+//         id: pair.id,
+//         symbol: pair.symbol,
+//         name: pair.name,
+//         current_price: parseFloat(pair.priceUsd),
+//         price_change_percentage_24h: parseFloat(pair.change24h),
+//         image: pair.logoURI,
+//       }));
+//       setPairs(formattedPairs);
+//     } catch (error) {
+//       console.error('Failed to fetch pairs:', error);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchCryptoPairs();
+//   }, [selectedStableCoin]);
+
+//   return (
+//     <div>
+//       <div className="flex justify-between">
+//         <input
+//           type="text"
+//           placeholder="Search pairs"
+//           value={searchQuery}
+//           onChange={(e) => setSearchQuery(e.target.value)}
+//           className="px-4 py-2 border rounded"
+//         />
+//         <select
+//           value={selectedStableCoin}
+//           onChange={(e) => setSelectedStableCoin(e.target.value)}
+//           className="px-4 py-2 border rounded"
+//         >
+//           <option value="USD">USD</option>
+//           <option value="ICP">ICP</option>
+//           <option value="USDT">USDT</option>
+//           <option value="ETH">ETH</option>
+//           <option value="BTC">BTC</option>
+//         </select>
+//       </div>
+//       <div>
+//         {pairs.map((pair) => (
+//           <div key={pair.id} onClick={() => onPairSelect(pair)} className="flex justify-between p-2 hover:bg-gray-200 cursor-pointer">
+//             <div className="flex items-center">
+//               <StarIcon filled={favorites.has(pair.id)} />
+//               <img src={pair.image} alt={pair.name} className="w-5 h-5 ml-2" />
+//               <span className="ml-2">{pair.symbol}</span>
+//             </div>
+//             <div>${pair.current_price.toFixed(2)}</div>
+//           </div>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// };
+
+// // Component for rendering a chart
+// const CurrencyChart: React.FC<{ pairId: string }> = ({ pairId }) => {
+//   useEffect(() => {
+//     // Fetch chart data from Dexscreener and render using a library like Chart.js or Recharts
+//   }, [pairId]);
+
+//   return <div className="chart-container">Chart for {pairId}</div>;
+// };
+
+// // Main component combining pair list and chart
+// export const CurrencyPairSelector: React.FC = () => {
+//   const [selectedPair, setSelectedPair] = useState<CurrencyPair | null>(null);
+
+//   return (
+//     <div>
+//       <CurrencyPairList onPairSelect={(pair) => setSelectedPair(pair)} />
+//       {selectedPair && <CurrencyChart pairId={selectedPair.id} />}
+//     </div>
+//   );
+// };

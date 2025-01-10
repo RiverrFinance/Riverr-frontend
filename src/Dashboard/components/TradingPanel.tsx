@@ -32,7 +32,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
   };
 
   return (
-    <div className="bg-[#13131F] rounded-lg border border-gray-800">
+    <div className={`bg-[#13131F] rounded-lg border border-gray-800`}>
       {/* Trading Type Selector */}
       <div className="flex p-1 bg-[#1C1C28] rounded-t-lg">
         {(['Long', 'Short', 'Swap'] as const).map((type) => (

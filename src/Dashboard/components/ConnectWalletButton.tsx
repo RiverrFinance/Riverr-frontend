@@ -1,9 +1,34 @@
+import { createContext, useContext, useState } from 'react';
 import { Icon } from "semantic-ui-react";
-import { useState } from 'react';
+// import { useState } from 'react';
 import { ethers } from 'ethers';
 import { getWalletErrorMessage } from '../../utils/walletErrors';
 import { toast } from 'sonner';
 import { ConnectWalletButtonProps } from '../../types/trading';
+import { TradingPanel } from './TradingPanel';
+import { Sidebar } from './Sidebar';
+
+const AuthContext = createContext<{
+  account: string | null;
+  setAccount: (account: string | null) => void;
+}>({
+  account: null,
+  setAccount: () => {},
+});
+
+export const useAuth = () => useContext(AuthContext);
+
+// export const ConnectWalletButton = ({ isNavbar }) => {
+//   const [account, setAccount] = useState<string | null>(null);
+
+//   return (
+//     <AuthContext.Provider value={{ account, setAccount }}>
+//       {children}
+//     </AuthContext.Provider>
+//   );
+// };
+
+
 
 export const ConnectWalletButton: React.FC<ConnectWalletButtonProps & { className?: string, isConnected?: boolean, isIconConnected?: boolean }> = ({ className, isConnected, isIconConnected }) => {
   const [account, setAccount] = useState<string | null>(null);
@@ -146,3 +171,14 @@ export const ConnectWalletButton: React.FC<ConnectWalletButtonProps & { classNam
     </button>
   );
 }; 
+
+export const MyComponent = () => {
+  const [account, setAccount] = useState<string | null>(null);
+
+  return (
+    <AuthContext.Provider value={{ account, setAccount }}>
+      <Sidebar />
+      <TradingPanel />
+    </AuthContext.Provider>
+  );
+};

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { CurrencyPairSelector } from '../components/CurrencyPairSelector';
-import type { CurrencyPair } from '../components/CurrencyPairSelector';
+import { CurrencyPair } from '../../types/trading';
 import { Icon } from 'semantic-ui-react';
 import { TradingPanel } from '../components/TradingPanel';
 import { OrderData } from '../../types/trading';
-import { TradingChart } from '../components/TradingChart';
+import DexScreenerChart from '../components/DexScreenerChart';
 
 export const Trade = () => {
   const [selectedPair, setSelectedPair] = useState<CurrencyPair | null>(null);
@@ -66,12 +66,12 @@ export const Trade = () => {
                 <Icon name="chart line" className="text-gray-400 text-sm" />
                 <span className="text-sm text-gray-400">24h Change</span>
               </div>
-              {selectedPair && (
+              {selectedPair ? (
                 <span className={selectedPair.price_change_percentage_24h >= 0 ? 'text-green-500' : 'text-red-500'}>
                   {selectedPair.price_change_percentage_24h >= 0 ? '+' : ''}
                   {selectedPair.price_change_percentage_24h.toFixed(2)}%
                 </span>
-              )}
+              ) : '-'}
             </div>
 
             {/* 24h High */}
@@ -81,7 +81,7 @@ export const Trade = () => {
                 <span className="text-sm text-gray-400">24h High</span>
               </div>
               <span className="text-white">
-                {selectedPair ? `$${formatPrice(61234.12)}` : '-'}
+                {selectedPair ? `$${formatPrice(selectedPair.high_24h)}` : '-'}
               </span>
             </div>
 
@@ -92,7 +92,7 @@ export const Trade = () => {
                 <span className="text-sm text-gray-400">24h Low</span>
               </div>
               <span className="text-white">
-                {selectedPair ? `$${formatPrice(59344.32)}` : '-'}
+                {selectedPair ? `$${formatPrice(selectedPair.low_24h)}` : '-'}
               </span>
             </div>
 
@@ -103,7 +103,7 @@ export const Trade = () => {
                 <span className="text-sm text-gray-400">24h Volume (USDT)</span>
               </div>
               <span className="text-white">
-                {selectedPair ? `${formatVolume(259.91)}M` : '-'}
+                {selectedPair ? `${formatVolume(selectedPair.total_volume)}` : '-'}
               </span>
             </div>
           </div>
@@ -168,8 +168,11 @@ export const Trade = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-        <div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 grid-rows-2 gap-6 mt-6">
+        <div className="lg:col-span-2">
+          <DexScreenerChart />
+        </div>
+        <div className='max-lg:row-start-1'>
           <TradingPanel
             maxLeverage={100}
             defaultLeverage={10}
@@ -178,10 +181,6 @@ export const Trade = () => {
             supportedTokens={['USDT', 'USDC']}
             defaultToken="USDT"
           />
-        </div>
-        <div className="lg:col-span-2">
-          {/* Chart will go here */}
-          <TradingChart symbol="BTCUSDT" interval="1m" />
         </div>
       </div>
     </div>
