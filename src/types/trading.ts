@@ -35,4 +35,12 @@ export interface CurrencyPair {
   high_24h: number;
   low_24h: number;
   total_volume: number;
+  pairAddress: string;
+  chainId: string;
+  dexId: string;
+}
+
+export interface CurrencyPairSelectorProps {
+  onPairSelect?: (pair: CurrencyPair | null) => void;
+  selectedQuoteCurrency: string;
 }

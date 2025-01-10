@@ -4,8 +4,10 @@ import { Pairs } from './Pairs';
 import { CurrencyPair } from '../../types/trading';
 // import { toast } from 'sonner';
 
-interface CurrencyPairSelectorProps {
-  onPairSelect?: (pair: CurrencyPair | null) => void;
+export interface CurrencyPairSelectorProps {
+  onPairSelect: (pair: CurrencyPair | null) => void;
+  selectedQuoteCurrency: string;
+  setSelectedQuoteCurrency: (coin: string) => void;
 }
 
 const StarIcon = ({ filled }: { filled: boolean }) => (
@@ -22,7 +24,11 @@ const StarIcon = ({ filled }: { filled: boolean }) => (
   </svg>
 );
 
-export const CurrencyPairSelector: React.FC<CurrencyPairSelectorProps> = ({ onPairSelect }) => {
+export const CurrencyPairSelector: React.FC<CurrencyPairSelectorProps> = ({
+  onPairSelect,
+  selectedQuoteCurrency,
+  setSelectedQuoteCurrency,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('All');
@@ -30,10 +36,9 @@ export const CurrencyPairSelector: React.FC<CurrencyPairSelectorProps> = ({ onPa
   const [loading, setLoading] = useState(false);
   const [selectedPair, setSelectedPair] = useState<CurrencyPair | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
-  const [selectedQuoteCurrency, setSelectedQuoteCurrency] = useState('USD');
 
   const tabs = ['All', 'Favorites', 'Top Volume', 'New Listing', 'Memecoins'];
-  const stableCoins = ['USD', 'USDT', 'USDC', 'ETH', 'BTC', 'ICP'];
+  const stableCoins = ['USD', 'ICP', 'USDT', 'ETH'];
 
   useEffect(() => {
     fetchCryptoPairs();
@@ -97,41 +102,6 @@ export const CurrencyPairSelector: React.FC<CurrencyPairSelectorProps> = ({ onPa
       setLoading(false);
     }
   };
-
-
-
-  // const fetchCryptoPairs = async () => {
-  //   try {
-  //     setLoading(true);
-  //     const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${selectedStableCoin.toLowerCase()}`);
-  //     if (!response.ok) {
-  //       throw new Error(`HTTP error! status: ${response.status}`);
-  //     }
-  //     const data = await response.json();
-
-  //     const formattedPairs = data.pairs.map((pair: any) => ({
-  //       id: pair.id,
-  //       symbol: pair.baseToken.symbol,
-  //       name: `${pair.baseToken.name} / ${pair.quoteToken.symbol}`,
-  //       current_price: parseFloat(pair.priceUsd),
-  //       price_change_percentage_24h: parseFloat(pair.priceChange24h ?? 0),
-  //       image: pair.baseToken.logoURI || '',  // If available
-  //       isFavorite: favorites.has(pair.id)
-  //     }));
-
-  //     setPairs(formattedPairs);
-  //   } catch (error) {
-  //     console.error('ERROR FETCHING CRYPTO PAIRS:', error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };  
-
-
-
-  // useEffect(() => {
-  //   fetchCryptoPairs();
-  // }, [selectedStableCoin]);
 
   const toggleFavorite = (pairId: string) => {
     setFavorites(prev => {
@@ -366,6 +336,9 @@ export const CurrencyPairSelector: React.FC<CurrencyPairSelectorProps> = ({ onPa
                       high_24h: pair.high_24h,
                       low_24h: pair.low_24h,
                       volume: pair.total_volume,
+                      pairAddress: pair.pairAddress,
+                      chainId: pair.chainId,
+                      dexId: pair.dexId,
                     }}
                     selectedQuoteCurrency={selectedQuoteCurrency}
                     favorites={favorites}
@@ -382,7 +355,6 @@ export const CurrencyPairSelector: React.FC<CurrencyPairSelectorProps> = ({ onPa
     </div>
   );
 };
-
 
 // import { useState, useEffect } from 'react';
 // import { Icon } from 'semantic-ui-react';
@@ -503,3 +475,4 @@ export const CurrencyPairSelector: React.FC<CurrencyPairSelectorProps> = ({ onPa
 //     </div>
 //   );
 // };
+
