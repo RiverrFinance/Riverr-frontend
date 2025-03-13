@@ -1,5 +1,7 @@
+import { Agent, Identity } from "@dfinity/agent";
+import { MarketActor } from "../utils/Interfaces/marketActor";
 export interface OrderData {
-  type: 'Long' | 'Short' | 'Swap';
+  type: "Long" | "Short" | "Swap";
   payAmount: number;
   payToken: string;
   receiveAmount: number;
@@ -9,38 +11,33 @@ export interface OrderData {
 }
 
 export interface TradingPanelProps {
-  maxLeverage?: number;
-  defaultLeverage?: number;
-  onOrderSubmit?: (orderData: OrderData) => void;
-  availableBalance?: number;
-  supportedTokens?: string[];
-  defaultToken?: string;
+  market: Market;
+  identity: Identity | null;
+
+  onOrderSubmit?: () => void;
 }
 
 export interface ConnectWalletButtonProps {
-  className?: string;
-} 
+  setConnected: (state: boolean) => void;
+  onConnect: (Identity: Identity) => void;
+}
 
 export interface SidebarProps {
   children: React.ReactNode;
 }
-export interface CurrencyPair {
-  id: string;
-  symbol: string;
-  name: string;
-  current_price: number;
-  price_change_percentage_24h: number;
-  image: string;
+
+export interface Market {
+  baseAsset: Asset;
+  quoteAsset: Asset;
+  market_id: string;
+  chartId?: string;
   isFavorite?: boolean;
-  high_24h: number;
-  low_24h: number;
-  total_volume: number;
-  pairAddress: string;
-  chainId: string;
-  dexId: string;
 }
 
-export interface CurrencyPairSelectorProps {
-  onPairSelect?: (pair: CurrencyPair | null) => void;
-  selectedQuoteCurrency: string;
+export interface Asset {
+  id: string;
+  name: string;
+  symbol: string;
+  image?: string;
+  vault?: string;
 }

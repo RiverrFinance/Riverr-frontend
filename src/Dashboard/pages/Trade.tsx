@@ -1,59 +1,45 @@
 import { useState } from 'react';
-import { CurrencyPairSelector } from '../components/CurrencyPairSelector';
-import { CurrencyPair } from '../../types/trading';
+import { MarketSelector } from '../components/MarketSelector';
+import { Market } from '../../types/trading';
 import DexScreenerChart from '../components/DexScreenerChart';
-import { TradingPanel } from '../components/TradingPanel';
+import {TradingPanel} from '../components/TradingPanel';
+import { markets } from '../lists/marketlist';
+import { Identity } from '@dfinity/agent';
 
-export const Trade = () => {
-  const [selectedPair, setSelectedPair] = useState<CurrencyPair | null>(null);
-  const [selectedQuoteCurrency, setSelectedQuoteCurrency] = useState<string>('USD');
 
-  const quoteCurrencies = ['USD', 'ICP', 'USDT', 'ETH'];
+interface Props {
+  Identity:Identity | null,
+  setIdentity:(id:Identity) =>void
+}
+
+
+export const Trade = ({Identity}:Props) => {
+  const [selectedMarket, setSelectedMarket] = useState<Market >(markets[0]);
 
   return (
     <div className="p-4">
-      {/* Currency Tabs */}
-      <div className="flex gap-2 mb-4">
-        {quoteCurrencies.map((currency) => (
-          <button
-            key={currency}
-            onClick={() => setSelectedQuoteCurrency(currency)}
-            className={`px-4 py-2 rounded-lg transition-all duration-200 ${selectedQuoteCurrency === currency
-              ? 'bg-blue-500 text-white'
-              : 'bg-[#1C1C28] text-gray-400 hover:text-white'
-              }`}
-          >
-            {currency}
-          </button>
-        ))}
-      </div>
-
+      {/* Currency Tabs */} 
+   
       {/* Trading Interface */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="lg:col-span-9">
           <DexScreenerChart
-            selectedQuoteCurrency={selectedQuoteCurrency}
-            selectedPair={selectedPair}
+            chart_id={selectedMarket?.chartId}
           />
         </div>
-        <div>
-          <CurrencyPairSelector
-            onPairSelect={(pair) => {
-              setSelectedPair(pair);
-              console.log('Selected pair:', pair); // Debug log
+        <div className="lg:col-span-3">
+          <MarketSelector
+            selectedMarket={selectedMarket}
+            onMarketSelect={(market) => {
+              setSelectedMarket(market);
+          
             }}
-            selectedQuoteCurrency={selectedQuoteCurrency}
-            setSelectedQuoteCurrency={setSelectedQuoteCurrency}
+         
           />
-          <TradingPanel
-            maxLeverage={100}
-            defaultLeverage={10}
-            availableBalance={0}
-            supportedTokens={[selectedQuoteCurrency]}
-            defaultToken={selectedQuoteCurrency}
-          />
+          <TradingPanel market={selectedMarket} identity={Identity}/>
         </div>
       </div>
     </div>
   );
 }; 
+

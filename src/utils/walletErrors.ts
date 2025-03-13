@@ -1,3 +1,6 @@
+import {AuthClient} from "."
+import {HttpAgent} from "@dfinity/agent";
+
 export enum WalletError {
   USER_REJECTED = 4001,
   UNAUTHORIZED = 4100,
@@ -6,6 +9,8 @@ export enum WalletError {
   CHAIN_DISCONNECTED = 4901,
   ALREADY_PROCESSING = -32002,
 }
+
+
 
 const ERROR_MESSAGES: Record<number, string> = {
   [WalletError.USER_REJECTED]: 'Connection rejected! Please try again.',
