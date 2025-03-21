@@ -34,8 +34,7 @@ const navLinks = [
 ];
 
 interface Props {
-  Identity: Identity | null;
-  setIdentity: (id: Identity) => void;
+  childre;
 }
 
 export const Sidebar: React.FC<Props> = ({ Identity, setIdentity }: Props) => {
