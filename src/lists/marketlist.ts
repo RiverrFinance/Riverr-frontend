@@ -1,5 +1,18 @@
-import { Market, Asset } from "../../types/trading";
+export interface Market {
+  baseAsset: Asset;
+  quoteAsset: Asset;
+  market_id: string;
+  chartId?: string;
+  isFavorite?: boolean;
+}
 
+export interface Asset {
+  id: string;
+  name: string;
+  symbol: string;
+  image?: string;
+  vault?: string;
+}
 export const quoteCurrencies: Array<Asset> = [
   {
     id: "tether",

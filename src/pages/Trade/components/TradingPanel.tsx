@@ -1,59 +1,39 @@
 import React, { useEffect, useState } from "react";
 import { Icon } from "semantic-ui-react";
-import { Market } from "../../../types/types";
-import { Identity } from "@dfinity/agent";
+import { Market } from "../../../lists/marketlist";
 import { MarketActor } from "../../../utils/Interfaces/marketActor";
 import { AnonymousIdentity, HttpAgent } from "@dfinity/agent";
 import { StateDetails } from "../../../utils/declarations/market/market.did";
-import { VaultActor } from "../../../utils/Interfaces/vaultActor";
-import { LeverageSlider } from "./LeverageSlider";
-import { Parameters, TradeError } from "../types";
-import { formatPrice } from "../utilFunctions";
-import { LimitPriceInput } from "./LimitPriceInput";
-import { Principal } from "@dfinity/principal";
-import { TokenActor } from "../../../utils/Interfaces/tokenActor";
-
-// const _BASE_PRICE: bigint = 1000_000_000n;
-// const _PRICE_DECIMAL: bigint = 1000_000_000n;
+import { Identity } from "@dfinity/agent";
 
 //@ts-ignore
 if (typeof global === "undefined") {
   (window as any).global = window;
 }
 
-const buttonText = (error: TradeError) => {
-  if (error == "Connect Wallet") {
-    return "Connect Wallet";
-  } else if (error == "Insufficient Balance") {
-    return "Insufficient Balance";
-  } else if (error == "Min Collateral is") {
-    return "Min Collateral is";
-  } else if (error == "Collateral Exceeded") {
-    return "Collateral Exceeded";
-  } else {
-    return "Open Position";
-  }
+type Parameters = {
+  collateral: number;
+  leverage: number;
+  limitPrice: number;
 };
 
 export interface TradingPanelProps {
   market: Market;
   identity: Identity | null;
+
   onOrderSubmit?: () => void;
 }
-////
+
 export const TradingPanel: React.FC<TradingPanelProps> = ({
   market,
   identity,
 }) => {
-  const [userMarginBalance, setUserMarginBalance] = useState<bigint>(0n);
-  const [agent, setAgent] = useState<HttpAgent>(HttpAgent.createSync());
-  const [error, setError] = useState<TradeError>("");
+  const [orderType, setOrderType] = useState<"Market" | "Limit">("Market");
+  const [activeTab, setActiveTab] = useState<"Long" | "Short">("Long");
   const [paramters, setParamters] = useState<Parameters>({
-    collateral: "",
+    collateral: 0,
     leverage: 1,
-    orderPrice: "",
-    orderType: "Market",
-    direction: "Long",
+    limitPrice: 0,
   });
 
   const [marketState, setMarketState] = useState<StateDetails>({
@@ -64,79 +44,54 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
     min_collateral: 0n,
   });
 
-  //const marketActor = new MarketActor(market.market_id, agent);
-  const tokenActor = new TokenActor("4yl7m-3qaaa-aaaaf-qanlq-cai", agent);
-
-  const updateCollateral = async (value: string) => {
-    let collateral;
-
-    if (identity == null || value == "") {
-      collateral = value;
-      setError(identity == null ? "Connect Wallet" : "");
-    } else {
-      collateral = Number(value);
-      let mulValue =
-        BigInt(collateral) * BigInt(10) ** BigInt(market.quoteAsset.decimal);
-
-      if (userMarginBalance < BigInt(mulValue)) {
-        setError("Insufficient Balance");
-      } else if (BigInt(mulValue) < marketState.min_collateral) {
-        setError("Min Collateral is");
-      } else {
-        setError("");
-      }
-    }
-
-    setParamters({
-      ...paramters,
-      collateral: collateral.toString(),
-    });
-  };
-
-  const test = async () => {
-    console.log(await tokenActor.name());
-  };
-
-  const updateOrderPrice = async (value: string) => {
-    setParamters({ ...paramters, orderPrice: value });
-  };
-
-  const updateLeverage = (value: number) => {
-    setParamters({
-      ...paramters,
-      leverage: value,
-    });
-  };
-
-  const updateStatezDetails = async () => {
+  const openOrder = async () => {
     try {
+      if (identity) {
+        let agent = await HttpAgent.create({ identity });
+
+        let long = activeTab == "Long";
+
+        let order = orderType == "Limit" ? { Limit: null } : { Market: null };
+
+        let marketactor = new MarketActor(market.market_id, agent);
+
+        let result = await marketactor.openPosition(
+          BigInt(paramters.collateral),
+          long,
+          order,
+          paramters.leverage,
+          []
+        );
+
+        console.log(result);
+      }
+    } catch {}
+  };
+
+  const fetchAndSetStatezDetails = async () => {
+    try {
+      let agent = await HttpAgent.create({
+        host: "https://ic0.app",
+        identity: new AnonymousIdentity(),
+      });
+
       let marketActor = new MarketActor(market.market_id, agent);
+
       let details = await marketActor.getStateDetails();
+
       setMarketState(details);
     } catch (e) {}
   };
 
-  const totalValue = (): string => {
-    if (paramters.collateral == "") {
-      return "--";
-    }
-    return formatPrice(
-      Number(paramters.collateral) * Number(paramters.leverage)
-    ).toString();
-  };
-
-  // first yupdate
   useEffect(() => {
-    const updateAgent = async () => {
-      let setIdentity = identity != null ? identity : new AnonymousIdentity();
-      let initAgent = await HttpAgent.create({
-        host: "https://ico.app",
-        identity: setIdentity,
-      });
-      setAgent(initAgent);
+    const interval = setInterval(() => {
+      fetchAndSetStatezDetails();
+    });
+
+    return () => {
+      clearInterval(interval);
     };
-    updateAgent();
-  }, [identity]);
+  }, []);
 
   return (
     <div className={`bg-[#13131F] p-3 rounded-lg border border-gray-800`}>
@@ -144,10 +99,10 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
         {(["Market", "Limit"] as const).map((type) => (
           <button
             key={type}
-            onClick={() => setParamters({ ...paramters, orderType: type })}
+            onClick={() => setOrderType(type)}
             className={`flex-1 py-2 px-4 text-sm font-medium transition-all duration-200 
               ${
-                paramters.orderType === type
+                orderType === type
                   ? "text-blue-500 font-medium text-md border-b border-b-blue-500 px-4 py-1 transition-all duration-200"
                   : "text-gray-400 hover:text-white transition-colors duration-200 text-md"
               }`}
@@ -161,10 +116,10 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
         {(["Long", "Short"] as const).map((type) => (
           <button
             key={type}
-            onClick={() => setParamters({ ...paramters, direction: type })}
+            onClick={() => setActiveTab(type)}
             className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 
               ${
-                paramters.direction === type
+                activeTab === type
                   ? "text-gray-900 font-medium text-md bg-blue-500 rounded-md px-4 py-1 transition-all duration-200"
                   : "text-white transition-colors duration-200 text-md"
               }`}
@@ -180,8 +135,8 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
           <div className="flex justify-between text-sm mb-2">
             <span className="text-gray-400">Collateral</span>
             <span className="text-gray-400">
-              Available: {userMarginBalance.toString()}{" "}
-              {market.quoteAsset.symbol}
+              Available: {10}
+              {"USDT"}
             </span>
           </div>
           <div className="flex items-center gap-2 bg-[#1C1C28] rounded-lg p-3">
@@ -190,7 +145,12 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
               value={paramters.collateral}
               onChange={(e) => {
                 let { value } = e.target;
-                updateCollateral(value);
+                setParamters({
+                  ...paramters,
+                  collateral: value == "" ? 0 : Number(value),
+                  limitPrice:
+                    value == "" ? 0 : Number(value) * paramters.leverage,
+                });
               }}
               className="flex-1 bg-transparent text-white outline-none text-lg"
               placeholder="0.00"
@@ -201,34 +161,83 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
 
         {/* Receive Input */}
 
-        {paramters.orderType == "Limit" ? (
-          <LimitPriceInput
-            orderPrice={paramters.orderPrice}
-            updateAction={updateOrderPrice}
-            market={market}
-          />
+        {orderType == "Limit" ? (
+          <div>
+            <div className="flex justify-between text-sm mb-2">
+              <span className="text-gray-400">{activeTab}</span>
+            </div>
+            <div className="flex items-center gap-2 bg-[#1C1C28] rounded-lg p-3">
+              <input
+                type="number"
+                value={paramters.limitPrice}
+                onChange={(e) => {
+                  let { value } = e.target;
+
+                  setParamters({
+                    ...paramters,
+                    limitPrice: value == "" ? 0 : Number(value),
+                    collateral:
+                      value == "" ? 0 : Number(value) / paramters.leverage,
+                  });
+                }}
+                className="flex-1 bg-transparent text-white outline-none text-lg"
+                placeholder="0.00"
+              />
+              <div className="bg-[#1C1C28] text-white outline-none px-2 py-1 rounded">
+                {activeTab == "Long"
+                  ? market.quoteAsset.symbol
+                  : market.baseAsset.symbol}
+              </div>
+            </div>
+          </div>
         ) : (
           <></>
         )}
 
         {/* Leverage Slider */}
-        <LeverageSlider
-          leverage={paramters.leverage}
-          updateAction={updateLeverage}
-          maxLevaragex10={marketState.max_leveragex10}
-        />
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-400">Leverage</span>
+            <span className="text-white font-medium">
+              {paramters.leverage}x
+            </span>
+          </div>
+          <div className="relative">
+            <input
+              type="range"
+              min="1"
+              max={100}
+              value={paramters.leverage}
+              onChange={(e) => {
+                let { value } = e.target;
+
+                setParamters({
+                  ...paramters,
+                  leverage: Number(value),
+                  limitPrice: paramters.collateral * Number(value),
+                });
+              }}
+              className="w-full h-1 bg-[#1C1C28] rounded-lg appearance-none cursor-pointer"
+            />
+            <div className="flex justify-between text-xs text-gray-400 mt-1">
+              <span>0%</span>
+              <span>25%</span>
+              <span>50%</span>
+              <span>75%</span>
+              <span>100%</span>
+            </div>
+          </div>
+        </div>
 
         {/* Total */}
         <div className="flex justify-between items-center bg-[#1C1C28] rounded-lg p-3">
           <span className="text-gray-400">Total</span>
-          <span className="text-white">
-            {totalValue()} {market.baseAsset.symbol}
-          </span>
+          <span className="text-white">30,211.85 USDT</span>
         </div>
 
         {/* Pool Selection */}
         <div className="flex justify-between items-center bg-[#1C1C28] rounded-lg p-3">
-          <span className="text-gray-400">Market</span>
+          <span className="text-gray-400">Pool</span>
           <div className="flex items-center gap-2">
             <span className="text-white">
               {market.baseAsset.symbol}-{market.quoteAsset.symbol}
@@ -240,9 +249,11 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
         {/* Styled ConnectWalletButton */}
         <div className=" flex justify-center">
           {/* <button onClick={stateDetails}>test it now </button> */}
-          <button onClick={test} className="py-3 px-24">
-            {buttonText(error)}
-          </button>
+          {/* <ConnectWalletButton
+            className="py-3 px-24"
+            isConnected={false}
+            isIconConnected={false}
+          /> */}
         </div>
       </div>
     </div>

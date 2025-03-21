@@ -1,0 +1,9 @@
+export interface OrderData {
+  type: "Long" | "Short" | "Swap";
+  payAmount: number;
+  payToken: string;
+  receiveAmount: number;
+  receiveToken: string;
+  leverage: number;
+  slippage?: number;
+}
