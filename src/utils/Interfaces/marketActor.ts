@@ -18,13 +18,14 @@ export class MarketActor {
     this.market = createMarket(canisteId, { agent });
   }
 
-  public async closePosition(): Promise<bigint> {
-    let amount = await this.market.closePosition([]);
+  public async closePosition(account_index: number): Promise<bigint> {
+    let amount = await this.market.closePosition(account_index, []);
 
     return amount;
   }
 
   public async openPosition(
+    index: number,
     collatreal: bigint,
     long: boolean,
     order_type: OrderType,
@@ -32,6 +33,7 @@ export class MarketActor {
     maxtick: [] | [bigint]
   ): Promise<boolean> {
     let result = await this.market.openPosition(
+      index,
       collatreal,
       long,
       order_type,
@@ -68,9 +70,10 @@ export class MarketActor {
   }
 
   public async getUserAccount(
-    principal: Principal
+    principal: Principal,
+    index: number
   ): Promise<Uint8Array | number[]> {
-    return await this.market.getUserAccount(principal);
+    return await this.market.getUserAccount(principal, index);
   }
 
   public async getBestOfferTick(buy: boolean): Promise<bigint> {

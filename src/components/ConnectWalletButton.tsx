@@ -44,15 +44,11 @@ export const ConnectWalletButton: React.FC<ConnectWalletButtonProps> = ({
     onConnect(identity);
   };
 
-  // const disconnectWallet = async () => {
-  //    if (await authClient.isAuthenticated()){
-  //         authClient.logout()
-  //    }
-  // };
-
   const formatAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  return <div onClick={connectWallet}>{principal.toString()}</div>;
+  return (
+    <div onClick={connectWallet}>{formatAddress(principal.toString())}</div>
+  );
 };

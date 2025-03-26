@@ -2,95 +2,76 @@ import React, { useEffect, useState } from "react";
 import { Icon } from "semantic-ui-react";
 import { Market } from "../../../lists/marketlist";
 import { MarketActor } from "../../../utils/Interfaces/marketActor";
-import { AnonymousIdentity, HttpAgent } from "@dfinity/agent";
+import { HttpAgent } from "@dfinity/agent";
 import { StateDetails } from "../../../utils/declarations/market/market.did";
-import { Identity } from "@dfinity/agent";
+import { useAgent } from "@nfid/identitykit/react";
+import { LeverageSlider } from "./LeverageSlider";
+import { PriceInput } from "./PriceInput";
+import { parseUnits } from "ethers/lib/utils";
+import { MarginInput } from "./MarginInput";
 
-//@ts-ignore
-if (typeof global === "undefined") {
-  (window as any).global = window;
-}
+import { InputError } from "../types/trading";
+import ActionButton from "./ActionButton";
 
-type Parameters = {
-  collateral: number;
-  leverage: number;
-  limitPrice: number;
-};
+const ICP_API_HOST = "https://icp-api.io/";
 
 export interface TradingPanelProps {
   market: Market;
-  identity: Identity | null;
-
   onOrderSubmit?: () => void;
 }
 
-export const TradingPanel: React.FC<TradingPanelProps> = ({
-  market,
-  identity,
-}) => {
+export const TradingPanel: React.FC<TradingPanelProps> = ({ market }) => {
+  const readWriteAgent = useAgent();
+
+  const [readAgent, setUnauthenticatedAgent] = useState<HttpAgent>(
+    HttpAgent.createSync()
+  );
+  const [error, setError] = useState<InputError>("");
   const [orderType, setOrderType] = useState<"Market" | "Limit">("Market");
-  const [activeTab, setActiveTab] = useState<"Long" | "Short">("Long");
-  const [paramters, setParamters] = useState<Parameters>({
-    collateral: 0,
-    leverage: 1,
-    limitPrice: 0,
-  });
+  const [tradeDirection, setActiveTab] = useState<"Long" | "Short">("Long");
+  const [margin, setMargin] = useState<string>("");
+  const [limitPrice, setLimitPrice] = useState<string>("");
+  const [leverage, setLeverage] = useState<number>(1);
 
   const [marketState, setMarketState] = useState<StateDetails>({
-    max_leveragex10: 100,
-    not_paused: true,
+    max_leveragex10: 1000,
+    not_paused: false,
     current_tick: 0n,
     base_token_multiple: 20,
     min_collateral: 0n,
   });
 
-  const openOrder = async () => {
-    try {
-      if (identity) {
-        let agent = await HttpAgent.create({ identity });
-
-        let long = activeTab == "Long";
-
-        let order = orderType == "Limit" ? { Limit: null } : { Market: null };
-
-        let marketactor = new MarketActor(market.market_id, agent);
-
-        let result = await marketactor.openPosition(
-          BigInt(paramters.collateral),
-          long,
-          order,
-          paramters.leverage,
-          []
-        );
-
-        console.log(result);
-      }
-    } catch {}
+  const total = () => {
+    if (margin == "") {
+      return "--";
+    }
+    return Number(margin) * Number(leverage);
   };
 
   const fetchAndSetStatezDetails = async () => {
     try {
-      let agent = await HttpAgent.create({
-        host: "https://ic0.app",
-        identity: new AnonymousIdentity(),
-      });
-
-      let marketActor = new MarketActor(market.market_id, agent);
-
-      let details = await marketActor.getStateDetails();
-
-      setMarketState(details);
-    } catch (e) {}
+      if (market.market_id) {
+        let marketActor = new MarketActor(market.market_id, readAgent);
+        let details = await marketActor.getStateDetails();
+        setMarketState(details);
+      }
+    } catch (e) {
+      console.log(e);
+    }
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchAndSetStatezDetails();
-    });
+  const openOrder = () => {};
 
-    return () => {
-      clearInterval(interval);
-    };
+  useEffect(() => {
+    HttpAgent.create({ host: ICP_API_HOST }).then(setUnauthenticatedAgent);
+
+    // const interval = setInterval(() => {
+    //   fetchAndSetStatezDetails();
+    // }, 1000);
+
+    // return () => {
+    //   clearInterval(interval);
+    // };
   }, []);
 
   return (
@@ -119,7 +100,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
             onClick={() => setActiveTab(type)}
             className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 
               ${
-                activeTab === type
+                tradeDirection === type
                   ? "text-gray-900 font-medium text-md bg-blue-500 rounded-md px-4 py-1 transition-all duration-200"
                   : "text-white transition-colors duration-200 text-md"
               }`}
@@ -130,114 +111,41 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
       </div>
 
       <div className="p-4 space-y-4">
-        {/* Pay Input */}
-        <div>
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-gray-400">Collateral</span>
-            <span className="text-gray-400">
-              Available: {10}
-              {"USDT"}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 bg-[#1C1C28] rounded-lg p-3">
-            <input
-              type="number"
-              value={paramters.collateral}
-              onChange={(e) => {
-                let { value } = e.target;
-                setParamters({
-                  ...paramters,
-                  collateral: value == "" ? 0 : Number(value),
-                  limitPrice:
-                    value == "" ? 0 : Number(value) * paramters.leverage,
-                });
-              }}
-              className="flex-1 bg-transparent text-white outline-none text-lg"
-              placeholder="0.00"
-            />
-            <div>{market.quoteAsset.symbol}</div>
-          </div>
-        </div>
-
-        {/* Receive Input */}
-
+        {/* margin Input */}
+        <MarginInput
+          value={margin}
+          market={market}
+          setMargin={setMargin}
+          setError={setError}
+          minCollateral={marketState.min_collateral}
+        />
+        {/* Limit Price Input */}
         {orderType == "Limit" ? (
-          <div>
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-gray-400">{activeTab}</span>
-            </div>
-            <div className="flex items-center gap-2 bg-[#1C1C28] rounded-lg p-3">
-              <input
-                type="number"
-                value={paramters.limitPrice}
-                onChange={(e) => {
-                  let { value } = e.target;
-
-                  setParamters({
-                    ...paramters,
-                    limitPrice: value == "" ? 0 : Number(value),
-                    collateral:
-                      value == "" ? 0 : Number(value) / paramters.leverage,
-                  });
-                }}
-                className="flex-1 bg-transparent text-white outline-none text-lg"
-                placeholder="0.00"
-              />
-              <div className="bg-[#1C1C28] text-white outline-none px-2 py-1 rounded">
-                {activeTab == "Long"
-                  ? market.quoteAsset.symbol
-                  : market.baseAsset.symbol}
-              </div>
-            </div>
-          </div>
+          <PriceInput
+            market={market}
+            value={limitPrice}
+            initialTick={marketState.current_tick}
+            setLimitPrice={setLimitPrice}
+          />
         ) : (
           <></>
         )}
-
         {/* Leverage Slider */}
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-400">Leverage</span>
-            <span className="text-white font-medium">
-              {paramters.leverage}x
-            </span>
-          </div>
-          <div className="relative">
-            <input
-              type="range"
-              min="1"
-              max={100}
-              value={paramters.leverage}
-              onChange={(e) => {
-                let { value } = e.target;
-
-                setParamters({
-                  ...paramters,
-                  leverage: Number(value),
-                  limitPrice: paramters.collateral * Number(value),
-                });
-              }}
-              className="w-full h-1 bg-[#1C1C28] rounded-lg appearance-none cursor-pointer"
-            />
-            <div className="flex justify-between text-xs text-gray-400 mt-1">
-              <span>0%</span>
-              <span>25%</span>
-              <span>50%</span>
-              <span>75%</span>
-              <span>100%</span>
-            </div>
-          </div>
-        </div>
+        <LeverageSlider
+          value={leverage}
+          maxLeverage={marketState.max_leveragex10 / 10}
+          setLeverage={setLeverage}
+        />
 
         {/* Total */}
         <div className="flex justify-between items-center bg-[#1C1C28] rounded-lg p-3">
           <span className="text-gray-400">Total</span>
-          <span className="text-white">30,211.85 USDT</span>
+          <span className="text-white">
+            {total()} {market.quoteAsset.symbol}
+          </span>
         </div>
-
-        {/* Pool Selection */}
         <div className="flex justify-between items-center bg-[#1C1C28] rounded-lg p-3">
-          <span className="text-gray-400">Pool</span>
+          <span className="text-gray-400">Market</span>
           <div className="flex items-center gap-2">
             <span className="text-white">
               {market.baseAsset.symbol}-{market.quoteAsset.symbol}
@@ -245,15 +153,9 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
             <Icon name="chevron down" className="text-gray-400" />
           </div>
         </div>
-
         {/* Styled ConnectWalletButton */}
         <div className=" flex justify-center">
-          {/* <button onClick={stateDetails}>test it now </button> */}
-          {/* <ConnectWalletButton
-            className="py-3 px-24"
-            isConnected={false}
-            isIconConnected={false}
-          /> */}
+          <ActionButton currentError={error} onClick={openOrder} />
         </div>
       </div>
     </div>

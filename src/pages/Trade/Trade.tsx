@@ -4,14 +4,10 @@ import { Market } from "../../lists/marketlist";
 import DexScreenerChart from "./components/DexScreenerChart";
 import { TradingPanel } from "./components/TradingPanel";
 import { markets } from "../../lists/marketlist";
-import { Identity } from "@dfinity/agent";
 
-interface Props {
-  Identity: Identity | null;
-  setIdentity: (id: Identity) => void;
-}
+interface Props {}
 
-export const Trade = ({ Identity }: Props) => {
+export const Trade = ({}: Props) => {
   const [selectedMarket, setSelectedMarket] = useState<Market>(markets[0]);
 
   return (
@@ -21,7 +17,7 @@ export const Trade = ({ Identity }: Props) => {
       {/* Trading Interface */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         <div className="lg:col-span-9">
-          <DexScreenerChart chart_id={selectedMarket?.chartId} />
+          <DexScreenerChart chart_id={selectedMarket.chartId} />
         </div>
         <div className="lg:col-span-3">
           <MarketSelector
@@ -30,7 +26,7 @@ export const Trade = ({ Identity }: Props) => {
               setSelectedMarket(market);
             }}
           />
-          <TradingPanel market={selectedMarket} identity={Identity} />
+          <TradingPanel market={selectedMarket} />
         </div>
       </div>
     </div>

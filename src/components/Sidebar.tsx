@@ -1,8 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Icon, Menu } from "semantic-ui-react";
-import { ConnectWalletButton } from "./ConnectWalletButton";
-import { Identity } from "@dfinity/agent";
+import {
+  ConnectWallet,
+  ConnectWalletButton,
+  ConnectedWalletButton,
+  ConnectWalletDropdownMenu,
+} from "@nfid/identitykit/react";
+
+import { useAgent } from "@nfid/identitykit/react";
 
 // Navigation links configuration
 const navLinks = [
@@ -33,11 +39,11 @@ const navLinks = [
   },
 ];
 
-interface Props {
-  childre;
+export interface Props {
+  children: React.ReactNode;
 }
 
-export const Sidebar: React.FC<Props> = ({ Identity, setIdentity }: Props) => {
+export const Sidebar: React.FC<Props> = ({ children }: Props) => {
   const [visible, setVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -134,11 +140,16 @@ export const Sidebar: React.FC<Props> = ({ Identity, setIdentity }: Props) => {
       {/* Right side with actions */}
       <div className="flex items-center space-x-2 md:space-x-4">
         <div className="block">
-          <ConnectWalletButton
-            isConnected={true}
-            Identity={Identity}
-            setIdentity={setIdentity}
+          <ConnectWallet
+            connectButtonComponent={ConnectWalletButton}
+            connectedButtonComponent={ConnectedWalletButton}
+            dropdownMenuComponent={ConnectWalletDropdownMenu}
           />
+          {/* <ConnectWalletButton
+            isConnected={true}
+            
+            setIdentity={setIdentity}
+          /> */}
         </div>
 
         {/* Language Globe Icon */}

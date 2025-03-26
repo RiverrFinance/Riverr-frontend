@@ -5,6 +5,7 @@ import {
 } from "../declarations/token/index";
 
 import { Principal } from "@dfinity/principal";
+import { Account } from "../declarations/token/token.did";
 
 export class TokenActor {
   token: typeof TokenIDL;
@@ -21,21 +22,53 @@ export class TokenActor {
   public async name(): Promise<string> {
     return await this.token.icrc1_name();
   }
-}
-export class TestTokenActor {
-  token: typeof TokenIDL;
-  constructor(canisterId: string, agent: Agent) {
-    this.token = createTokenActor(canisterId, {
-      agent,
+
+  public async balance(user: Principal): Promise<bigint> {
+    return await this.token.icrc1_balance_of({
+      owner: user,
+      subaccount: [],
     });
   }
 
-  public async decimals(): Promise<number> {
-    return await this.token.icrc1_decimals();
+  public async allowance(user: Principal, spender: Principal): Promise<bigint> {
+    let { allowance } = await this.token.icrc2_allowance({
+      account: {
+        owner: user,
+        subaccount: [],
+      },
+      spender: {
+        owner: spender,
+        subaccount: [],
+      },
+    });
+
+    return allowance;
   }
 
-  public async name(): Promise<string> {
-    return await this.token.icrc1_name();
+  public async approveSpending(
+    amount: bigint,
+    expectedamount: bigint,
+    spender: Principal
+  ): Promise<boolean> {
+    let result = await this.token.icrc2_approve({
+      fee: [],
+      memo: [],
+      from_subaccount: [],
+      created_at_time: [],
+      amount,
+      expected_allowance: [expectedamount],
+      expires_at: [],
+      spender: {
+        owner: spender,
+        subaccount: [],
+      },
+    });
+
+    if ("Ok" in result) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   public async receiveFaucet(
@@ -57,3 +90,14 @@ export class TestTokenActor {
     }
   }
 }
+
+// export interface ApproveArgs {
+//   'fee' : [] | [bigint],
+//   'memo' : [] | [Uint8Array | number[]],
+//   'from_subaccount' : [] | [Uint8Array | number[]],
+//   'created_at_time' : [] | [bigint],
+//   'amount' : bigint,
+//   'expected_allowance' : [] | [bigint],
+//   'expires_at' : [] | [bigint],
+//   'spender' : Account,
+// }

@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
 import { Icon } from "semantic-ui-react";
 import { Pairs } from "./Pairs";
-import { Asset, Market } from "../../types/trading";
+import {
+  Asset,
+  Market,
+  markets,
+  quoteCurrencies,
+} from "../../../lists/marketlist";
 import { AccessList } from "ethers/lib/utils";
-import { markets, quoteCurrencies } from "../../lists/marketlist";
 
 // import { toast } from 'sonner';
 
@@ -71,7 +75,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
       <div className="flex gap-2 mb-4">
         {quoteCurrencies.map((currency) => (
           <button
-            key={currency.id}
+            key={currency.priceID}
             onClick={() => setSelectedQuoteCurrency(currency)}
             className={`px-4 py-2 rounded-lg transition-all duration-200 ${
               selectedQuoteCurrency === currency
@@ -91,6 +95,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
         .map((market) => {
           return (
             <div
+              key={market.chartId}
               onClick={() => {
                 onPairSelect(market);
               }}

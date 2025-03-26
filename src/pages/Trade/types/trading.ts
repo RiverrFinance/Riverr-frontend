@@ -7,3 +7,9 @@ export interface OrderData {
   leverage: number;
   slippage?: number;
 }
+
+export type InputError =
+  | ""
+  | "Wallet not Connected"
+  | "Insufficient Bakance"
+  | "Smaller than min collateral";

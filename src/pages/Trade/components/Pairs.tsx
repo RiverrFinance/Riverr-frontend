@@ -2,6 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { StarIcon } from "./StarIcon";
 import { Market } from "../../../lists/marketlist";
+import { fetchDetails } from "../../../utils/utilFunction";
 
 interface PairProps {
   market: Market;
@@ -9,7 +10,7 @@ interface PairProps {
   isSelected?: boolean;
 }
 
-interface Details {
+interface PriceDetails {
   price: number;
   price_change_24h: number;
 }
@@ -21,7 +22,7 @@ export const Pairs: React.FC<PairProps> = ({
   favorites,
   isSelected,
 }) => {
-  const [details, setDetails] = useState<Details>({
+  const [details, setDetails] = useState<PriceDetails>({
     price: 0.0,
     price_change_24h: 0.0,
   });
@@ -29,11 +30,11 @@ export const Pairs: React.FC<PairProps> = ({
   const updateDetails = async () => {
     try {
       const [response1, response2] = await Promise.all([
-        fetchDetails(market.baseAsset.id),
-        fetchDetails(market.quoteAsset.id),
+        fetchDetails(market.baseAsset.priceID),
+        fetchDetails(market.quoteAsset.priceID),
       ]);
 
-      const [baseAssetDetails, quoteAssetDetails]: Array<Details> =
+      const [baseAssetDetails, quoteAssetDetails]: Array<PriceDetails> =
         await Promise.all([response1.json(), response2.json()]);
 
       let price = baseAssetDetails.price / quoteAssetDetails.price;
@@ -48,13 +49,6 @@ export const Pairs: React.FC<PairProps> = ({
     } catch (err) {
       console.log(err);
     }
-  };
-
-  const fetchDetails = async (id: string) => {
-    const response = fetch(
-      `https://quotex-backend.onrender.com/api/price/${id}`
-    );
-    return response;
   };
 
   const formatPrice = (price: number) => {
@@ -95,7 +89,7 @@ export const Pairs: React.FC<PairProps> = ({
             e.stopPropagation();
           }}
         >
-          <StarIcon filled={favorites?.has(market.baseAsset.id)} />
+          <StarIcon filled={favorites?.has(market.baseAsset.priceID)} />
         </button>
         <img
           src={market.baseAsset.image}

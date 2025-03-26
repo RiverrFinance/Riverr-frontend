@@ -1,23 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import {AuthClient} from "@dfinity/auth-client"
-import {HttpAgent} from "@dfinity/agent";
+import React, { useEffect, useState } from "react";
 
 interface DexScreenerChartProps {
-  chart_id?: string;
+  chart_id: string;
 }
 
-const DexScreenerChart: React.FC<DexScreenerChartProps> = ({
-  chart_id
-}) => {
-  const [chartUrl, setChartUrl] = useState('');
- 
-  useEffect(() => {
-    const baseUrl = 'https://dexscreener.com';
-    const chartParams = 'embed=1&loadChartSettings=0&trades=0&tabs=0&info=0&chartLeftToolbar=0&chartTheme=dark&theme=dark&chartStyle=0&chartType=usd&interval=15';
+const DexScreenerChart: React.FC<DexScreenerChartProps> = ({ chart_id }) => {
+  const [chartUrl, setChartUrl] = useState("");
 
-    let url;
-     url = `${baseUrl}/icp/${chart_id}?${chartParams}`;
-  
+  useEffect(() => {
+    const baseUrl = "https://dexscreener.com";
+    const chartParams =
+      "embed=1&loadChartSettings=0&trades=0&tabs=0&info=0&chartLeftToolbar=0&chartTheme=dark&theme=dark&chartStyle=0&chartType=usd&interval=15";
+
+    let url = `${baseUrl}/icp/${chart_id}?${chartParams}`;
 
     setChartUrl(url);
   }, [chart_id]);
@@ -28,7 +23,7 @@ const DexScreenerChart: React.FC<DexScreenerChartProps> = ({
         src={chartUrl}
         className="w-full"
         height="600"
-        style={{ border: 'none' }}
+        style={{ border: "none" }}
         title="Dexscreener Trading Chart"
         allowFullScreen
       />

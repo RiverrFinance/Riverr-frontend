@@ -1,68 +1,76 @@
 export interface Market {
   baseAsset: Asset;
   quoteAsset: Asset;
-  market_id: string;
-  chartId?: string;
+  market_id?: string;
+  chartId: string;
   isFavorite?: boolean;
 }
 
 export interface Asset {
-  id: string;
+  priceID: string;
   name: string;
   symbol: string;
   image?: string;
-  vault?: string;
+  vaultID?: string;
+  canisterID: string;
+  decimals: number;
 }
-export const quoteCurrencies: Array<Asset> = [
+
+export const assetList: Asset[] = [
   {
-    id: "tether",
+    priceID: "internet-computer",
+    symbol: "ICP",
+    name: "internt computer coin",
+    vaultID: "5se5w-zaaaa-aaaaf-qanmq-cai",
+    canisterID: "4yl7m-3qaaa-aaaaf-qanlq-cai",
+    decimals: 8,
+  },
+  {
+    priceID: "tether",
     symbol: "USDT",
     name: "usdt",
+    decimals: 6,
+    canisterID: "cngnf-vqaaa-aaaar-qag4q-cai",
   },
-  { id: "internet-computer", symbol: "ICP", name: "icp" },
+  {
+    priceID: "bitcoin",
+    symbol: "BTC",
+    name: "bitcoin",
+    decimals: 6,
+    canisterID: "mxzaz-hqaaa-aaaar-qaada-cai",
+  },
+  {
+    priceID: "ethereum",
+    symbol: "ETH",
+    name: "ethereum",
+    decimals: 18,
+    canisterID: "ss2fx-dyaaa-aaaar-qacoq-cai",
+  },
 ];
+export const quoteCurrencies: Array<Asset> = [assetList[0], assetList[1]];
 
 export const markets: Array<Market> = [
   {
-    baseAsset: {
-      id: "bitcoin",
-      symbol: "BTC",
-      name: "bitcoin",
-    },
+    baseAsset: assetList[2],
     quoteAsset: quoteCurrencies[0],
     chartId: "xmiu5-jqaaa-aaaag-qbz7q-cai",
     market_id: "",
     isFavorite: true,
   },
   {
-    baseAsset: {
-      id: "ethereum",
-      symbol: "ETH",
-      name: "bitcoin",
-    },
+    baseAsset: assetList[3],
     quoteAsset: quoteCurrencies[0],
     chartId: "angxa-baaaa-aaaag-qcvnq-cai",
-    market_id: "",
     isFavorite: true,
   },
   {
-    baseAsset: {
-      id: "bitcoin",
-      symbol: "BTC",
-      name: "bitcoin",
-    },
+    baseAsset: assetList[2],
     quoteAsset: quoteCurrencies[1],
     chartId: "xmiu5-jqaaa-aaaag-qbz7q-cai",
-    market_id: "",
     isFavorite: true,
   },
   {
-    baseAsset: {
-      id: "ethereum",
-      symbol: "ETH",
-      name: "bitcoin",
-    },
-    market_id: "",
+    baseAsset: assetList[3],
     quoteAsset: quoteCurrencies[1],
     chartId: "angxa-baaaa-aaaag-qcvnq-cai",
     isFavorite: true,
