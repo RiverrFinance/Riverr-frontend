@@ -25,7 +25,7 @@ dist-ssr
 
 
 # declarations folder 
-declarations
+
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
