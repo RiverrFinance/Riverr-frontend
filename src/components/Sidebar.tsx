@@ -46,6 +46,7 @@ export interface Props {
 export const Sidebar: React.FC<Props> = ({ children }: Props) => {
   const [visible, setVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isCheckIfMobileIs480, setIsCheckIfMobileIs480] = useState(false)
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
   const [offsetY, setOffsetY] = useState(0);
@@ -55,11 +56,18 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+
+
+
   useEffect(() => {
     const checkIfMobile = () => setIsMobile(window.innerWidth <= 1000);
     checkIfMobile();
     window.addEventListener("resize", checkIfMobile);
 
+    const mobileIs480 = () => setIsCheckIfMobileIs480(window.innerWidth <=480)
+    mobileIs480();
+    window.addEventListener('resize', mobileIs480);
+    
     // Redirect to dashboard if on root path
     if (location.pathname === "/") navigate("/dashboard");
 
@@ -73,7 +81,7 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
         ? ["/", "/dashboard"].includes(location.pathname)
         : location.pathname === path;
     return isActive
-      ? "text-blue-500 font-medium text-md border border-blue-500 rounded-2xl px-4 py-1 transition-all duration-200"
+      ? "text-white font-medium text-md border border-white rounded-2xl px-4 py-1 transition-all duration-200 hover:text-white"
       : "text-gray-400 hover:text-white transition-colors duration-200 text-md";
   };
 
@@ -126,20 +134,21 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
 
   // Logo component
   const Logo = () => (
-    <Link to="/" className="logo flex items-center space-x-1 p-0 md:pl-5">
-      <span className="text-5xl font-bold bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent">
+    <Link to="/" className="logo flex items-center space-x-1 p-0 md:pl-5 text-white">
+      <span className="text-5xl font-bold bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent text-white">
         Q
       </span>
       <span className="text-lg hidden sm:inline tracking-wider">UOTEX</span>
     </Link>
   );
 
-  // Header content component
-  const HeaderContent = () => (
+  // Navbar content component
+  const NavBarContent = () => (
     <>
       {/* Right side with actions */}
       <div className="flex items-center space-x-2 md:space-x-4">
-        <div className="block">
+        <div className="bg-[#0300AD] rounded-md flex justify-items-center items-center gap-2 px-5 cursor-pointer">
+          <Icon name='google wallet' />
           <ConnectWallet
             connectButtonComponent={ConnectWalletButton}
             connectedButtonComponent={ConnectedWalletButton}
@@ -152,161 +161,194 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
           /> */}
         </div>
 
-        {/* Language Globe Icon */}
-        <IconButton title="Language">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-white"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
-            />
-          </svg>
-        </IconButton>
+        {!isCheckIfMobileIs480 && 
+          <div className="flex gap-2 items-center">
+            {/* Language Globe Icon */}
+            <IconButton title="Language">
+              <Icon name="globe" className="pl-0.5" />
+            </IconButton>
 
-        {/* Notification Bell Icon */}
-        <IconButton title="Notifications">
-          <div className="relative">
-            <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-              />
-            </svg>
+            {/* Notification Bell Icon */}
+            <IconButton title="Notifications">
+              <div className="relative">
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+                  <Icon name="bell" />
+              </div>
+            </IconButton>
           </div>
-        </IconButton>
+        }
       </div>
     </>
   );
 
   return (
-    <div className="min-h-screen w-full overflow-hidden bg-[#13131F] text-white px-0 md:px-6 py-10 ">
-      {/* Header */}
-      <div className="bg-[#13131ffb] fixed top-0 left-0 right-0 z-50">
-        <div className="flex items-center justify-between p-6 border-b border-gray-800">
-          {/* Mobile Header view */}
-          {isMobile ? (
-            <div className="container mx-auto flex items-center justify-between">
-              <Logo />
-              <HeaderContent />
+    <div className="min-h-screen w-full overflow-hidden bg-[#000000] text-white px-4 md:px-6 py-10 space-y-28">
 
-              {/* Mobile Menu Button */}
-              <div
-                className="w-10 h-10 flex items-center justify-center p-2  hover:-translate-y-1 hover:shadow-[0_4px_0_0_rgba(30,58,138,0.8)] bg-transparent rounded-lg transition-all duration-300 hover:border-t hover:border-b hover:border-blue-400/50"
-                onClick={() => setVisible(!visible)}
-              >
-                <div className="relative w-6 h-3 cursor-pointer">
-                  {/* Top bar */}
-                  <div
-                    className={`absolute w-6 h-0.5 bg-white transition-all duration-300 ease-in-out ${
-                      visible ? "top-1/2 -translate-y-1/2 rotate-45" : "top-0"
-                    }`}
-                  />
-
-                  {/* Bottom bar */}
-                  <div
-                    className={`absolute w-6 h-0.5 bg-white transition-all duration-300 ease-in-out ${
-                      visible
-                        ? "top-1/2 -translate-y-1/2 -rotate-45"
-                        : "bottom-0"
-                    }`}
-                  />
-                </div>
-              </div>
-            </div>
-          ) : (
-            // Desktop Header view
-            <div className="w-full">
-              <div className="flex items-center justify-between space-x-10">
+      {/* Navbar */}
+      <div className="backdrop-blur-3xl h-28 bg-transparent fixed top-0 left-0 right-0 md:mx-6 mx-4 z-50 rounded-b-2xl">
+        <div className="bg-[#18191D] fixed top-5 left-0 right-0 rounded-b-2xl z-50">
+          <div className="flex items-center justify-between p-6">
+            {/* Mobile Navbar view */}
+            {isMobile ? (
+              <div className="container mx-auto flex items-center justify-between">
                 <Logo />
-                {/* Primary Navigation */}
-                <div className="flex items-center space-x-10">
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.path}
-                      to={link.path}
-                      className={`${isActiveLink(link.path)} py-2`}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
+                <NavBarContent />
 
-                <HeaderContent />
+                {/* Mobile Menu Button */}
+                <div
+                  className="w-10 h-10 flex items-center justify-center p-2  hover:-translate-y-1 hover:shadow-[0_4px_0_0_rgba(30,58,138,0.8)] bg-transparent rounded-lg transition-all duration-300 hover:border-t hover:border-b hover:border-blue-400/50"
+                  onClick={() => setVisible(!visible)}
+                >
+                  <div className="relative w-6 h-3 cursor-pointer">
+                    {/* Top bar */}
+                    <div
+                      className={`absolute w-6 h-0.5 bg-white transition-all duration-300 ease-in-out ${
+                        visible ? "top-1/2 -translate-y-1/2 rotate-45" : "top-0"
+                      }`}
+                    />
+
+                    {/* Bottom bar */}
+                    <div
+                      className={`absolute w-6 h-0.5 bg-white transition-all duration-300 ease-in-out ${
+                        visible
+                          ? "top-1/2 -translate-y-1/2 -rotate-45"
+                          : "bottom-0"
+                      }`}
+                    />
+                  </div>
+                </div>
               </div>
+            ) : (
+              // Desktop Navbar view
+              <div className="w-full">
+                <div className="flex items-center justify-between space-x-10">
+                  <Logo />
+                  {/* Primary Navigation */}
+                  <div className="flex items-center space-x-10">
+                    {navLinks.map((link) => (
+                      <Link
+                        key={link.path}
+                        to={link.path}
+                        className={`${isActiveLink(link.path)} py-2`}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+
+                  <NavBarContent /> 
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile Menu Drawer */}
+          {isMobile && (
+            <div
+              ref={drawerRef}
+              className={`absolute top-[90%] left-0 right-0 w-full bg-[#18191D] px-0 md:px-6 py-4 border border-[#18191D] rounded-b-lg overflow-hidden transition-all duration-300 ease-in-out origin-top select-none ${
+                visible ? "max-h-fit opacity-100" : "max-h-0 opacity-0"
+              }`}
+              style={{
+                transform: isDragging
+                  ? `translate(${offsetX}px, ${offsetY}px)`
+                  : undefined,
+                touchAction: "none", // Prevents default touch behaviors
+                userSelect: "none", // Prevents text selection
+              }}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onMouseDown={handleTouchStart}
+              onMouseMove={handleTouchMove}
+              onMouseUp={handleTouchEnd}
+              onMouseLeave={handleTouchEnd}
+            >
+              {/* Drawer Handle - add handles on all sides */}
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="w-full flex justify-center p-4 border-b border-gray-800">
+                  <div className="w-12 h-1 bg-gray-600 rounded-full pointer-events-auto cursor-grab active:cursor-grabbing hover:bg-gray-500 transition-colors" />
+                </div>
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-transparent pointer-events-auto cursor-grab active:cursor-grabbing hover:bg-gray-500 transition-colors" />
+                <div className="absolute right-0 top-0 bottom-0 w-1 bg-transparent pointer-events-auto cursor-grab active:cursor-grabbing hover:bg-gray-500 transition-colors" />
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-transparent pointer-events-auto cursor-grab active:cursor-grabbing hover:bg-gray-500 transition-colors" />
+              </div>
+
+              <div>
+                <div className="pt-12">
+                  <div className="items-start">
+                    <div className="px-16 pb-8 pt-4 space-y-4">
+                      {navLinks.map((link) => (
+                        <Menu.Item
+                          as="div"
+                          key={link.path}
+                          className={`${isActiveLink(
+                            link.path
+                          )} block py-3 text-lg text-white-100 hover:text-blue-00 cursor-pointer`}
+                          onClick={() => handleNavigation(link.path)}
+                        >
+                          {link.icon}
+                          {link.label}
+                        </Menu.Item>
+                      ))}                    
+                    </div>                    
+                  </div>
+                  <div className="flex flex-col items-center">
+                    {isCheckIfMobileIs480 && 
+                      <div className="flex gap-5">
+                        {/* Language Globe Icon */}
+                        <IconButton title="Language">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+                            />
+                          </svg>
+                        </IconButton>
+
+                        {/* Notification Bell Icon */}
+                        <IconButton title="Notifications">
+                          <div className="relative">
+                            <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5 text-white"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                              />
+                            </svg>
+                          </div>
+                        </IconButton>
+                      </div>
+                    }
+                  </div>
+                </div>                
+              </div>
+
             </div>
           )}
-        </div>
-
-        {/* Mobile Menu Drawer */}
-        {isMobile && (
-          <div
-            ref={drawerRef}
-            className={`absolute top-full left-0 right-0 w-full bg-[#13131f] px-0 md:px-6 py-4 border border-gray-800 rounded-b-lg overflow-hidden transition-all duration-300 ease-in-out origin-top select-none ${
-              visible ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
-            }`}
-            style={{
-              transform: isDragging
-                ? `translate(${offsetX}px, ${offsetY}px)`
-                : undefined,
-              touchAction: "none", // Prevents default touch behaviors
-              userSelect: "none", // Prevents text selection
-            }}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onMouseDown={handleTouchStart}
-            onMouseMove={handleTouchMove}
-            onMouseUp={handleTouchEnd}
-            onMouseLeave={handleTouchEnd}
-          >
-            {/* Drawer Handle - add handles on all sides */}
-            <div className="absolute inset-0 pointer-events-none">
-              <div className="w-full flex justify-center p-4 border-b border-gray-800">
-                <div className="w-12 h-1 bg-gray-600 rounded-full pointer-events-auto cursor-grab active:cursor-grabbing hover:bg-gray-500 transition-colors" />
-              </div>
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-transparent pointer-events-auto cursor-grab active:cursor-grabbing hover:bg-gray-500 transition-colors" />
-              <div className="absolute right-0 top-0 bottom-0 w-1 bg-transparent pointer-events-auto cursor-grab active:cursor-grabbing hover:bg-gray-500 transition-colors" />
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-transparent pointer-events-auto cursor-grab active:cursor-grabbing hover:bg-gray-500 transition-colors" />
-            </div>
-
-            <div className="px-16 pb-8 pt-12 space-y-4">
-              {navLinks.map((link) => (
-                <Menu.Item
-                  as="div"
-                  key={link.path}
-                  className={`${isActiveLink(
-                    link.path
-                  )} block py-3 text-lg text-white-100 hover:text-blue-00 cursor-pointer`}
-                  onClick={() => handleNavigation(link.path)}
-                >
-                  {link.icon}
-                  {link.label}
-                </Menu.Item>
-              ))}
-            </div>
-          </div>
-        )}
+        </div>        
       </div>
+
 
       {/* Main Content with Scale Animation */}
       <div
-        className={`pt-20 transition-all duration-300 ease-in-out ${
+        className={`transition-all duration-300 ease-in-out ${
           visible && isMobile
             ? "transform scale-90 opacity-50"
             : "transform scale-100 opacity-100"
@@ -336,7 +378,7 @@ const IconButton = ({
   <button
     title={title}
     type="button"
-    className="group relative p-2 rounded-[20px] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:translate-x-1 hover:shadow-[0_4px_0_0_rgba(30,58,138,0.8)] bg-transparent hover:border-t hover:border-b hover:border-blue-400/50"
+    className="group relative p-2 rounded-[20px] overflow-x-hidden transition-all duration-300 hover:-translate-y-1 hover:translate-x-1 hover:shadow-[0_4px_0_0_rgba(30,58,138,0.8)] bg-transparent hover:border-t hover:border-b hover:border-blue-400/50"
   >
     {/* Content */}
     <div className="relative z-10">{children}</div>

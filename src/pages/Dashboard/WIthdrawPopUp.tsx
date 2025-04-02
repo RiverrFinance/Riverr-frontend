@@ -7,11 +7,13 @@ import { VaultActor } from "../../utils/Interfaces/vaultActor";
 import { parseUnits } from "ethers/lib/utils";
 
 interface Props {
+  isOpen: boolean;
+  onClose: () => void;
   asset: Asset;
   marginBalance: string;
 }
 
-export default function WIthdrawPopUp({ asset }: Props) {
+export default function WithdrawPopUp({ asset, isOpen, onClose }: Props) {
   const readWriteAgent = useAgent();
   const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync);
   const [userMarginBalance, setUserMarginBalance] = useState<bigint>(0n);
@@ -19,6 +21,10 @@ export default function WIthdrawPopUp({ asset }: Props) {
   const [error, setError] = useState<
     "" | "Insufficient Balance" | "Amount too Small"
   >("");
+
+  if (!isOpen) {
+    return null;
+  }
 
   const withdrawFromAccount = async () => {
     try {
@@ -52,5 +58,16 @@ export default function WIthdrawPopUp({ asset }: Props) {
     HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
   }, []);
 
-  return <div>WIthdrawPopUp</div>;
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div className="bg-[#18191D] p-6 rounded-md">
+      {/* <h2 className="text-lg font-semibold mb-4">Withdraw {assetName ? assetName : 'Asset'}</h2> */}
+      <p className="mb-4">This is a demo withdraw modal.</p>
+      {/* Add your withdraw form elements here */}
+      <button onClick={onClose} className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+        Close
+      </button>
+    </div>
+  </div>
+  );
 }

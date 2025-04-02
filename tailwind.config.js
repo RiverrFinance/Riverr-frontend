@@ -5,6 +5,9 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],  theme: {
     extend: {
+      screens: {
+        'xs': '480px',
+      },
       backdropBlur: {
         xs: '2px',
       },

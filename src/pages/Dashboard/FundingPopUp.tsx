@@ -10,9 +10,11 @@ const ICP_API_HOST = "https://icp-api.io/";
 
 interface Props {
   asset: Asset;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export default function FundingPopUp({ asset }: Props) {
+export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
   const readWriteAgent = useAgent();
   const [userTokenBalance, setUserTokenBalance] = useState<bigint>(0n);
   const [depositAmount, setDepositAmount] = useState<string>("");
@@ -23,6 +25,10 @@ export default function FundingPopUp({ asset }: Props) {
   const [currentAction, setCurrentAction] = useState<
     "Appoving" | "Spending" | ""
   >("");
+
+  if (!isOpen) {
+    return null;
+  }
 
   const setUserBalance = async () => {
     try {
@@ -119,5 +125,16 @@ export default function FundingPopUp({ asset }: Props) {
     };
   }, []);
 
-  return <div>DepositPopUp</div>;
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+      <div className="bg-[#18191D] p-6 rounded-md">
+        {/* <h2 className="text-lg font-semibold mb-4">Deposit {asset ? asset : 'Asset'}</h2> */}
+        <p className="mb-4">This is a demo deposit modal.</p>
+        {/* Add your deposit form elements here */}
+        <button onClick={onClose} className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+          Close
+        </button>
+      </div>
+    </div>
+  );
 }
