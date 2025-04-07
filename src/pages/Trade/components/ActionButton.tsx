@@ -6,6 +6,7 @@ import {
 } from "@nfid/identitykit/react";
 import React, { HTMLProps } from "react";
 import { InputError } from "../types/trading";
+import { Icon } from "semantic-ui-react";
 
 interface Props {
   currentError: InputError;
@@ -23,9 +24,12 @@ export default function ActionButton({ currentError, onClick }: Props) {
   return (
     <div>
       {!readwrietAgent ? (
-        <ConnectWallet />
-      ) : (
-        <button onClick={onClickAction}>Open Order</button>
+        <div className="bg-[#0300AD] rounded-md flex justify-items-center items-center gap-2 px-5 cursor-pointer">
+          <Icon name='google wallet' />
+          <ConnectWallet />
+        </div>      
+        ) : (
+        <button type="button" onClick={onClickAction}>Open Order</button>
       )}
     </div>
   );

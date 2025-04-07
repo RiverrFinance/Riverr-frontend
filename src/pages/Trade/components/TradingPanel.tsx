@@ -79,6 +79,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({ market }) => {
       <div className="flex p-1 mb-5 mx-3">
         {(["Market", "Limit"] as const).map((type) => (
           <button
+          type="button"
             key={type}
             onClick={() => setOrderType(type)}
             className={`flex-1 py-2 px-4 text-sm font-medium transition-all duration-200 
@@ -93,7 +94,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({ market }) => {
         ))}
       </div>
       {/* Trading Type Selector */}
-      <div className="flex p-1 bg-[#1C1C28] p-1 mx-4 border border-gray-700 rounded-md ">
+      <div className="flex bg-[#1C1C28] p-1 mx-4 border border-gray-700 rounded-md ">
         {(["Long", "Short"] as const).map((type) => (
           <button
             key={type}

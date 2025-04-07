@@ -14,6 +14,7 @@ export interface Asset {
   vaultID?: string;
   canisterID: string;
   decimals: number;
+  logoUrl: string
 }
 
 export const assetList: Asset[] = [
@@ -24,6 +25,7 @@ export const assetList: Asset[] = [
     vaultID: "5se5w-zaaaa-aaaaf-qanmq-cai",
     canisterID: "4yl7m-3qaaa-aaaaf-qanlq-cai",
     decimals: 8,
+    logoUrl: "https://coin-images.coingecko.com/coins/images/14495/large/Internet_Computer_logo.png?1696514180",
   },
   {
     priceID: "tether",
@@ -31,6 +33,7 @@ export const assetList: Asset[] = [
     name: "usdt",
     decimals: 6,
     canisterID: "cngnf-vqaaa-aaaar-qag4q-cai",
+    logoUrl: "https://assets.coingecko.com/coins/images/325/small/Tether-logo.png?1668148630",
   },
   {
     priceID: "bitcoin",
@@ -38,6 +41,7 @@ export const assetList: Asset[] = [
     name: "bitcoin",
     decimals: 6,
     canisterID: "mxzaz-hqaaa-aaaar-qaada-cai",
+    logoUrl: "https://assets.coingecko.com/coins/images/1/small/bitcoin.png?1696501408",
   },
   {
     priceID: "ethereum",
@@ -45,6 +49,7 @@ export const assetList: Asset[] = [
     name: "ethereum",
     decimals: 18,
     canisterID: "ss2fx-dyaaa-aaaar-qacoq-cai",
+    logoUrl: "https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880",
   },
 ];
 export const quoteCurrencies: Array<Asset> = [assetList[0], assetList[1]];

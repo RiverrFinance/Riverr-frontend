@@ -9,6 +9,8 @@ import {
 } from "@nfid/identitykit/react";
 
 import { useAgent } from "@nfid/identitykit/react";
+import LogoImg from '../../public/images/Logo.png'
+
 
 // Navigation links configuration
 const navLinks = [
@@ -134,13 +136,30 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
 
   // Logo component
   const Logo = () => (
-    <Link to="/" className="logo flex items-center space-x-1 p-0 md:pl-5 text-white">
-      <span className="text-5xl font-bold bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent text-white">
-        Q
+    <Link to="/" className="logo flex items-center gap-3 p-0 md:pl-5 text-white">
+      <span className="text-5xl font-bold bg-gradient-to-r from-white to-white bg-clip-text text-transparent text-white">
+        <img src={LogoImg} alt="" />
       </span>
-      <span className="text-lg hidden sm:inline tracking-wider">UOTEX</span>
+      <span className="text-lg hidden sm:inline tracking-wider">QUOTEX</span>
     </Link>
   );
+
+  const IconContent = () => (
+    <>
+      {/* Language Globe Icon */}
+      <IconButton title="" className="" onClick={()=>{}}>
+        <Icon name="globe" className="pl-1 pt-0.5" />
+      </IconButton>
+
+      {/* Notification Bell Icon */}
+      <IconButton title="" className="" onClick={()=>{}}>
+        <div className="relative">
+          <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+            <Icon name="bell" />
+        </div>
+      </IconButton>
+    </>
+  )
 
   // Navbar content component
   const NavBarContent = () => (
@@ -156,25 +175,13 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
           />
           {/* <ConnectWalletButton
             isConnected={true}
-            
             setIdentity={setIdentity}
           /> */}
         </div>
 
         {!isCheckIfMobileIs480 && 
           <div className="flex gap-2 items-center">
-            {/* Language Globe Icon */}
-            <IconButton title="Language">
-              <Icon name="globe" className="pl-0.5" />
-            </IconButton>
-
-            {/* Notification Bell Icon */}
-            <IconButton title="Notifications">
-              <div className="relative">
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
-                  <Icon name="bell" />
-              </div>
-            </IconButton>
+            <IconContent />
           </div>
         }
       </div>
@@ -182,7 +189,7 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
   );
 
   return (
-    <div className="min-h-screen w-full overflow-hidden bg-[#000000] text-white px-4 md:px-6 py-10 space-y-28">
+    <div className="min-h-screen w-full overflow-hidden bg-[#000000] text-white pt-10 pb-5 space-y-28">
 
       {/* Navbar */}
       <div className="backdrop-blur-3xl h-28 bg-transparent fixed top-0 left-0 right-0 md:mx-6 mx-4 z-50 rounded-b-2xl">
@@ -195,9 +202,10 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
                 <NavBarContent />
 
                 {/* Mobile Menu Button */}
-                <div
-                  className="w-10 h-10 flex items-center justify-center p-2  hover:-translate-y-1 hover:shadow-[0_4px_0_0_rgba(30,58,138,0.8)] bg-transparent rounded-lg transition-all duration-300 hover:border-t hover:border-b hover:border-blue-400/50"
+                <IconButton
+                  className="w-10 h-10 flex items-center justify-center !rounded-lg transition-all duration-300 hover:!shadow-[0_3px_0_0_#0300AD]"
                   onClick={() => setVisible(!visible)}
+                  title=""
                 >
                   <div className="relative w-6 h-3 cursor-pointer">
                     {/* Top bar */}
@@ -216,7 +224,7 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
                       }`}
                     />
                   </div>
-                </div>
+                </IconButton>
               </div>
             ) : (
               // Desktop Navbar view
@@ -296,44 +304,7 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
                   <div className="flex flex-col items-center">
                     {isCheckIfMobileIs480 && 
                       <div className="flex gap-5">
-                        {/* Language Globe Icon */}
-                        <IconButton title="Language">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5 text-white"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
-                            />
-                          </svg>
-                        </IconButton>
-
-                        {/* Notification Bell Icon */}
-                        <IconButton title="Notifications">
-                          <div className="relative">
-                            <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-5 w-5 text-white"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                              />
-                            </svg>
-                          </div>
-                        </IconButton>
+                        <IconContent />
                       </div>
                     }
                   </div>
@@ -348,7 +319,7 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
 
       {/* Main Content with Scale Animation */}
       <div
-        className={`transition-all duration-300 ease-in-out ${
+        className={`md:mx-6 mx-4 transition-all duration-300 ease-in-out ${
           visible && isMobile
             ? "transform scale-90 opacity-50"
             : "transform scale-100 opacity-100"
@@ -368,19 +339,25 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
   );
 };
 
-const IconButton = ({
+export const IconButton = ({
   children,
   title,
+  className,
+  onClick,
 }: {
   children: React.ReactNode;
   title?: string;
+  className: string;
+  onClick:() => void;
 }) => (
   <button
     title={title}
     type="button"
-    className="group relative p-2 rounded-[20px] overflow-x-hidden transition-all duration-300 hover:-translate-y-1 hover:translate-x-1 hover:shadow-[0_4px_0_0_rgba(30,58,138,0.8)] bg-transparent hover:border-t hover:border-b hover:border-blue-400/50"
+    className={`group relative p-2 rounded-[20px] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_2px_0_0_#0300AD] bg-transparent hover:border-t hover:border-b hover:border-blue-400/50 ${className}`}
+    onClick={onClick}
   >
     {/* Content */}
+    <span>{title}</span>
     <div className="relative z-10">{children}</div>
   </button>
 );

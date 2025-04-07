@@ -7,7 +7,8 @@
   transition: filter 300ms;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #00b5fd);
+  color: #ffffff;
+  filter: drop-shadow(0 0 2em #ffffff);
   scale: 1.1;
   transition: scale 300ms;
 }
@@ -18,13 +19,14 @@
   border-radius: 0px !important;
   font-weight: 600 !important;
   font-size: 16px !important;
-  /* height: 0px !important; */
   width:  fit-content !important;
   min-width: fit-content !important;
   padding: 0px !important;
   border: none;
   letter-spacing: .5px;
 }
+
+
 
 
 
