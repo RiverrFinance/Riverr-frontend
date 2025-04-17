@@ -23,7 +23,7 @@ export const idlFactory = ({ IDL }) => {
     'Limit' : LimitOrder,
     'Market' : IDL.Null,
   });
-  const PositionDetails = IDL.Record({
+  const PositionParameters = IDL.Record({
     'owner' : IDL.Principal,
     'debt_value' : IDL.Nat,
     'long' : IDL.Bool,
@@ -33,6 +33,11 @@ export const idlFactory = ({ IDL }) => {
     'interest_rate' : IDL.Nat32,
     'collateral_value' : IDL.Nat,
     'volume_share' : IDL.Nat,
+  });
+  const PositionStatus = IDL.Variant({
+    'FILLED' : IDL.Null,
+    'PARTIAL' : IDL.Null,
+    'UNFILLED' : IDL.Null,
   });
   const StateDetails = IDL.Record({
     'max_leveragex10' : IDL.Nat8,
@@ -53,24 +58,18 @@ export const idlFactory = ({ IDL }) => {
     'created_timestamp' : IDL.Nat64,
   });
   const OrderType = IDL.Variant({ 'Limit' : IDL.Null, 'Market' : IDL.Null });
-  const Result = IDL.Variant({ 'Ok' : PositionDetails, 'Err' : IDL.Text });
+  const Result = IDL.Variant({ 'Ok' : PositionParameters, 'Err' : IDL.Text });
   return IDL.Service({
     'closePosition' : IDL.Func([IDL.Nat8, IDL.Opt(IDL.Nat64)], [IDL.Nat], []),
-    'getAccountPosition' : IDL.Func(
-        [IDL.Vec(IDL.Nat8)],
-        [PositionDetails],
+    'getAccountPositionDetails' : IDL.Func(
+        [IDL.Principal, IDL.Nat8],
+        [IDL.Opt(IDL.Tuple(PositionParameters, PositionStatus))],
         ['query'],
       ),
     'getBestOfferTick' : IDL.Func([IDL.Bool], [IDL.Nat64], ['query']),
     'getMarketDetails' : IDL.Func([], [MarketDetails], ['query']),
-    'getPositionPNL' : IDL.Func([IDL.Vec(IDL.Nat8)], [IDL.Int64], ['query']),
     'getStateDetails' : IDL.Func([], [StateDetails], ['query']),
     'getTickDetails' : IDL.Func([IDL.Nat64], [TickDetails], ['query']),
-    'getUserAccount' : IDL.Func(
-        [IDL.Principal, IDL.Nat8],
-        [IDL.Vec(IDL.Nat8)],
-        ['query'],
-      ),
     'liquidatePosition' : IDL.Func([IDL.Principal, IDL.Nat8], [IDL.Bool], []),
     'openPosition' : IDL.Func(
         [
@@ -85,11 +84,6 @@ export const idlFactory = ({ IDL }) => {
         ],
         [Result],
         [],
-      ),
-    'positionStatus' : IDL.Func(
-        [IDL.Vec(IDL.Nat8)],
-        [IDL.Bool, IDL.Bool],
-        ['query'],
       ),
     'retryAccountError' : IDL.Func([IDL.Vec(IDL.Nat8)], [], []),
     'startTimer' : IDL.Func([], [], []),

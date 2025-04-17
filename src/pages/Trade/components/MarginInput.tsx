@@ -2,7 +2,7 @@ import { Market } from "../../../lists/marketlist";
 import { formatUnits } from "ethers/lib/utils";
 import { InputError } from "../types/trading";
 import { parseUnits } from "ethers/lib/utils";
-import { useAgent } from "@nfid/identitykit/react";
+import { useAgent, useAuth } from "@nfid/identitykit/react";
 import { useEffect, useState } from "react";
 import { HttpAgent } from "@dfinity/agent";
 import { ICP_API_HOST } from "../../../utils/utilFunction";
@@ -24,13 +24,18 @@ export const MarginInput = ({
   minCollateral,
 }: Props) => {
   const readWriteAgent = useAgent();
+  const { user } = useAuth();
   const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
   const [userMarginBalance, setUserMarginBalance] = useState<bigint>(0n);
+
+  if (user) {
+    console.log(user.principal.toText());
+  }
 
   useEffect(() => {
     HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
     const interval = setInterval(() => {
-      if (readWriteAgent) {
+      if (user) {
         setMarginBalance();
       }
     }, 5000);
@@ -43,9 +48,8 @@ export const MarginInput = ({
   const setMarginBalance = async () => {
     try {
       if (market.quoteAsset.vaultID) {
-        const user = await readWriteAgent.getPrincipal();
         const vault = new VaultActor(market.quoteAsset.vaultID, readAgent);
-        const margin = await vault.userMarginBalance(user);
+        const margin = await vault.userMarginBalance(user.principal);
 
         setUserMarginBalance(margin);
       }

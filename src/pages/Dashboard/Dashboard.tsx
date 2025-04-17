@@ -1,14 +1,16 @@
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { Asset, assetList, quoteCurrencies } from "../../lists/marketlist";
+import { memo, useCallback, useEffect, useState } from "react";
+import { Asset, assetList } from "../../lists/marketlist";
 import { HttpAgent } from "@dfinity/agent";
 import { AssetComponent } from "./AssetComponent";
-import { useAgent } from "@nfid/identitykit/react";
+import { useAgent, useAuth } from "@nfid/identitykit/react";
 import { VaultActor } from "../../utils/Interfaces/vaultActor";
 import { fetchDetails } from "../../utils/utilFunction";
 import { formatUnits } from "ethers/lib/utils";
-import FundingPopUp from "./FundingPopUp"
-import WithdrawPopUp from "./WithdrawPopUp";
+import FundingPopUp from "./FundingPopUp";
+import WithdrawPopUp from "./WIthdrawPopUp";
 import { Icon } from "semantic-ui-react";
+import { MinterActor } from "../../utils/Interfaces/tokenActor";
+import { Principal } from "@dfinity/principal";
 
 const ICP_API_HOST = "https://icp-api.io/";
 const COIN_GECKO_API_URL = "https://api.coingecko.com/api/v3";
@@ -36,6 +38,7 @@ interface CoinGeckoMarketData {
 
 export function Dashboard() {
   const readWriteAgent = useAgent();
+  const { user, disconnect } = useAuth();
   const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
   const [pricesArray, setPricesArray] = useState<number[]>([]);
   const [balancesArray, setBalancesArray] = useState<string[]>([]);
@@ -46,7 +49,16 @@ export function Dashboard() {
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
 
   const [topMovers, setTopMovers] = useState<CoinGeckoMarketData[]>([]);
-  const topPriorityCoinIds = ["bitcoin", "ethereum", "binancecoin", "aave", "solana", "ripple", "internet-computer", "usd-coin"];
+  const topPriorityCoinIds = [
+    "bitcoin",
+    "ethereum",
+    "binancecoin",
+    "aave",
+    "solana",
+    "ripple",
+    "internet-computer",
+    "usd-coin",
+  ];
 
   const [showBalances, setShowBalances] = useState(true);
 
@@ -54,12 +66,30 @@ export function Dashboard() {
     setShowBalances(!showBalances);
   };
 
+  const receiveFaucet = async () => {
+    if (readWriteAgent) {
+      const asset = assetList[0];
+      let mintActor = new MinterActor(
+        "lmfrn-3iaaa-aaaaf-qaova-cai",
+        readWriteAgent
+      );
+      try {
+        await mintActor.mint(
+          Principal.fromText(asset.canisterID),
+          user.principal,
+          10n ** BigInt(asset.decimals + 1) // ICP tokens
+        );
+      } catch (error) {
+        console.error("Error receiving faucet:", error);
+      }
+    }
+  };
+
   const fetcherUserMarginBalance = async (asset: Asset): Promise<bigint> => {
     try {
       if (asset.vaultID && readWriteAgent) {
-        let user = await readWriteAgent.getPrincipal();
         let vaultActor = new VaultActor(asset.vaultID, readAgent);
-        const balance = await vaultActor.userMarginBalance(user);
+        const balance = await vaultActor.userMarginBalance(user.principal);
         return balance;
       }
       return 0n;
@@ -72,6 +102,7 @@ export function Dashboard() {
     let response = await fetchDetails(asset.priceID);
     let assetValueDetails: PriceDetails = await response.json();
     let { price } = assetValueDetails;
+
     return price;
   };
 
@@ -91,7 +122,6 @@ export function Dashboard() {
       );
       const prices = resolvedPromiseList.map(([price]) => price);
       const balances = resolvedPromiseList.map(([, balance]) => balance);
-
       setPricesArray(prices);
       setBalancesArray(balances);
     } catch {}
@@ -106,48 +136,7 @@ export function Dashboard() {
       valueSum += currentValue;
     });
     setTotalValue(valueSum);
-    console.log('TOTALVALUE', totalValue);
   };
-
-  const fetchTopMovers = useCallback(async () => {
-    try {
-      const currency = "usd";
-
-      const topPriorityResponse = await fetch(
-        `${COIN_GECKO_API_URL}/coins/markets?vs_currency=${currency}&ids=${topPriorityCoinIds.join(
-          ","
-        )}&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h`
-      );
-      if (!topPriorityResponse.ok) {
-        throw new Error(`HTTP error fetching top priority coins! status: ${topPriorityResponse.status}`);
-      }
-      const topPriorityData: CoinGeckoMarketData[] = await topPriorityResponse.json();
-
-      //fetch all other coins
-      const allCoinsResponse = await fetch(
-        `${COIN_GECKO_API_URL}/coins/markets?vs_currency=${currency}&order=market_cap_desc&per_page=250&page=1&sparkline=false&price_change_percentage=24h`
-      );
-      if (!allCoinsResponse.ok) {
-        throw new Error(`HTTP error fetching all coins! status: ${allCoinsResponse.status}`);
-      }
-      const allCoinsData: CoinGeckoMarketData[] = await allCoinsResponse.json();
-
-      // Filtering top priority coins from others (no duplicates)
-      const otherCoinsData = allCoinsData.filter(coin => !topPriorityCoinIds.includes(coin.id));
-
-      const combinedTopMovers = [...topPriorityData, ...otherCoinsData];
-
-      setTopMovers(combinedTopMovers);
-    } catch (error) {
-      console.error("Error fetching top movers:", error);
-    }
-  }, [topPriorityCoinIds]);
-
-  useEffect(() => {
-    fetchTopMovers();
-    const interval = setInterval(fetchTopMovers, 10000000); // Fetch every 10s (three '0' added)
-    return () => clearInterval(interval);
-  }, [fetchTopMovers]);
 
   useEffect(() => {
     if (readWriteAgent) {
@@ -162,13 +151,61 @@ export function Dashboard() {
   ]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    let interval: number | undefined = undefined;
+    interval = setInterval(() => {
       updateValueDetails();
     }, 5000);
     return () => {
       clearInterval(interval);
     };
   }, [readWriteAgent]);
+
+  const fetchTopMovers = useCallback(async () => {
+    try {
+      const currency = "usd";
+
+      const topPriorityResponse = await fetch(
+        `${COIN_GECKO_API_URL}/coins/markets?vs_currency=${currency}&ids=${topPriorityCoinIds.join(
+          ","
+        )}&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h`
+      );
+      if (!topPriorityResponse.ok) {
+        throw new Error(
+          `HTTP error fetching top priority coins! status: ${topPriorityResponse.status}`
+        );
+      }
+      const topPriorityData: CoinGeckoMarketData[] =
+        await topPriorityResponse.json();
+
+      //fetch all other coins
+      const allCoinsResponse = await fetch(
+        `${COIN_GECKO_API_URL}/coins/markets?vs_currency=${currency}&order=market_cap_desc&per_page=250&page=1&sparkline=false&price_change_percentage=24h`
+      );
+      if (!allCoinsResponse.ok) {
+        throw new Error(
+          `HTTP error fetching all coins! status: ${allCoinsResponse.status}`
+        );
+      }
+      const allCoinsData: CoinGeckoMarketData[] = await allCoinsResponse.json();
+
+      // Filtering top priority coins from others (no duplicates)
+      const otherCoinsData = allCoinsData.filter(
+        (coin) => !topPriorityCoinIds.includes(coin.id)
+      );
+
+      const combinedTopMovers = [...topPriorityData, ...otherCoinsData];
+
+      setTopMovers(combinedTopMovers);
+    } catch (error) {
+      console.error("Error fetching top movers:", error);
+    }
+  }, [topPriorityCoinIds]);
+
+  useEffect(() => {
+    fetchTopMovers();
+    const interval = setInterval(fetchTopMovers, 10000000); // Fetch every 10s (three '0' added)
+    return () => clearInterval(interval);
+  }, [fetchTopMovers]);
 
   useEffect(() => {
     HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
@@ -201,21 +238,32 @@ export function Dashboard() {
       <div className="md:space-y-6 space-y-3 lg:col-span-8 md:col-span-7 h-full overflow-hidden flex flex-col">
         <div className="py-5 px-5 h-fit bg-[#18191D] rounded-2xl md:rounded-3xl">
           <div className="bg-[#0300AD] rounded-lg md:rounded-2xl py-10 md:px-5 px-12 h-fit flex flex-col max-xs:items-center">
-            <div className="text-3xl font-black tracking-wide mb-4">Dashboard</div>
+            <div className="text-3xl font-black tracking-wide mb-4">
+              Dashboard
+            </div>
             <div className="space-y-1 flex flex-col max-xs:items-center">
               <div className="text-md text-gray-300">Total Balance</div>
               <div className="text-2xl font-bold space-x-2 transition-all">
-                <span>{showBalances ? `$${formatPrice(totalValue)}` : '**********'}</span>
-                <button title="eye" onClick={toggleShowBalances} className="cursor-pointer text-gray-300 hover:text-white focus:outline-none">
-                  <Icon name={showBalances ? 'eye' : 'eye slash'} size="tiny" />
+                <span>
+                  {showBalances ? `$${format(totalValue)}` : "**********"}
+                </span>
+                <button
+                  title="eye"
+                  onClick={toggleShowBalances}
+                  className="cursor-pointer text-gray-300 hover:text-white focus:outline-none"
+                >
+                  <Icon name={showBalances ? "eye" : "eye slash"} size="tiny" />
                 </button>
                 <small className="uppercase text-xs">usdt</small>
               </div>
-              <div className="text-sm text-gray-400">{showBalances ? '100 icp' : '****'}</div>
-            </div>        
-          </div>          
+
+              <div className="text-sm text-gray-400">
+                {/* {showBalances ? "100 icp" : "****"} */}
+              </div>
+            </div>
+          </div>
         </div>
-   
+
         <div className="flex-grow py-8 px-5 bg-[#18191D] rounded-2xl md:rounded-3xl">
           <div className="text-2xl font-bold mb-4 capitalize">portfolio</div>
           <div>
@@ -224,9 +272,8 @@ export function Dashboard() {
               balancesArray={balancesArray}
               onDeposit={handleOpenDepositModal}
               onWithdraw={handleOpenWithdrawModal}
-            />                      
+            />
           </div>
-       
         </div>
       </div>
       <div className="lg:col-span-4 md:col-span-5 py-7 h-full bg-[#18191D] rounded-2xl md:rounded-3xl">
@@ -235,23 +282,26 @@ export function Dashboard() {
         </div>
         <TopMoversComponent topMovers={topMovers} />
       </div>
-      
-        {selectedAsset && (
-          <>
-            <FundingPopUp 
-              asset={selectedAsset} 
-              isOpen={isDepositModalOpen} 
-              onClose={handleCloseDepositModal} 
-            />
-            <WithdrawPopUp 
-              asset={selectedAsset} 
-              isOpen={isWithdrawModalOpen} 
-              onClose={handleCloseWithdrawModal}
-              marginBalance={balancesArray[assetList.findIndex(a => a.name === selectedAsset.name)] || "0"} 
-            />          
-          </>
-        )}        
 
+      {selectedAsset && (
+        <>
+          <FundingPopUp
+            asset={selectedAsset}
+            isOpen={isDepositModalOpen}
+            onClose={handleCloseDepositModal}
+          />
+          <WithdrawPopUp
+            asset={selectedAsset}
+            isOpen={isWithdrawModalOpen}
+            onClose={handleCloseWithdrawModal}
+            marginBalance={
+              balancesArray[
+                assetList.findIndex((a) => a.name === selectedAsset.name)
+              ] || "0"
+            }
+          />
+        </>
+      )}
     </div>
   );
 }
@@ -263,9 +313,13 @@ interface AssetListsProps {
   onWithdraw: (asset: Asset) => void;
 }
 const AssetListComponent = memo(
-  function Component({ pricesArray, balancesArray, onDeposit, onWithdraw }: AssetListsProps) {
-
-    const [openAccordionIndex, setOpenAccordionIndex] = useState(0);  // to toggle accordion, the index of the opened accordion
+  function Component({
+    pricesArray,
+    balancesArray,
+    onDeposit,
+    onWithdraw,
+  }: AssetListsProps) {
+    const [openAccordionIndex, setOpenAccordionIndex] = useState(0); // to toggle accordion, the index of the opened accordion
     const handleAccordionToggle = (index: number) => {
       setOpenAccordionIndex((prevIndex) => (prevIndex === index ? -1 : index));
     };
@@ -284,22 +338,24 @@ const AssetListComponent = memo(
             const userBalance = balancesArray[index] || "0.00"; // asset.vaultid
 
             return (
-              <div key={asset.name} className="hover:px-4 p-2 hover:border border-[#27272b]  hover:border-[#27272b] rounded-2xl transition-all duration-300">
+              <div
+                key={asset.name}
+                className="hover:px-4 p-2 hover:border border-[#27272b]  hover:border-[#27272b] rounded-2xl transition-all duration-300"
+              >
                 <AssetComponent
                   asset={asset}
                   price={price}
                   userBalance={userBalance}
-                  index={index} 
-                  openAccordionIndex={openAccordionIndex} 
+                  index={index}
+                  openAccordionIndex={openAccordionIndex}
                   onAccordionToggle={handleAccordionToggle}
                   onDeposit={onDeposit}
                   onWithdraw={onWithdraw}
-                />              
+                />
               </div>
             );
-          })}          
+          })}
         </div>
-
       </div>
     );
   },
@@ -308,12 +364,10 @@ const AssetListComponent = memo(
       JSON.stringify(prevProps.pricesArray) ==
         JSON.stringify(newProps.pricesArray) &&
       JSON.stringify(prevProps.balancesArray) ==
-        JSON.stringify(newProps.balancesArray) 
+        JSON.stringify(newProps.balancesArray)
     );
   }
 );
-
-
 
 interface TopMoversProps {
   topMovers: CoinGeckoMarketData[];
@@ -330,31 +384,43 @@ const TopMoversComponent = memo(
               className="py-4 grid grid-cols-12 items-center justify-between gap-3"
             >
               <div className="col-span-6 flex items-center">
-                <img src={coin.image} alt={coin.name} className="w-6 h-6 mr-2" />
+                <img
+                  src={coin.image}
+                  alt={coin.name}
+                  className="w-6 h-6 mr-2"
+                />
                 <div>
                   <div className="text-md font-semibold">{coin.name}</div>
-                  <div className="text-sm text-gray-500">{coin.symbol.toUpperCase()}</div>
+                  <div className="text-sm text-gray-500">
+                    {coin.symbol.toUpperCase()}
+                  </div>
                 </div>
               </div>
               <div
                 className={`col-span-3 text-sm ${
-                  coin.price_change_percentage_24h >= 0 ? "text-green-500" : "text-red-500"
+                  coin.price_change_percentage_24h >= 0
+                    ? "text-green-500"
+                    : "text-red-500"
                 }`}
               >
-                {coin.price_change_percentage_24h ? `${coin.price_change_percentage_24h.toFixed(2)}%` : "0.00%"}
+                {coin.price_change_percentage_24h
+                  ? `${coin.price_change_percentage_24h.toFixed(2)}%`
+                  : "0.00%"}
               </div>
-              <div className="col-span-3 text-sm font-semibold">${formatPrice(coin.current_price)}</div>
+              <div className="col-span-3 text-sm font-semibold">
+                ${format(coin.current_price)}
+              </div>
             </div>
           ))}
         </div>
       </div>
     );
   },
-  (prevProps, nextProps) => JSON.stringify(prevProps.topMovers) === JSON.stringify(nextProps.topMovers)
+  (prevProps, nextProps) =>
+    JSON.stringify(prevProps.topMovers) === JSON.stringify(nextProps.topMovers)
 );
 
-
-const formatPrice = (price: number) => {
+const format = (price: number) => {
   if (!price) return "0.00";
   return price < 1
     ? price.toFixed(6)

@@ -67,7 +67,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({ market }) => {
 
     // const interval = setInterval(() => {
     //   fetchAndSetStatezDetails();
-    // }, 1000);
+    // }, 5000);
 
     // return () => {
     //   clearInterval(interval);
@@ -79,7 +79,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({ market }) => {
       <div className="flex p-1 mb-5 mx-3">
         {(["Market", "Limit"] as const).map((type) => (
           <button
-          type="button"
+            type="button"
             key={type}
             onClick={() => setOrderType(type)}
             className={`flex-1 py-2 px-4 text-sm font-medium transition-all duration-200 

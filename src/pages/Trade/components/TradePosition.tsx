@@ -4,22 +4,26 @@ import { MarketActor } from "../../../utils/Interfaces/marketActor";
 import { Market } from "../../../lists/marketlist";
 import { HttpAgent } from "@dfinity/agent";
 import { ICP_API_HOST } from "../../../utils/utilFunction";
-import { PositionDetails } from "../../../utils/declarations/market/market.did";
+import { PositionParameters } from "../../../utils/declarations/market/market.did";
 
 interface Props {
   account_index: number;
   market: Market;
+  order: PositionParameters;
 }
 
 export default function TradePosition({ account_index, market }: Props) {
   const readWriteAgent = useAgent();
   const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
-  const [positionDetails, setPositionDetails] =
-    useState<PositionDetails | null>(null);
 
   useEffect(() => {
     HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
   }, []);
 
-  return <div>{positionDetails == null ? <></> : <div></div>}</div>;
+  return (
+    <div>
+      {" "}
+      <div></div>
+    </div>
+  );
 }

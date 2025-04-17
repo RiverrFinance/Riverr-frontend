@@ -4,8 +4,32 @@ import {
   token as TokenIDL,
 } from "../declarations/token/index";
 
+import {
+  createActor as createMinterActor,
+  minter as MinterIDL,
+} from "../declarations/minter/index";
+
 import { Principal } from "@dfinity/principal";
 import { Account } from "../declarations/token/token.did";
+
+export class MinterActor {
+  minter: typeof MinterIDL;
+
+  constructor(canisterId: string, agent: Agent) {
+    this.minter = createMinterActor(canisterId, {
+      agent,
+    });
+  }
+  public async mint(
+    asset: Principal,
+    user: Principal,
+    amount: bigint
+  ): Promise<boolean> {
+    let result = await this.minter.mint(asset, user, amount);
+
+    return result;
+  }
+}
 
 export class TokenActor {
   token: typeof TokenIDL;
@@ -84,8 +108,10 @@ export class TokenActor {
       created_at_time: [],
     });
     if ("Ok" in result) {
+      console.log(result.Ok);
       return true;
     } else {
+      console.log(result.Err);
       return false;
     }
   }

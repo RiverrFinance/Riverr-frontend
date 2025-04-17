@@ -1,10 +1,4 @@
-import {
-  ConnectedWalletButton,
-  ConnectWallet,
-  ConnectWalletButtonProps,
-  useAgent,
-} from "@nfid/identitykit/react";
-import React, { HTMLProps } from "react";
+import { ConnectWallet, useAgent } from "@nfid/identitykit/react";
 import { InputError } from "../types/trading";
 import { Icon } from "semantic-ui-react";
 
@@ -25,11 +19,13 @@ export default function ActionButton({ currentError, onClick }: Props) {
     <div>
       {!readwrietAgent ? (
         <div className="bg-[#0300AD] rounded-md flex justify-items-center items-center gap-2 px-5 cursor-pointer">
-          <Icon name='google wallet' />
+          <Icon name="google wallet" />
           <ConnectWallet />
-        </div>      
-        ) : (
-        <button type="button" onClick={onClickAction}>Open Order</button>
+        </div>
+      ) : (
+        <button type="button" onClick={onClickAction}>
+          Open Order
+        </button>
       )}
     </div>
   );

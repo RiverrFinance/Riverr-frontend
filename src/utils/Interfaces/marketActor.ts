@@ -6,10 +6,11 @@ import {
 } from "../declarations/market/index";
 import {
   _SERVICE,
-  PositionDetails,
+  PositionParameters,
   StateDetails,
   MarketDetails,
   OrderType,
+  PositionStatus,
 } from "../declarations/market/market.did";
 
 export class MarketActor {
@@ -49,6 +50,13 @@ export class MarketActor {
     }
   }
 
+  public async getaccountPositiondetails(
+    user: Principal,
+    index: number
+  ): Promise<[[PositionParameters, PositionStatus]] | []> {
+    return await this.market.getAccountPositionDetails(user, index);
+  }
+
   public async getStateDetails(): Promise<StateDetails> {
     return await this.market.getStateDetails();
   }
@@ -57,50 +65,7 @@ export class MarketActor {
     return await this.market.getMarketDetails();
   }
 
-  public async getAccountPosition(
-    account: Uint8Array | number[]
-  ): Promise<PositionDetails> {
-    return await this.market.getAccountPosition(account);
-  }
-
-  public async getPositionPNL(
-    positionAccount: Uint8Array | number[]
-  ): Promise<bigint> {
-    return await this.market.getPositionPNL(positionAccount);
-  }
-
-  public async getUserAccount(
-    principal: Principal,
-    index: number
-  ): Promise<Uint8Array | number[]> {
-    return await this.market.getUserAccount(principal, index);
-  }
-
   public async getBestOfferTick(buy: boolean): Promise<bigint> {
     return await this.market.getBestOfferTick(buy);
   }
 }
-
-// export interface _SERVICE {
-//   'closePosition' : ActorMethod<[[] | [bigint]], bigint>,
-//   'getAccountPosition' : ActorMethod<[Uint8Array | number[]], PositionDetails>,
-//   'getBestOfferTick' : ActorMethod<[boolean], bigint>,
-//   'getMarketDetails' : ActorMethod<[], MarketDetails>,
-//   'getPositionPNL' : ActorMethod<[Uint8Array | number[]], bigint>,
-//   'getStateDetails' : ActorMethod<[], StateDetails>,
-//   'getTickDetails' : ActorMethod<[bigint], TickDetails>,
-//   'getUserAccount' : ActorMethod<[Principal], Uint8Array | number[]>,
-//   'liquidatePosition' : ActorMethod<[Principal], boolean>,
-//   'openPosition' : ActorMethod<
-//     [bigint, boolean, OrderType, number, [] | [bigint], bigint, bigint],
-//     Result
-//   >,
-//   'positionStatus' : ActorMethod<[Uint8Array | number[]], [boolean, boolean]>,
-//   'retryAccountError' : ActorMethod<[Principal], undefined>,
-//   'startTimer' : ActorMethod<[], undefined>,
-//   'successNotification' : ActorMethod<
-//     [Uint8Array | number[], bigint],
-//     undefined
-//   >,
-//   'updateStateDetails' : ActorMethod<[StateDetails], undefined>,
-// }

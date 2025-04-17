@@ -1,8 +1,8 @@
 import { Actor, HttpAgent } from "@dfinity/agent";
 
 // Imports and re-exports candid interface
-import { idlFactory } from "./market.did.js";
-export { idlFactory } from "./market.did.js";
+import { idlFactory } from "./minter.did.js";
+export { idlFactory } from "./minter.did.js";
 
 /* CANISTER_ID is replaced by webpack based on node environment
  * Note: canister environment variable will be standardized as
@@ -14,13 +14,13 @@ export const canisterId = "";
 export const createActor = (canisterId, options = {}) => {
   const agent = options.agent || new HttpAgent({ ...options.agentOptions });
 
-  // if (options.agent && options.agentOptions) {
-  //   console.warn(
-  //     "Detected both agent and agentOptions passed to createActor. Ignoring agentOptions and proceeding with the provided agent."
-  //   );
-  // }
+  if (options.agent && options.agentOptions) {
+    console.warn(
+      "Detected both agent and agentOptions passed to createActor. Ignoring agentOptions and proceeding with the provided agent."
+    );
+  }
 
-  // Fetch root key for certificate validation during development
+  // // Fetch root key for certificate validation during development
   // if (process.env.DFX_NETWORK !== "ic") {
   //   agent.fetchRootKey().catch((err) => {
   //     console.warn(
@@ -38,4 +38,4 @@ export const createActor = (canisterId, options = {}) => {
   });
 };
 
-export const market = canisterId ? createActor(canisterId) : undefined;
+export const minter = canisterId ? createActor(canisterId) : undefined;
