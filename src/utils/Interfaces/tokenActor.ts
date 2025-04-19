@@ -71,7 +71,6 @@ export class TokenActor {
 
   public async approveSpending(
     amount: bigint,
-    expectedamount: bigint,
     spender: Principal
   ): Promise<boolean> {
     let result = await this.token.icrc2_approve({
@@ -80,7 +79,7 @@ export class TokenActor {
       from_subaccount: [],
       created_at_time: [],
       amount,
-      expected_allowance: [expectedamount],
+      expected_allowance: [],
       expires_at: [],
       spender: {
         owner: spender,
@@ -89,8 +88,10 @@ export class TokenActor {
     });
 
     if ("Ok" in result) {
+      console.log(result.Ok);
       return true;
     } else {
+      console.log(result.Err);
       return false;
     }
   }

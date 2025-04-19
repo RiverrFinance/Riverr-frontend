@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { ICP_API_HOST } from "../../utils/utilFunction";
 import { Asset } from "../../lists/marketlist";
 import { VaultActor } from "../../utils/Interfaces/vaultActor";
-import { parseUnits } from "ethers/lib/utils";
+import { formatUnits, parseUnits } from "ethers/lib/utils";
 import { Modal, Button, Icon } from "semantic-ui-react";
 import { IconButton } from "../../components/Sidebar";
 import Modal_Icon from "../../../public/images/Modal_Icon.png";
@@ -14,7 +14,7 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   asset: Asset;
-  marginBalance: string;
+  marginBalance: bigint;
 }
 
 export default function WithdrawPopUp({
@@ -31,22 +31,24 @@ export default function WithdrawPopUp({
   >("");
   const [isLoading, setIsLoading] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
-  const [view, setView] = useState<"input" | "preview" | "success">("input");
-  const [dollarValue, setDollarValue] = useState<string>("0.00");
-  const [txError, setTxError] = useState<string>("");
-  const [txSuccess, setTxSuccess] = useState(false);
+  const [view, setView] = useState<"input" | "preview" | "transaction result">(
+    "input"
+  );
+  // const [dollarValue, setDollarValue] = useState<string>("0.00");
+  const [txError, setTxError] = useState<string | null>(null);
 
   const proceedToPreview = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (withdrawAmount !== "" && error === "") {
-      // Calculate dollar value based on current market rate (mock)
-      setDollarValue((parseFloat(withdrawAmount) * 450).toFixed(2));
-      setView("preview");
-    }
+    // if (withdrawAmount !== "" && error === "") { you disables thw button if this conditions are not met so no need to include them here
+    // Calculate dollar value based on current market rate (mock)
+    //  setDollarValue((parseFloat(withdrawAmount) * 450).toFixed(2));
+    setView("preview");
+    //}
   };
 
   const goBackToInput = (e: React.MouseEvent) => {
     e.preventDefault();
+    setIsChecked(false);
     setView("input");
   };
 
@@ -56,50 +58,45 @@ export default function WithdrawPopUp({
       setError("");
       return;
     }
+    const amount = parseUnits(value, asset.decimals).toBigInt();
 
-    try {
-      const amount = parseUnits(value, asset.decimals);
-      const maxBalance = parseUnits(marginBalance, asset.decimals).toBigInt();
-      
-      if (amount.toBigInt() > maxBalance) {
-        setError("Insufficient Balance");
-      } else if (amount.toBigInt() <= 0n) {
-        setError("Amount too Small");
-      } else {
-        setError("");
-      }
-      setWithdrawAmount(value);
-    } catch (err) {
-      setError("Invalid amount");
+    if (amount > marginBalance) {
+      setError("Insufficient Balance");
+    } else if (amount <= 0n) {
+      setError("Amount too Small");
+    } else {
+      setError("");
     }
+    setWithdrawAmount(value);
   };
 
   const withdrawFromAccount = async (e: React.MouseEvent) => {
     try {
       if (readWriteAgent) {
         setIsLoading(true);
-        setTxError("");
         const vaultActor = new VaultActor(asset.vaultID, readWriteAgent);
-        const amount = parseUnits(withdrawAmount, asset.decimals);
+        const amount = parseUnits(withdrawAmount, asset.decimals).toBigInt();
         let txResult: boolean = await vaultActor.withdrawfromAccount(
-          amount.toBigInt(),
+          amount,
           user.principal
         );
-
+        console.log(txResult);
         if (txResult) {
-          setTxSuccess(true);
+          setTxError(null);
         } else {
           setTxError("Transaction failed. Please try again.");
         }
-        setView("success");
       }
     } catch (error) {
       setTxError("An error occurred. Please try again.");
-      setView("success");
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    setView("transaction result");
+  }, [txError]);
 
   useEffect(() => {
     if (isOpen) {
@@ -178,7 +175,8 @@ export default function WithdrawPopUp({
                     <span className="text-white">
                       Available:{" "}
                       <span className="text-xs text-gray-400">
-                        {marginBalance} {asset.symbol}
+                        {formatUnits(marginBalance, asset.decimals)}{" "}
+                        {asset.symbol}
                       </span>
                     </span>
                     {error && <span className="text-red-500">{error}</span>}
@@ -193,6 +191,7 @@ export default function WithdrawPopUp({
                     className="h-4 w-4 accent-[#23262F]"
                     onChange={() => setIsChecked(!isChecked)}
                   />
+
                   <span className="text-sm text-gray-500">
                     I agree with the terms and conditions of the platform's
                     withdraw service.
@@ -221,17 +220,17 @@ export default function WithdrawPopUp({
               >
                 <Icon name="arrow left" />
               </button>
-              <span className="text-xl font-bold">Order Preview</span>
+              <span className="text-xl font-bold">Withdrawal Preview</span>
             </div>
 
             <div className="text-center pt-5">
               <h2 className="text-3xl font-bold mb-2">
                 {withdrawAmount} {asset.symbol}
               </h2>
-              <p className="text-gray-400">
+              {/* <p className="text-gray-400">
                 You will withdraw{" "}
                 <span className="text-green-600">${dollarValue}</span>
-              </p>
+              </p> */}
 
               <div className="my-8 py-5">
                 <div className="flex justify-between items-center mb-2">
@@ -263,7 +262,7 @@ export default function WithdrawPopUp({
           </>
         )}
 
-        {view === "success" && (
+        {view === "transaction result" && (
           <div className="flex flex-col justify-items-center">
             <div className="flex justify-between items-center">
               <div />
@@ -281,8 +280,8 @@ export default function WithdrawPopUp({
                   <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
                     <Icon name="times circle" size="large" color="red" />
                   </div>
-                  <h2 className="text-xl font-semibold">Transaction Failed</h2>
-                  <p className="text-sm text-gray-400">{txError}</p>
+                  <h2 className="text-xl font-semibold">{txError}</h2>
+                  {/* <p className="text-sm text-gray-400">{txError}</p> */}
                   <Button
                     onClick={goBackToInput}
                     className="!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !w-full"

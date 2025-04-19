@@ -33,14 +33,16 @@ export class VaultActor {
     amount: bigint,
     user: Principal
   ): Promise<boolean> {
-    let txresult = this.vault.withdrawFromAccount(amount, {
+    let txresult = await this.vault.withdrawFromAccount(amount, {
       owner: user,
       subaccount: [],
     });
 
-    if ('Ok' in txresult) {
+    if ("Ok" in txresult) {
+      console.log(txresult.Ok);
       return true;
     } else {
+      console.log(txresult.Err);
       return false;
     }
   }
@@ -57,32 +59,34 @@ export class VaultActor {
 
   public async provideLeverage(amount: bigint): Promise<boolean> {
     let txResult = await this.vault.provideLeverage(amount);
-    if ('Ok' in txResult) {
-      console.log('Leverage provided successfully:', txResult.Ok);
-      return true
+    if ("Ok" in txResult) {
+      console.log("Leverage provided successfully:", txResult.Ok);
+      return true;
     } else {
-      console.error('Error providing leverage:', txResult.Err);
-      return false 
+      console.error("Error providing leverage:", txResult.Err);
+      return false;
     }
   }
 
-  public async stakeVirtualTokens(amount:bigint,span:StakeSpan):Promise<boolean>{
-    let result = await this.vault.stakeVirtualTokens(amount,span,[]);
-    if ('Ok' in result){
-       return true
-    }else {
-      return false 
+  public async stakeVirtualTokens(
+    amount: bigint,
+    span: StakeSpan
+  ): Promise<boolean> {
+    let result = await this.vault.stakeVirtualTokens(amount, span, []);
+    if ("Ok" in result) {
+      return true;
+    } else {
+      return false;
     }
   }
 
-
-  public async unstakeVirtualToken(stakeID:bigint):Promise<boolean>{
+  public async unstakeVirtualToken(stakeID: bigint): Promise<boolean> {
     let result = await this.vault.unStakeVirtualTokens(stakeID);
-    if ('Ok' in result){
-      return true
-   }else {
-     return false 
-   }
+    if ("Ok" in result) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }
 
