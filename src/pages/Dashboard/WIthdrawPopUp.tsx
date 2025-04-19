@@ -25,15 +25,16 @@ export default function WithdrawPopUp({
 }: Props) {
   const readWriteAgent = useAgent();
   const { user } = useAuth();
-  //const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
   const [withdrawAmount, setWithdrawAmount] = useState<string>("");
   const [error, setError] = useState<
-    "" | "Insufficient Balance" | "Amount too Small"
+    "" | "Insufficient Balance" | "Amount too Small" | "Invalid amount"
   >("");
   const [isLoading, setIsLoading] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const [view, setView] = useState<"input" | "preview" | "success">("input");
   const [dollarValue, setDollarValue] = useState<string>("0.00");
+  const [txError, setTxError] = useState<string>("");
+  const [txSuccess, setTxSuccess] = useState(false);
 
   const proceedToPreview = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -50,44 +51,55 @@ export default function WithdrawPopUp({
   };
 
   const onAmountChange = (value: string) => {
-    if (value !== "") {
+    if (value === "") {
+      setWithdrawAmount("");
       setError("");
-    } else {
-      let amount = parseUnits(value, asset.decimals).toBigInt();
-      if (amount > parseUnits(marginBalance, asset.decimals).toBigInt()) {
+      return;
+    }
+
+    try {
+      const amount = parseUnits(value, asset.decimals);
+      const maxBalance = parseUnits(marginBalance, asset.decimals).toBigInt();
+      
+      if (amount.toBigInt() > maxBalance) {
         setError("Insufficient Balance");
+      } else if (amount.toBigInt() <= 0n) {
+        setError("Amount too Small");
       } else {
         setError("");
       }
+      setWithdrawAmount(value);
+    } catch (err) {
+      setError("Invalid amount");
     }
-    setWithdrawAmount(value);
   };
 
   const withdrawFromAccount = async (e: React.MouseEvent) => {
-    // e.preventDefault();
     try {
       if (readWriteAgent) {
         setIsLoading(true);
+        setTxError("");
         const vaultActor = new VaultActor(asset.vaultID, readWriteAgent);
         const amount = parseUnits(withdrawAmount, asset.decimals);
         let txResult: boolean = await vaultActor.withdrawfromAccount(
           amount.toBigInt(),
           user.principal
         );
-        //  await vaultActor.withdrawfromAccount(amount.toBigInt(), user.principal);
 
-        // Show success message
+        if (txResult) {
+          setTxSuccess(true);
+        } else {
+          setTxError("Transaction failed. Please try again.");
+        }
         setView("success");
-        setIsLoading(false);
       }
-    } catch {
+    } catch (error) {
+      setTxError("An error occurred. Please try again.");
+      setView("success");
+    } finally {
       setIsLoading(false);
     }
   };
-
-  // const formatBalance = (balance: bigint) => {
-  //   return Number(balance) / Math.pow(10, asset.decimals);
-  // };
 
   useEffect(() => {
     if (isOpen) {
@@ -263,12 +275,30 @@ export default function WithdrawPopUp({
                 <Icon name="close" size="small" className="pl-0.5" />
               </IconButton>
             </div>
-            <div className="flex flex-col items-center space-y-1">
-              <img src={Marketing_Campaign_1} alt="" />
-              <h2>
-                {withdrawAmount} {asset.symbol}
-              </h2>
-              <p className="text-sm text-gray-400">Withdrawal Successful</p>
+            <div className="flex flex-col items-center space-y-3">
+              {txError ? (
+                <>
+                  <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
+                    <Icon name="times circle" size="large" color="red" />
+                  </div>
+                  <h2 className="text-xl font-semibold">Transaction Failed</h2>
+                  <p className="text-sm text-gray-400">{txError}</p>
+                  <Button
+                    onClick={goBackToInput}
+                    className="!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !w-full"
+                  >
+                    Try Again
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <img src={Marketing_Campaign_1} alt="" />
+                  <h2>
+                    {withdrawAmount} {asset.symbol}
+                  </h2>
+                  <p className="text-sm text-gray-400">Withdrawal Successful</p>
+                </>
+              )}
             </div>
           </div>
         )}

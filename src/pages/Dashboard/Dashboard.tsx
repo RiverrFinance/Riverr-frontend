@@ -61,6 +61,7 @@ export function Dashboard() {
   ];
 
   const [showBalances, setShowBalances] = useState(true);
+  const [isClaimingFaucet, setIsClaimingFaucet] = useState(false);
 
   const toggleShowBalances = () => {
     setShowBalances(!showBalances);
@@ -68,6 +69,8 @@ export function Dashboard() {
 
   const receiveFaucet = async () => {
     if (readWriteAgent) {
+      setIsClaimingFaucet(true);
+
       const asset = assetList[0];
       let mintActor = new MinterActor(
         "lmfrn-3iaaa-aaaaf-qaova-cai",
@@ -81,6 +84,8 @@ export function Dashboard() {
         );
       } catch (error) {
         console.error("Error receiving faucet:", error);
+      } finally {
+        setIsClaimingFaucet(false);
       }
     }
   };
@@ -143,6 +148,7 @@ export function Dashboard() {
       changeTotalValue();
     } else {
       setTotalValue(0);
+      
     }
   }, [
     readWriteAgent,
@@ -151,7 +157,7 @@ export function Dashboard() {
   ]);
 
   useEffect(() => {
-    let interval: number | undefined = undefined;
+    let interval: NodeJS.Timeout | undefined = undefined;
     interval = setInterval(() => {
       updateValueDetails();
     }, 5000);
@@ -237,34 +243,64 @@ export function Dashboard() {
     <div className="max-h-fit bg-transparent rounded-3xl grid md:grid-cols-12 md:gap-5 gap-10 ">
       <div className="md:space-y-6 space-y-3 lg:col-span-8 md:col-span-7 h-full overflow-hidden flex flex-col">
         <div className="py-5 px-5 h-fit bg-[#18191D] rounded-2xl md:rounded-3xl">
-          <div className="bg-[#0300AD] rounded-lg md:rounded-2xl py-10 md:px-5 px-12 h-fit flex flex-col max-xs:items-center">
-            <div className="text-3xl font-black tracking-wide mb-4">
-              Dashboard
-            </div>
-            <div className="space-y-1 flex flex-col max-xs:items-center">
-              <div className="text-md text-gray-300">Total Balance</div>
-              <div className="text-2xl font-bold space-x-2 transition-all">
-                <span>
-                  {showBalances ? `$${format(totalValue)}` : "**********"}
-                </span>
-                <button
-                  title="eye"
-                  onClick={toggleShowBalances}
-                  className="cursor-pointer text-gray-300 hover:text-white focus:outline-none"
-                >
-                  <Icon name={showBalances ? "eye" : "eye slash"} size="tiny" />
-                </button>
-                <small className="uppercase text-xs">usdt</small>
+          <div className="bg-[#0300AD] rounded-lg md:rounded-2xl py-10 md:px-5 px-12 h-fit flex justify-between items-center">
+            <div className="flex flex-col max-xs:items-center">
+              <div className="text-3xl font-black tracking-wide mb-4">
+                Dashboard
               </div>
+              <div className="space-y-1 flex flex-col max-xs:items-center">
+                <div className="text-md text-gray-300">Total Balance</div>
+                <div className="text-2xl font-bold space-x-2 transition-all">
+                  <span>
+                    {showBalances ? `$${format(totalValue)}` : "**********"}
+                  </span>
+                  <button
+                    type="button"
+                    title="eye"
+                    onClick={toggleShowBalances}
+                    className="cursor-pointer text-gray-300 hover:text-white focus:outline-none"
+                  >
+                    <Icon name={showBalances ? "eye" : "eye slash"} size="tiny" />
+                  </button>
+                  <small className="uppercase text-xs">usdt</small>
+                </div>
 
-              <div className="text-sm text-gray-400">
-                {/* {showBalances ? "100 icp" : "****"} */}
-              </div>
+                <div className="text-sm text-gray-400">
+                  {/* {showBalances ? "100 icp" : "****"} */}
+                </div>
+              </div>              
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              <button
+                type="button"
+                className={`bg-white hover:bg-gray-100 text-[#0300AD] text-sm font-medium px-4 py-2 rounded-full flex gap-1 transition-all duration-300 hover:-translate-y-0.5 border border-black hover:border-t hover:border-b hover:shadow-[0_4px_0_0_#000000] ${
+                  !readWriteAgent || isClaimingFaucet ? 'opacity-75 cursor-not-allowed bg-gray-200' : ''
+                }`}
+                onClick={receiveFaucet}
+                disabled={!readWriteAgent || isClaimingFaucet}
+              >
+                <Icon 
+                  name={isClaimingFaucet ? "spinner" : "tint"} 
+                  loading={isClaimingFaucet}
+                />
+                <span className="font-semibold">
+                  {!readWriteAgent 
+                    ? "Claim Faucet" 
+                    : isClaimingFaucet 
+                      ? "Claiming..." 
+                      : "Claim Faucet"
+                  }
+                </span>
+              </button>
+              {!readWriteAgent && (
+                <span className="text-xs text-gray-300">
+                  Connect wallet to claim faucet
+                </span>
+              )}
             </div>
           </div>
         </div>
-
-        <div className="flex-grow py-8 px-5 bg-[#18191D] rounded-2xl md:rounded-3xl">
+        <div className="flex-grow py-8 px-5 bg-[#18191D] rounded-2xl md:rounded-3xl h-screen">
           <div className="text-2xl font-bold mb-4 capitalize">portfolio</div>
           <div>
             <AssetListComponent

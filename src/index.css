@@ -16,6 +16,7 @@
 /* connect wallet button */
 #connect {
   background-color: transparent !important;
+  color: white !important;
   border-radius: 0px !important;
   font-weight: 600 !important;
   font-size: 16px !important;
