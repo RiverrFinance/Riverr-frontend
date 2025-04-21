@@ -7,9 +7,8 @@ import { VaultActor } from "../../utils/Interfaces/vaultActor";
 import { formatUnits, parseUnits } from "ethers/lib/utils";
 import { Modal, Button, Icon } from "semantic-ui-react";
 import { IconButton } from "../../components/Sidebar";
-import Modal_Icon from "../../../public/images/Modal_Icon.png";
-import Marketing_Campaign_1 from "../../../public/images/Marketing_Campaign_1.png";
-
+import Modal_Icon from "../../images/Modal_Icon.png";
+import Marketing_Campaign_1 from "../../images/Marketing_Campaign_1.png";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -36,6 +35,8 @@ export default function WithdrawPopUp({
   );
   // const [dollarValue, setDollarValue] = useState<string>("0.00");
   const [txError, setTxError] = useState<string | null>(null);
+
+  const [transactionDone, setTransactionDone] = useState(false);
 
   const proceedToPreview = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -83,19 +84,24 @@ export default function WithdrawPopUp({
         console.log(txResult);
         if (txResult) {
           setTxError(null);
+          setTransactionDone(true);
         } else {
           setTxError("Transaction failed. Please try again.");
+          setTransactionDone(true);
         }
       }
     } catch (error) {
       setTxError("An error occurred. Please try again.");
+      setTransactionDone(true);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    setView("transaction result");
+    if (transactionDone) {
+      setView("transaction result");
+    }
   }, [txError]);
 
   useEffect(() => {

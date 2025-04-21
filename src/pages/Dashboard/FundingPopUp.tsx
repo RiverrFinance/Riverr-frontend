@@ -1,6 +1,6 @@
 import { useAgent, useAuth } from "@nfid/identitykit/react";
 import { Asset } from "../../lists/marketlist";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HttpAgent } from "@dfinity/agent";
 import { TokenActor } from "../../utils/Interfaces/tokenActor";
 import { Principal } from "@dfinity/principal";
@@ -8,8 +8,8 @@ import { VaultActor } from "../../utils/Interfaces/vaultActor";
 import { formatUnits, parseUnits } from "ethers/lib/utils";
 import { Modal, Button, Icon } from "semantic-ui-react";
 import { IconButton } from "../../components/Sidebar";
-import Modal_Icon from "../../../public/images/Modal_Icon.png";
-import Marketing_Campaign_1 from "../../../public/images/Marketing_Campaign_1.png";
+import Modal_Icon from "../../images/Modal_Icon.png";
+import Marketing_Campaign_1 from "../../images/Marketing_Campaign_1.png";
 
 const ICP_API_HOST = "https://icp-api.io/";
 
@@ -39,6 +39,10 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
   //const [dollarValue, setDollarValue] = useState<string>("0.00");
   const [txError, setTxError] = useState<string | null>(null);
 
+  const [trnsactionDone, setTransactionDone] = useState(false);
+
+  let firstMount = useRef(true);
+
   /**
    *
    * Balance management fetches user balance for the parituclar asset and returns it
@@ -52,11 +56,12 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
     } catch (err) {}
   };
   useEffect(() => {
+    setUserBalance();
     let interval: number | undefined;
     if (readWriteAgent) {
       interval = setInterval(() => {
         setUserBalance();
-      }, 10000);
+      }, 15000);
     }
     return () => {
       clearInterval(interval);
@@ -105,9 +110,9 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
         if (allowance < amount) {
           setCurrentAction("Appoving");
           let response = await approveSpending(amount - allowance);
-          console.log(response);
           if (!response) {
             setTxError("Approval failed");
+            setTransactionDone(true);
             return;
           }
         }
@@ -116,20 +121,25 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
         let txResult = await vaultActor.fundAccount(amount, user.principal);
         if (txResult) {
           setTxError(null);
+          setTransactionDone(true);
         } else {
           setTxError("Funding failed");
+          setTransactionDone(true);
         }
       }
     } catch (err) {
       setTxError("An error occurred. Please try again.");
+      setTransactionDone(true);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    setView("transaction result");
-  }, [txError]);
+    if (trnsactionDone) {
+      setView("transaction result");
+    }
+  }, [trnsactionDone]);
 
   const proceedToPreview = (e: React.MouseEvent) => {
     e.preventDefault();

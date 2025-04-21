@@ -4,8 +4,8 @@ import { HttpAgent } from "@dfinity/agent";
 import { AssetComponent } from "./AssetComponent";
 import { useAgent, useAuth } from "@nfid/identitykit/react";
 import { VaultActor } from "../../utils/Interfaces/vaultActor";
-import { fetchDetails } from "../../utils/utilFunction";
-import { formatUnits } from "ethers/lib/utils";
+import { fetchDetails, fetchTopMovers } from "../../utils/utilFunction";
+import { formatUnits, parseUnits } from "ethers/lib/utils";
 import FundingPopUp from "./FundingPopUp";
 import WithdrawPopUp from "./WIthdrawPopUp";
 import { Icon } from "semantic-ui-react";
@@ -49,16 +49,8 @@ export function Dashboard() {
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
 
   const [topMovers, setTopMovers] = useState<CoinGeckoMarketData[]>([]);
-  const topPriorityCoinIds = [
-    "bitcoin",
-    "ethereum",
-    "binancecoin",
-    "aave",
-    "solana",
-    "ripple",
-    "internet-computer",
-    "usd-coin",
-  ];
+  const topPriorityCoinIds =
+    "bitcoin,ethereum,binancecoin,aave,solana,ripple,internet-computer,usd-coin";
 
   const [showBalances, setShowBalances] = useState(true);
   const [isClaimingFaucet, setIsClaimingFaucet] = useState(false);
@@ -70,6 +62,7 @@ export function Dashboard() {
 
   const handleCloseDepositModal = () => {
     setIsDepositModalOpen(false);
+    setSelectedAsset(null);
     // Update balances after deposit
     updateValueDetails();
   };
@@ -81,42 +74,22 @@ export function Dashboard() {
 
   const handleCloseWithdrawModal = () => {
     setIsWithdrawModalOpen(false);
+    setSelectedAsset(null);
     // Update balances after withdrawal
     updateValueDetails();
   };
 
-  const fetchTopMovers = useCallback(async () => {
-    // try {
-    //   const currency = "usd";
-    //   const topPriorityResponse = await fetch(
-    //     `${COIN_GECKO_API_URL}/coins/markets?vs_currency=${currency}&ids=${topPriorityCoinIds.join(
-    //       ","
-    //     )}&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h`
-    //   );
-    //   if (!topPriorityResponse.ok) {
-    //     throw new Error(
-    //       `HTTP error fetching top priority coins! status: ${topPriorityResponse.status}`
-    //     );
-    //   }
-    //   const topPriorityData: CoinGeckoMarketData[] =
-    //     await topPriorityResponse.json();
-    //   //fetch all other coins
-    //   const allCoinsResponse = await fetch(
-    //     `${COIN_GECKO_API_URL}/coins/markets?vs_currency=${currency}&order=market_cap_desc&per_page=250&page=1&sparkline=false&price_change_percentage=24h`
-    //   );
-    //   if (!allCoinsResponse.ok) {
-    //     throw new Error(
-    //       `HTTP error fetching all coins! status: ${allCoinsResponse.status}`
-    //     );
-    //   }
-    //   const allCoinsData: CoinGeckoMarketData[] = await allCoinsResponse.json();
-    //   // Filtering top priority coins from others (no duplicates)
-    //   const otherCoinsData = allCoinsData.filter(
-    //     (coin) => !topPriorityCoinIds.includes(coin.id)
-    //   );
-    //   const combinedTopMovers = [...topPriorityData, ...otherCoinsData];
-    //   setTopMovers(combinedTopMovers);
-    // } catch {}
+  const fetchAndSetTopMovers = useCallback(async () => {
+    try {
+      const response = await fetchTopMovers(topPriorityCoinIds);
+      if (response.ok) {
+        const combinedTopMovers = await response.json();
+        console.log(combinedTopMovers);
+        setTopMovers(combinedTopMovers);
+      }
+    } catch (err) {
+      // console.log(`this error occured in dahsboard ${err}`);
+    }
   }, [topPriorityCoinIds]);
 
   const toggleShowBalances = () => {
@@ -192,8 +165,8 @@ export function Dashboard() {
     let valueSum = 0;
     pricesArray.forEach((price, index) => {
       let balance = balancesArray[index] || 0n;
-      // let refAsset = assetList[index];
-      let currentValue = price * Number(balance);
+      let refAsset = assetList[index];
+      let currentValue = (price * Number(balance)) / 10 ** refAsset.decimals;
       valueSum += currentValue;
     });
     setTotalValue(valueSum);
@@ -204,27 +177,25 @@ export function Dashboard() {
       changeTotalValue();
     } else {
       setTotalValue(0);
+      setBalancesArray([]);
     }
-  }, [
-    readWriteAgent,
-    JSON.stringify(balancesArray),
-    JSON.stringify(pricesArray),
-  ]);
+  }, [readWriteAgent, balancesArray.toString(), JSON.stringify(pricesArray)]);
 
   useEffect(() => {
+    updateValueDetails();
     const interval = setInterval(() => {
       updateValueDetails();
-    }, 20000);
+    }, 15000);
     return () => {
       clearInterval(interval);
     };
   }, [readWriteAgent]);
 
   useEffect(() => {
-    fetchTopMovers();
-    const interval = setInterval(fetchTopMovers, 10000000); // Fetch every 10s (three '0' added)
+    fetchAndSetTopMovers();
+    const interval = setInterval(fetchAndSetTopMovers, 15000); // Fetch every 10s (three '0' added)
     return () => clearInterval(interval);
-  }, [fetchTopMovers]);
+  }, [fetchAndSetTopMovers]);
 
   useEffect(() => {
     HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
@@ -396,8 +367,7 @@ const AssetListComponent = memo(
     return (
       JSON.stringify(prevProps.pricesArray) ==
         JSON.stringify(newProps.pricesArray) &&
-      JSON.stringify(prevProps.balancesArray) ==
-        JSON.stringify(newProps.balancesArray)
+      prevProps.balancesArray.toString() == newProps.balancesArray.toString()
     );
   }
 );

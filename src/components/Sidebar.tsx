@@ -9,8 +9,7 @@ import {
 } from "@nfid/identitykit/react";
 
 import { useAgent } from "@nfid/identitykit/react";
-import LogoImg from '../../public/images/Logo.png'
-
+import LogoImg from "../images/Logo.png";
 
 // Navigation links configuration
 const navLinks = [
@@ -48,7 +47,7 @@ export interface Props {
 export const Sidebar: React.FC<Props> = ({ children }: Props) => {
   const [visible, setVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [isCheckIfMobileIs480, setIsCheckIfMobileIs480] = useState(false)
+  const [isCheckIfMobileIs480, setIsCheckIfMobileIs480] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
   const [offsetY, setOffsetY] = useState(0);
@@ -58,18 +57,15 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-
-
-
   useEffect(() => {
     const checkIfMobile = () => setIsMobile(window.innerWidth <= 1000);
     checkIfMobile();
     window.addEventListener("resize", checkIfMobile);
 
-    const mobileIs480 = () => setIsCheckIfMobileIs480(window.innerWidth <=480)
+    const mobileIs480 = () => setIsCheckIfMobileIs480(window.innerWidth <= 480);
     mobileIs480();
-    window.addEventListener('resize', mobileIs480);
-    
+    window.addEventListener("resize", mobileIs480);
+
     // Redirect to dashboard if on root path
     if (location.pathname === "/") navigate("/dashboard");
 
@@ -136,7 +132,10 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
 
   // Logo component
   const Logo = () => (
-    <Link to="/" className="logo flex items-center gap-3 p-0 md:pl-5 text-white">
+    <Link
+      to="/"
+      className="logo flex items-center gap-3 p-0 md:pl-5 text-white"
+    >
       <span className="text-5xl font-bold bg-gradient-to-r from-white to-white bg-clip-text text-transparent text-white">
         <img src={LogoImg} alt="" />
       </span>
@@ -147,19 +146,19 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
   const IconContent = () => (
     <>
       {/* Language Globe Icon */}
-      <IconButton title="" className="" onClick={()=>{}}>
+      <IconButton title="" className="" onClick={() => {}}>
         <Icon name="globe" className="pl-1 pt-0.5" />
       </IconButton>
 
       {/* Notification Bell Icon */}
-      <IconButton title="" className="" onClick={()=>{}}>
+      <IconButton title="" className="" onClick={() => {}}>
         <div className="relative">
           <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
-            <Icon name="bell" />
+          <Icon name="bell" />
         </div>
       </IconButton>
     </>
-  )
+  );
 
   // Navbar content component
   const NavBarContent = () => (
@@ -167,10 +166,10 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
       {/* Right side with actions */}
       <div className="flex items-center space-x-2 md:space-x-4">
         <div className="bg-[#0300AD] rounded-md flex justify-items-center items-center gap-2 px-5 cursor-pointer">
-          <Icon name='google wallet' />
+          <Icon name="google wallet" />
           <ConnectWallet
             connectButtonComponent={ConnectWalletButton}
-            connectedButtonComponent={ConnectedWalletButton}
+            //    connectedButtonComponent={ConnectedWalletButton}
             dropdownMenuComponent={ConnectWalletDropdownMenu}
           />
           {/* <ConnectWalletButton
@@ -179,18 +178,17 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
           /> */}
         </div>
 
-        {!isCheckIfMobileIs480 && 
+        {!isCheckIfMobileIs480 && (
           <div className="flex gap-2 items-center">
             <IconContent />
           </div>
-        }
+        )}
       </div>
     </>
   );
 
   return (
     <div className="min-h-screen w-full overflow-hidden bg-[#000000] text-white pt-10 pb-5 space-y-28">
-
       {/* Navbar */}
       <div className="backdrop-blur-3xl h-28 bg-transparent fixed top-0 left-0 right-0 md:mx-6 mx-4 z-50 rounded-b-2xl">
         <div className="bg-[#18191D] fixed top-5 left-0 right-0 rounded-b-2xl z-50">
@@ -244,7 +242,7 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
                     ))}
                   </div>
 
-                  <NavBarContent /> 
+                  <NavBarContent />
                 </div>
               </div>
             )}
@@ -298,24 +296,22 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
                           {link.icon}
                           {link.label}
                         </Menu.Item>
-                      ))}                    
-                    </div>                    
+                      ))}
+                    </div>
                   </div>
                   <div className="flex flex-col items-center">
-                    {isCheckIfMobileIs480 && 
+                    {isCheckIfMobileIs480 && (
                       <div className="flex gap-5">
                         <IconContent />
                       </div>
-                    }
+                    )}
                   </div>
-                </div>                
+                </div>
               </div>
-
             </div>
           )}
-        </div>        
+        </div>
       </div>
-
 
       {/* Main Content with Scale Animation */}
       <div
@@ -348,7 +344,7 @@ export const IconButton = ({
   children: React.ReactNode;
   title?: string;
   className: string;
-  onClick:() => void;
+  onClick: () => void;
 }) => (
   <button
     title={title}
