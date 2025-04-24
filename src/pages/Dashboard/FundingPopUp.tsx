@@ -1,15 +1,15 @@
 import { useAgent, useAuth } from "@nfid/identitykit/react";
 import { Asset } from "../../lists/marketlist";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HttpAgent } from "@dfinity/agent";
 import { TokenActor } from "../../utils/Interfaces/tokenActor";
 import { Principal } from "@dfinity/principal";
 import { VaultActor } from "../../utils/Interfaces/vaultActor";
-import { parseUnits } from "ethers/lib/utils";
+import { formatUnits, parseUnits } from "ethers/lib/utils";
 import { Modal, Button, Icon } from "semantic-ui-react";
 import { IconButton } from "../../components/Sidebar";
-import Modal_Icon from "../../../public/images/Modal_Icon.png";
-import Marketing_Campaign_1 from "../../../public/images/Marketing_Campaign_1.png";
+import Modal_Icon from "../../images/Modal_Icon.png";
+import Marketing_Campaign_1 from "../../images/Marketing_Campaign_1.png";
 
 const ICP_API_HOST = "https://icp-api.io/";
 
@@ -32,10 +32,16 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
     "Appoving" | "Spending" | ""
   >("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isChecked, setIsChecked] = useState<boolean>(false);
-  const [view, setView] = useState<"input" | "preview" | "success" | "error">("input");
-  const [dollarValue, setDollarValue] = useState<string>("0.00");
-  const [txError, setTxError] = useState<string>("");
+  const [isChecked, setIsChecked] = useState(false);
+  const [view, setView] = useState<"input" | "preview" | "transaction result">(
+    "input"
+  );
+  //const [dollarValue, setDollarValue] = useState<string>("0.00");
+  const [txError, setTxError] = useState<string | null>(null);
+
+  const [trnsactionDone, setTransactionDone] = useState(false);
+
+  let firstMount = useRef(true);
 
   /**
    *
@@ -50,32 +56,30 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
     } catch (err) {}
   };
   useEffect(() => {
-    let interval: NodeJS.Timeout | undefined;
+    setUserBalance();
+    let interval: number | undefined;
     if (readWriteAgent) {
       interval = setInterval(() => {
         setUserBalance();
-      }, 10000);
+      }, 15000);
     }
     return () => {
       clearInterval(interval);
     };
   }, [readWriteAgent]);
 
-  const approveSpending = async (
-    approvalAmount: bigint,
-    expectedAmount: bigint
-  ): Promise<boolean> => {
+  const approveSpending = async (approvalAmount: bigint): Promise<boolean> => {
     let { vaultID } = asset;
     try {
       let tokenActor = new TokenActor(asset.canisterID, readWriteAgent);
 
       let txResult = await tokenActor.approveSpending(
         approvalAmount,
-        expectedAmount,
         Principal.fromText(vaultID)
       );
       return txResult;
     } catch {
+      console.log("error approving");
       return false;
     }
   };
@@ -97,83 +101,79 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
   const fundAccount = async (e: React.MouseEvent) => {
     e.preventDefault();
     let { vaultID } = asset;
-    setTxError("");
-    
+    // setTxError("");
     try {
       if (readWriteAgent && vaultID) {
         setIsLoading(true);
         const allowance = await getCurrentAllowance();
         let amount = parseUnits(depositAmount, asset.decimals).toBigInt();
-
         if (allowance < amount) {
           setCurrentAction("Appoving");
-          let response = await approveSpending(amount - allowance, amount);
+          let response = await approveSpending(amount - allowance);
           if (!response) {
-            setTxError("Approval failed. Please try again.");
-            setView("error");
+            setTxError("Approval failed");
+            setTransactionDone(true);
             return;
           }
         }
-
         let vaultActor = new VaultActor(asset.vaultID, readWriteAgent);
         setCurrentAction("Spending");
-
         let txResult = await vaultActor.fundAccount(amount, user.principal);
         if (txResult) {
-        // if (txError !== "") {
-          setView("success");
+          setTxError(null);
+          setTransactionDone(true);
         } else {
-          setTxError("Transaction failed. Please try again.");
-          setView("error");
+          setTxError("Funding failed");
+          setTransactionDone(true);
         }
       }
     } catch (err) {
       setTxError("An error occurred. Please try again.");
-      setView("error");
+      setTransactionDone(true);
     } finally {
       setIsLoading(false);
     }
   };
 
+  useEffect(() => {
+    if (trnsactionDone) {
+      setView("transaction result");
+    }
+  }, [trnsactionDone]);
+
   const proceedToPreview = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (depositAmount !== "" && error === "") {
-      // Calculate dollar value based on current market rate (mock)
-      setDollarValue((parseFloat(depositAmount) * 450).toFixed(2));
-      setView("preview");
-      setIsChecked(false); // Reset checkbox
-      setError('');
-    }
+    // if (depositAmount !== "" && error === "") {
+    // Calculate dollar value based on current market rate (mock)
+    //setDollarValue((parseFloat(depositAmount) * 450).toFixed(2));
+    setView("preview");
+    //  setError("");
+    //}
   };
 
   const goBackToInput = (e: React.MouseEvent) => {
     e.preventDefault();
     setView("input");
-    setUserBalance();
-    setDepositAmount("");
-    setError("");
-    setCurrentAction("");
-    setIsChecked(false); // Reset checkbox
+    // setUserBalance();
+    // setDepositAmount("");
+    // setError("");
+    // setCurrentAction("");
+    setIsChecked(false);
   };
 
   const onAmountUpdate = (value: string) => {
     setIsChecked(false); // Reset checkbox when amount changes
     setDepositAmount(value);
     if (!value) return setError("");
-    
-    try {
-      const amount = parseUnits(value, asset.decimals).toBigInt();
-      setError(
-        amount > userTokenBalance ? "Insufficient Balance" :
-        amount <= 0n ? "Amount too Small" : ""
-      );
-    } catch {
-      setError("Invalid amount");
-    }
-  };
 
-  const formatBalance = (balance: bigint) => {
-    return Number(balance) / Math.pow(10, asset.decimals);
+    const amount = parseUnits(value, asset.decimals).toBigInt();
+    setError(
+      amount > userTokenBalance
+        ? "Insufficient Balance"
+        : amount <= 0n
+        ? "Amount too Small"
+        : ""
+    );
   };
 
   useEffect(() => {
@@ -182,12 +182,12 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
       document.body.style.overflow = "hidden";
 
       HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
-      setUserBalance();
-      setView("input");
-      setDepositAmount("");
-      setError("");
-      setCurrentAction("");
-      setIsChecked(false); // Reset checkbox when modal opens
+      // setUserBalance();
+      // setView("input");
+      // setDepositAmount("");
+      // setError("");
+      // setCurrentAction("");
+      // setIsChecked(false);
     } else {
       // Re-enable scrolling
       document.body.style.overflow = "auto";
@@ -197,7 +197,7 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
       document.body.style.overflow = "auto";
       setIsChecked(false); // Reset checkbox when modal closes
     };
-  }, [isOpen, asset]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -261,7 +261,8 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
                     <span className="text-white">
                       Balance:{" "}
                       <span className="text-xs text-gray-400">
-                        {formatBalance(userTokenBalance)} {asset.symbol}
+                        {formatUnits(userTokenBalance, asset.decimals)}{" "}
+                        {asset.symbol}
                       </span>
                     </span>
                     {error && <span className="text-red-500">{error}</span>}
@@ -304,17 +305,17 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
               >
                 <Icon name="arrow left" />
               </button>
-              <span className="text-xl font-bold">Transaction Preview</span>
+              <span className="text-xl font-bold">Funding Preview</span>
             </div>
 
             <div className="text-center pt-5">
               <h2 className="text-3xl font-bold mb-2">
                 {depositAmount} {asset.symbol}
               </h2>
-              <p className="text-gray-400">
+              {/* <p className="text-gray-400">
                 You will deposit{" "}
                 <span className="text-green-600">${dollarValue}</span>
-              </p>
+              </p> */}
 
               <div className="my-8 py-5">
                 <div className="flex justify-between items-center mb-2">
@@ -360,7 +361,7 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
             </Button>
           </>
         )}
-        {view === "error" && (
+        {view === "transaction result" && (
           <div className="flex flex-col justify-items-center">
             <div className="flex justify-between items-center">
               <div />
@@ -373,40 +374,29 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
               </IconButton>
             </div>
             <div className="flex flex-col items-center space-y-3">
-              <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
-                <Icon name="times circle" size="large" color="red" className="pl-1" />
-              </div>
-              <h2 className="text-xl font-semibold">Transaction Failed</h2>
-              <p className="text-sm text-gray-400">{txError}</p>
-              <Button
-                onClick={goBackToInput}
-                className="!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !flex !items-center !gap-2 !justify-center !w-full !border !border-[#c2c0c0] hover:!-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] overflow-hidden transition-all duration-500 bg-transparent hover:border-t hover:border-b hover:border-blue-400/50"
-              >
-                Try Again
-              </Button>
-            </div>
-          </div>
-        )}
-        {view === "success" && (
-          <div className="flex flex-col justify-items-center">
-            <div className="flex justify-between items-center">
-              <div />
-              <IconButton
-                onClick={onClose}
-                className="text-gray-400 !rounded-xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5 !px-2"
-                title=""
-              >
-                <Icon name="close" size="small" className="pl-0.5" />
-              </IconButton>
-            </div>
-            <div className="flex flex-col items-center space-y-3">
-              <img src={Marketing_Campaign_1} alt="" />
-              <h2>{depositAmount} {asset.symbol}</h2>
-              <div className="flex flex-col items-center space-y-1">
-                <span className="text-sm text-gray-400">Deposit Successful</span>
-                <span className="text-sm text-gray-400 text-center">Your transaction has successfully been completed. For more details, check your transaction history.</span>                
-              </div>
-
+              {txError ? (
+                <>
+                  <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
+                    <Icon name="times circle" size="large" color="red" />
+                  </div>
+                  <h2 className="text-xl font-semibold">{txError}</h2>
+                  {/* <p className="text-sm text-gray-400">{txError}</p> */}
+                  <Button
+                    onClick={goBackToInput}
+                    className="!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !w-full"
+                  >
+                    Try Again
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <img src={Marketing_Campaign_1} alt="" />
+                  <h2>
+                    {depositAmount} {asset.symbol}
+                  </h2>
+                  <p className="text-sm text-gray-400">Deposit Successful</p>
+                </>
+              )}
             </div>
           </div>
         )}

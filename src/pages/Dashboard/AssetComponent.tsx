@@ -5,13 +5,14 @@ import { TokenActor } from "../../utils/Interfaces/tokenActor";
 import { HttpAgent } from "@dfinity/agent";
 import { Icon } from "semantic-ui-react";
 import { IconButton } from "../../components/Sidebar";
+import { formatEther, formatUnits } from "ethers/lib/utils";
 
 const ICP_API_HOST = "https://icp-api.io/";
 
 interface Props {
   price: number;
   asset: Asset;
-  userBalance: string;
+  userBalance: bigint;
   index: number;
   openAccordionIndex: number;
   onAccordionToggle: (index: number) => void;
@@ -29,16 +30,8 @@ export const AssetComponent = memo(function AssetComponent({
   onDeposit,
   onWithdraw,
 }: Props) {
-  const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
-
-  const value = price * Number(userBalance);
-
   const isAccordionOpen = index === openAccordionIndex;
   const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 1000);
-
-  useEffect(() => {
-    HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
-  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -76,7 +69,7 @@ export const AssetComponent = memo(function AssetComponent({
           ${formatPrice(price)}
         </div>
         <div className="col-span-2 max-lg:col-span-3 text-sm font-medium">
-          ${formatPrice(value)}
+          {formatUnits(userBalance, asset.decimals)}
         </div>
 
         {!isMobileView && (

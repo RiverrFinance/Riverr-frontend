@@ -4,8 +4,8 @@ import { HttpAgent } from "@dfinity/agent";
 import { AssetComponent } from "./AssetComponent";
 import { useAgent, useAuth } from "@nfid/identitykit/react";
 import { VaultActor } from "../../utils/Interfaces/vaultActor";
-import { fetchDetails } from "../../utils/utilFunction";
-import { formatUnits } from "ethers/lib/utils";
+import { fetchDetails, fetchTopMovers } from "../../utils/utilFunction";
+import { formatUnits, parseUnits } from "ethers/lib/utils";
 import FundingPopUp from "./FundingPopUp";
 import WithdrawPopUp from "./WIthdrawPopUp";
 import { Icon } from "semantic-ui-react";
@@ -38,10 +38,10 @@ interface CoinGeckoMarketData {
 
 export function Dashboard() {
   const readWriteAgent = useAgent();
-  const { user, disconnect } = useAuth();
+  const { user } = useAuth();
   const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
   const [pricesArray, setPricesArray] = useState<number[]>([]);
-  const [balancesArray, setBalancesArray] = useState<string[]>([]);
+  const [balancesArray, setBalancesArray] = useState<bigint[]>([]);
   const [totalValue, setTotalValue] = useState<number>(0);
 
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
@@ -49,19 +49,48 @@ export function Dashboard() {
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
 
   const [topMovers, setTopMovers] = useState<CoinGeckoMarketData[]>([]);
-  const topPriorityCoinIds = [
-    "bitcoin",
-    "ethereum",
-    "binancecoin",
-    "aave",
-    "solana",
-    "ripple",
-    "internet-computer",
-    "usd-coin",
-  ];
+  const topPriorityCoinIds =
+    "bitcoin,ethereum,binancecoin,aave,solana,ripple,internet-computer,usd-coin";
 
   const [showBalances, setShowBalances] = useState(true);
   const [isClaimingFaucet, setIsClaimingFaucet] = useState(false);
+
+  const handleOpenDepositModal = (asset: Asset) => {
+    setSelectedAsset(asset);
+    setIsDepositModalOpen(true);
+  };
+
+  const handleCloseDepositModal = () => {
+    setIsDepositModalOpen(false);
+    setSelectedAsset(null);
+    // Update balances after deposit
+    updateValueDetails();
+  };
+
+  const handleOpenWithdrawModal = (asset: Asset) => {
+    setSelectedAsset(asset);
+    setIsWithdrawModalOpen(true);
+  };
+
+  const handleCloseWithdrawModal = () => {
+    setIsWithdrawModalOpen(false);
+    setSelectedAsset(null);
+    // Update balances after withdrawal
+    updateValueDetails();
+  };
+
+  const fetchAndSetTopMovers = useCallback(async () => {
+    try {
+      const response = await fetchTopMovers(topPriorityCoinIds);
+      if (response.ok) {
+        const combinedTopMovers = await response.json();
+        console.log(combinedTopMovers);
+        setTopMovers(combinedTopMovers);
+      }
+    } catch (err) {
+      // console.log(`this error occured in dahsboard ${err}`);
+    }
+  }, [topPriorityCoinIds]);
 
   const toggleShowBalances = () => {
     setShowBalances(!showBalances);
@@ -92,7 +121,7 @@ export function Dashboard() {
 
   const fetcherUserMarginBalance = async (asset: Asset): Promise<bigint> => {
     try {
-      if (asset.vaultID && readWriteAgent) {
+      if (asset.vaultID && user) {
         let vaultActor = new VaultActor(asset.vaultID, readAgent);
         const balance = await vaultActor.userMarginBalance(user.principal);
         return balance;
@@ -111,18 +140,18 @@ export function Dashboard() {
     return price;
   };
 
-  const getUserAssetValue = async (asset: Asset): Promise<[number, string]> => {
+  const getUserAssetValue = async (asset: Asset): Promise<[number, bigint]> => {
     let price = await fetchAssetPrice(asset);
     let userMargin = await fetcherUserMarginBalance(asset);
-    return [price, formatUnits(userMargin, asset.decimals)];
+    return [price, userMargin]; //formatUnits(userMargin, asset.decimals)];
   };
 
   const updateValueDetails = async () => {
     try {
-      let sendPromiseList: Promise<[number, string]>[] = assetList.map(
+      let sendPromiseList: Promise<[number, bigint]>[] = assetList.map(
         (asset) => getUserAssetValue(asset)
       );
-      let resolvedPromiseList: [number, string][] = await Promise.all(
+      let resolvedPromiseList: [number, bigint][] = await Promise.all(
         sendPromiseList
       );
       const prices = resolvedPromiseList.map(([price]) => price);
@@ -136,8 +165,8 @@ export function Dashboard() {
     let valueSum = 0;
     pricesArray.forEach((price, index) => {
       let balance = balancesArray[index] || 0n;
-      // let refAsset = assetList[index];
-      let currentValue = price * Number(balance);
+      let refAsset = assetList[index];
+      let currentValue = (price * Number(balance)) / 10 ** refAsset.decimals;
       valueSum += currentValue;
     });
     setTotalValue(valueSum);
@@ -148,96 +177,29 @@ export function Dashboard() {
       changeTotalValue();
     } else {
       setTotalValue(0);
-      
+      setBalancesArray([]);
     }
-  }, [
-    readWriteAgent,
-    JSON.stringify(balancesArray),
-    JSON.stringify(pricesArray),
-  ]);
+  }, [readWriteAgent, balancesArray.toString(), JSON.stringify(pricesArray)]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout | undefined = undefined;
-    interval = setInterval(() => {
+    updateValueDetails();
+    const interval = setInterval(() => {
       updateValueDetails();
-    }, 5000);
+    }, 15000);
     return () => {
       clearInterval(interval);
     };
   }, [readWriteAgent]);
 
-  const fetchTopMovers = useCallback(async () => {
-    try {
-      const currency = "usd";
-
-      const topPriorityResponse = await fetch(
-        `${COIN_GECKO_API_URL}/coins/markets?vs_currency=${currency}&ids=${topPriorityCoinIds.join(
-          ","
-        )}&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h`
-      );
-      if (!topPriorityResponse.ok) {
-        throw new Error(
-          `HTTP error fetching top priority coins! status: ${topPriorityResponse.status}`
-        );
-      }
-      const topPriorityData: CoinGeckoMarketData[] =
-        await topPriorityResponse.json();
-
-      //fetch all other coins
-      const allCoinsResponse = await fetch(
-        `${COIN_GECKO_API_URL}/coins/markets?vs_currency=${currency}&order=market_cap_desc&per_page=250&page=1&sparkline=false&price_change_percentage=24h`
-      );
-      if (!allCoinsResponse.ok) {
-        throw new Error(
-          `HTTP error fetching all coins! status: ${allCoinsResponse.status}`
-        );
-      }
-      const allCoinsData: CoinGeckoMarketData[] = await allCoinsResponse.json();
-
-      // Filtering top priority coins from others (no duplicates)
-      const otherCoinsData = allCoinsData.filter(
-        (coin) => !topPriorityCoinIds.includes(coin.id)
-      );
-
-      const combinedTopMovers = [...topPriorityData, ...otherCoinsData];
-
-      setTopMovers(combinedTopMovers);
-    } catch (error) {
-      console.error("Error fetching top movers:", error);
-    }
-  }, [topPriorityCoinIds]);
-
   useEffect(() => {
-    fetchTopMovers();
-    const interval = setInterval(fetchTopMovers, 10000000); // Fetch every 10s (three '0' added)
+    fetchAndSetTopMovers();
+    const interval = setInterval(fetchAndSetTopMovers, 15000); // Fetch every 10s (three '0' added)
     return () => clearInterval(interval);
-  }, [fetchTopMovers]);
+  }, [fetchAndSetTopMovers]);
 
   useEffect(() => {
     HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
   }, []);
-
-  const handleOpenDepositModal = (asset: Asset) => {
-    setSelectedAsset(asset);
-    setIsDepositModalOpen(true);
-  };
-
-  const handleCloseDepositModal = () => {
-    setIsDepositModalOpen(false);
-    // Update balances after deposit
-    updateValueDetails();
-  };
-
-  const handleOpenWithdrawModal = (asset: Asset) => {
-    setSelectedAsset(asset);
-    setIsWithdrawModalOpen(true);
-  };
-
-  const handleCloseWithdrawModal = () => {
-    setIsWithdrawModalOpen(false);
-    // Update balances after withdrawal
-    updateValueDetails();
-  };
 
   return (
     <div className="max-h-fit bg-transparent rounded-3xl grid md:grid-cols-12 md:gap-5 gap-10 ">
@@ -260,36 +222,40 @@ export function Dashboard() {
                     onClick={toggleShowBalances}
                     className="cursor-pointer text-gray-300 hover:text-white focus:outline-none"
                   >
-                    <Icon name={showBalances ? "eye" : "eye slash"} size="tiny" />
+                    <Icon
+                      name={showBalances ? "eye" : "eye slash"}
+                      size="tiny"
+                    />
                   </button>
-                  <small className="uppercase text-xs">usdt</small>
+                  <small className="uppercase text-xs">USD</small>
                 </div>
 
                 <div className="text-sm text-gray-400">
                   {/* {showBalances ? "100 icp" : "****"} */}
                 </div>
-              </div>              
+              </div>
             </div>
             <div className="flex flex-col items-end gap-2">
               <button
                 type="button"
                 className={`bg-white hover:bg-gray-100 text-[#0300AD] text-sm font-medium px-4 py-2 rounded-full flex gap-1 transition-all duration-300 hover:-translate-y-0.5 border border-black hover:border-t hover:border-b hover:shadow-[0_4px_0_0_#000000] ${
-                  !readWriteAgent || isClaimingFaucet ? 'opacity-75 cursor-not-allowed bg-gray-200' : ''
+                  !readWriteAgent || isClaimingFaucet
+                    ? "opacity-75 cursor-not-allowed bg-gray-200"
+                    : ""
                 }`}
                 onClick={receiveFaucet}
                 disabled={!readWriteAgent || isClaimingFaucet}
               >
-                <Icon 
-                  name={isClaimingFaucet ? "spinner" : "tint"} 
+                <Icon
+                  name={isClaimingFaucet ? "spinner" : "tint"}
                   loading={isClaimingFaucet}
                 />
                 <span className="font-semibold">
-                  {!readWriteAgent 
-                    ? "Claim Faucet" 
-                    : isClaimingFaucet 
-                      ? "Claiming..." 
-                      : "Claim Faucet"
-                  }
+                  {!readWriteAgent
+                    ? "Claim Faucet"
+                    : isClaimingFaucet
+                    ? "Claiming..."
+                    : "Claim Faucet"}
                 </span>
               </button>
               {!readWriteAgent && (
@@ -333,7 +299,7 @@ export function Dashboard() {
             marginBalance={
               balancesArray[
                 assetList.findIndex((a) => a.name === selectedAsset.name)
-              ] || "0"
+              ] || 0n
             }
           />
         </>
@@ -344,7 +310,7 @@ export function Dashboard() {
 
 interface AssetListsProps {
   pricesArray: number[];
-  balancesArray: string[];
+  balancesArray: bigint[];
   onDeposit: (asset: Asset) => void;
   onWithdraw: (asset: Asset) => void;
 }
@@ -364,14 +330,16 @@ const AssetListComponent = memo(
       <div className="mt-4">
         <div className="grid grid-cols-12 items-center justify-between justify-items-start py-2 text-xs text-gray-500 capitalize">
           <div className="col-span-4  max-lg:col-span-6">Asset</div>
-          <div className="col-span-2 max-lg:col-span-3 text-right">Balance</div>
-          <div className="col-span-2  max-lg:col-span-3 text-right">Value</div>
+          <div className="col-span-2 max-lg:col-span-3 text-right">Price</div>
+          <div className="col-span-2  max-lg:col-span-3 text-right">
+            Balance
+          </div>
           <div className="col-span-4 max-lg:sr-only text-right"></div>
         </div>
         <div className="flex flex-col gap-5">
           {assetList.map((asset, index) => {
             const price = pricesArray[index]; // asset.priceID
-            const userBalance = balancesArray[index] || "0.00"; // asset.vaultid
+            const userBalance = balancesArray[index] || 0n; // asset.vaultid
 
             return (
               <div
@@ -399,8 +367,7 @@ const AssetListComponent = memo(
     return (
       JSON.stringify(prevProps.pricesArray) ==
         JSON.stringify(newProps.pricesArray) &&
-      JSON.stringify(prevProps.balancesArray) ==
-        JSON.stringify(newProps.balancesArray)
+      prevProps.balancesArray.toString() == newProps.balancesArray.toString()
     );
   }
 );
