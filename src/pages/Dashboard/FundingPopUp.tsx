@@ -32,11 +32,10 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
     "Appoving" | "Spending" | ""
   >("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
-  const [view, setView] = useState<"input" | "preview" | "success">("input");
+  const [isChecked, setIsChecked] = useState<boolean>(false);
+  const [view, setView] = useState<"input" | "preview" | "success" | "error">("input");
   const [dollarValue, setDollarValue] = useState<string>("0.00");
   const [txError, setTxError] = useState<string>("");
-  const [txSuccess, setTxSuccess] = useState(false);
 
   /**
    *
@@ -96,43 +95,44 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
   };
 
   const fundAccount = async (e: React.MouseEvent) => {
-    // e.preventDefault();
-    // let { vaultID } = asset;
-    // setTxError("");
+    e.preventDefault();
+    let { vaultID } = asset;
+    setTxError("");
     
-    // try {
-    //   if (readWriteAgent && vaultID) {
-    //     setIsLoading(true);
-    //     const allowance = await getCurrentAllowance();
-    //     let amount = parseUnits(depositAmount, asset.decimals).toBigInt();
+    try {
+      if (readWriteAgent && vaultID) {
+        setIsLoading(true);
+        const allowance = await getCurrentAllowance();
+        let amount = parseUnits(depositAmount, asset.decimals).toBigInt();
 
-    //     if (allowance < amount) {
-    //       setCurrentAction("Appoving");
-    //       let response = await approveSpending(amount - allowance, amount);
-    //       if (!response) {
-    //         setTxError("Approval failed. Please try again.");
-    //         setView("success");
-    //         return;
-    //       }
-    //     }
+        if (allowance < amount) {
+          setCurrentAction("Appoving");
+          let response = await approveSpending(amount - allowance, amount);
+          if (!response) {
+            setTxError("Approval failed. Please try again.");
+            setView("error");
+            return;
+          }
+        }
 
-    //     let vaultActor = new VaultActor(asset.vaultID, readWriteAgent);
-    //     setCurrentAction("Spending");
+        let vaultActor = new VaultActor(asset.vaultID, readWriteAgent);
+        setCurrentAction("Spending");
 
-    //     let txResult = await vaultActor.fundAccount(amount, user.principal);
-    //     if (txResult) {
-    //       setTxSuccess(true);
-    //     } else {
-    //       setTxError("Transaction failed. Please try again.");
-    //     }
-    //     setView("success");
-    //   }
-    // } catch (err) {
-    //   setTxError("An error occurred. Please try again.");
-    //   setView("success");
-    // } finally {
-    //   setIsLoading(false);
-    // }
+        let txResult = await vaultActor.fundAccount(amount, user.principal);
+        if (txResult) {
+        // if (txError !== "") {
+          setView("success");
+        } else {
+          setTxError("Transaction failed. Please try again.");
+          setView("error");
+        }
+      }
+    } catch (err) {
+      setTxError("An error occurred. Please try again.");
+      setView("error");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const proceedToPreview = (e: React.MouseEvent) => {
@@ -141,7 +141,7 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
       // Calculate dollar value based on current market rate (mock)
       setDollarValue((parseFloat(depositAmount) * 450).toFixed(2));
       setView("preview");
-      setIsChecked(false);
+      setIsChecked(false); // Reset checkbox
       setError('');
     }
   };
@@ -153,22 +153,23 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
     setDepositAmount("");
     setError("");
     setCurrentAction("");
-    setIsChecked(false);
+    setIsChecked(false); // Reset checkbox
   };
 
   const onAmountUpdate = (value: string) => {
+    setIsChecked(false); // Reset checkbox when amount changes
     setDepositAmount(value);
     if (!value) return setError("");
     
-    // try {
-    //   const amount = parseUnits(value, asset.decimals).toBigInt();
-    //   setError(
-    //     amount > userTokenBalance ? "Insufficient Balance" :
-    //     amount <= 0n ? "Amount too Small" : ""
-    //   );
-    // } catch {
-    //   setError("Invalid amount");
-    // }
+    try {
+      const amount = parseUnits(value, asset.decimals).toBigInt();
+      setError(
+        amount > userTokenBalance ? "Insufficient Balance" :
+        amount <= 0n ? "Amount too Small" : ""
+      );
+    } catch {
+      setError("Invalid amount");
+    }
   };
 
   const formatBalance = (balance: bigint) => {
@@ -186,7 +187,7 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
       setDepositAmount("");
       setError("");
       setCurrentAction("");
-      setIsChecked(false);
+      setIsChecked(false); // Reset checkbox when modal opens
     } else {
       // Re-enable scrolling
       document.body.style.overflow = "auto";
@@ -194,6 +195,7 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
 
     return () => {
       document.body.style.overflow = "auto";
+      setIsChecked(false); // Reset checkbox when modal closes
     };
   }, [isOpen, asset]);
 
@@ -216,11 +218,11 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
               </div>
               <IconButton
                 onClick={onClose}
-                className="text-gray-400 !rounded-2xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5"
+                className="text-gray-400 !rounded-xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5 !px-2"
                 title=""
               >
                 <Icon name="close" size="small" className="pl-0.5" />
-              </IconButton>
+              </IconButton> 
             </div>
             <div className="space-y-3">
               <div>
@@ -358,42 +360,53 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
             </Button>
           </>
         )}
-        {view === "success" && (
+        {view === "error" && (
           <div className="flex flex-col justify-items-center">
             <div className="flex justify-between items-center">
               <div />
               <IconButton
                 onClick={onClose}
-                className="text-gray-400 !rounded-2xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5"
+                className="text-gray-400 !rounded-xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5 !px-2"
                 title=""
               >
                 <Icon name="close" size="small" className="pl-0.5" />
               </IconButton>
             </div>
             <div className="flex flex-col items-center space-y-3">
-              {/* {txError ? ( */}
-                <>
-                  <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
-                    <Icon name="times circle" size="large" color="red" />
-                  </div>
-                  <h2 className="text-xl font-semibold">Transaction Failed</h2>
-                  {/* <p className="text-sm text-gray-400">{txError}</p> */}
-                  <Button
-                    onClick={goBackToInput}
-                    className="!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !w-full"
-                  >
-                    Try Again
-                  </Button>
-                </>
-              {/* // ) : ( */}
-                <>
-                  <img src={Marketing_Campaign_1} alt="" />
-                  <h2>
-                    {depositAmount} {asset.symbol}
-                  </h2>
-                  <p className="text-sm text-gray-400">Deposit Successful</p>
-                </>
-              {/* // )} */}
+              <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
+                <Icon name="times circle" size="large" color="red" className="pl-1" />
+              </div>
+              <h2 className="text-xl font-semibold">Transaction Failed</h2>
+              <p className="text-sm text-gray-400">{txError}</p>
+              <Button
+                onClick={goBackToInput}
+                className="!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !flex !items-center !gap-2 !justify-center !w-full !border !border-[#c2c0c0] hover:!-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] overflow-hidden transition-all duration-500 bg-transparent hover:border-t hover:border-b hover:border-blue-400/50"
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
+        )}
+        {view === "success" && (
+          <div className="flex flex-col justify-items-center">
+            <div className="flex justify-between items-center">
+              <div />
+              <IconButton
+                onClick={onClose}
+                className="text-gray-400 !rounded-xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5 !px-2"
+                title=""
+              >
+                <Icon name="close" size="small" className="pl-0.5" />
+              </IconButton>
+            </div>
+            <div className="flex flex-col items-center space-y-3">
+              <img src={Marketing_Campaign_1} alt="" />
+              <h2>{depositAmount} {asset.symbol}</h2>
+              <div className="flex flex-col items-center space-y-1">
+                <span className="text-sm text-gray-400">Deposit Successful</span>
+                <span className="text-sm text-gray-400 text-center">Your transaction has successfully been completed. For more details, check your transaction history.</span>                
+              </div>
+
             </div>
           </div>
         )}

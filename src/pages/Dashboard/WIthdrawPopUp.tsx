@@ -30,11 +30,10 @@ export default function WithdrawPopUp({
     "" | "Insufficient Balance" | "Amount too Small" | "Invalid amount"
   >("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
-  const [view, setView] = useState<"input" | "preview" | "success">("input");
+  const [isChecked, setIsChecked] = useState<boolean>(false);
+  const [view, setView] = useState<"input" | "preview" | "success" | "error">("input");
   const [dollarValue, setDollarValue] = useState<string>("0.00");
   const [txError, setTxError] = useState<string>("");
-  const [txSuccess, setTxSuccess] = useState(false);
 
   const proceedToPreview = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -42,15 +41,20 @@ export default function WithdrawPopUp({
       // Calculate dollar value based on current market rate (mock)
       setDollarValue((parseFloat(withdrawAmount) * 450).toFixed(2));
       setView("preview");
+      setIsChecked(false); 
     }
   };
 
   const goBackToInput = (e: React.MouseEvent) => {
     e.preventDefault();
     setView("input");
+    setWithdrawAmount("");
+    setError("");
+    setIsChecked(false); 
   };
 
   const onAmountChange = (value: string) => {
+    setIsChecked(false);
     if (value === "") {
       setWithdrawAmount("");
       setError("");
@@ -87,15 +91,15 @@ export default function WithdrawPopUp({
         );
 
         if (txResult) {
-          setTxSuccess(true);
+          setView("success");
         } else {
           setTxError("Transaction failed. Please try again.");
+          setView("error");
         }
-        setView("success");
       }
     } catch (error) {
       setTxError("An error occurred. Please try again.");
-      setView("success");
+      setView("error");
     } finally {
       setIsLoading(false);
     }
@@ -105,13 +109,17 @@ export default function WithdrawPopUp({
     if (isOpen) {
       // Prevent scrolling
       document.body.style.overflow = "hidden";
+      setIsChecked(false); 
+      setWithdrawAmount(""); 
+      setError("");
     } else {
       // Re-enable scrolling
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = "auto"; 
     }
 
     return () => {
       document.body.style.overflow = "auto";
+      setIsChecked(false); // Reset checkbox state when modal is closed
     };
   }, [isOpen]);
 
@@ -134,7 +142,7 @@ export default function WithdrawPopUp({
               </div>
               <IconButton
                 onClick={onClose}
-                className="text-gray-400 !rounded-2xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5"
+                className="text-gray-400 !rounded-xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5 !px-2"
                 title=""
               >
                 <Icon name="close" size="small" className="pl-0.5" />
@@ -256,11 +264,45 @@ export default function WithdrawPopUp({
             <Button
               onClick={withdrawFromAccount}
               disabled={isLoading}
-              className="!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !flex !items-center !gap-2 !justify-center !w-full !border !border-[#c2c0c0] hover:!-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] overflow-hidden transition-all duration-500 bg-transparent hover:border-t hover:border-b hover:border-blue-400/50"
+              className={`!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !flex !items-center !gap-2 !justify-center !w-full !border !border-[#c2c0c0] hover:!-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] overflow-hidden transition-all duration-500 bg-transparent hover:border-t hover:border-b hover:border-blue-400/50
+                ${
+                  isLoading
+                    ? "bg-[#0300ad5c] text-gray-400 cursor-not-allowed"
+                    : "bg-[#0300ad] hover:bg-[#0000003d] text-white"
+                }
+              `}
             >
               {isLoading ? "Processing..." : "Withdraw"}
             </Button>
           </>
+        )}
+
+        {view === "error" && (
+          <div className="flex flex-col justify-items-center">
+            <div className="flex justify-between items-center">
+              <div />
+              <IconButton
+                onClick={onClose}
+                className="text-gray-400 !rounded-xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5 !px-2"
+                title=""
+              >
+                <Icon name="close" size="small" className="pl-0.5" />
+              </IconButton>
+            </div>
+            <div className="flex flex-col items-center space-y-3">
+              <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
+                <Icon name="times circle" size="large" color="red" className="pl-1" />
+              </div>
+              <h2 className="text-xl font-semibold">Transaction Failed</h2>
+              <p className="text-sm text-gray-400">{txError}</p>
+              <Button
+                onClick={goBackToInput}
+                className="!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !flex !items-center !gap-2 !justify-center !w-full !border !border-[#c2c0c0] hover:!-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] overflow-hidden transition-all duration-500 bg-transparent hover:border-t hover:border-b hover:border-blue-400/50"
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
         )}
 
         {view === "success" && (
@@ -269,36 +311,19 @@ export default function WithdrawPopUp({
               <div />
               <IconButton
                 onClick={onClose}
-                className="text-gray-400 !rounded-2xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5"
+                className="text-gray-400 !rounded-xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5 !px-2"
                 title=""
               >
                 <Icon name="close" size="small" className="pl-0.5" />
               </IconButton>
             </div>
             <div className="flex flex-col items-center space-y-3">
-              {txError ? (
-                <>
-                  <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
-                    <Icon name="times circle" size="large" color="red" />
-                  </div>
-                  <h2 className="text-xl font-semibold">Transaction Failed</h2>
-                  <p className="text-sm text-gray-400">{txError}</p>
-                  <Button
-                    onClick={goBackToInput}
-                    className="!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !w-full"
-                  >
-                    Try Again
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <img src={Marketing_Campaign_1} alt="" />
-                  <h2>
-                    {withdrawAmount} {asset.symbol}
-                  </h2>
-                  <p className="text-sm text-gray-400">Withdrawal Successful</p>
-                </>
-              )}
+              <img src={Marketing_Campaign_1} alt="" />
+              <h2>{withdrawAmount} {asset.symbol}</h2>
+              <div className="flex flex-col items-center space-y-1">
+                <span className="text-sm text-gray-400">Withdrawal Successful</span>
+                <span className="text-sm text-gray-400 text-center">Your transaction has successfully been completed. For more details, check your transaction history.</span>
+              </div>
             </div>
           </div>
         )}
