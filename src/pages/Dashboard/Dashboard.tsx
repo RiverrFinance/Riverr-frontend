@@ -41,7 +41,7 @@ export function Dashboard() {
   const { user } = useAuth();
   const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
   const [pricesArray, setPricesArray] = useState<number[]>([]);
-  const [balancesArray, setBalancesArray] = useState<bigint[]>([]);
+  const [balancesArray, setBalancesArray] = useState<string[]>([]);
   const [totalValue, setTotalValue] = useState<number>(0);
 
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
@@ -56,19 +56,23 @@ export function Dashboard() {
   const [isClaimingFaucet, setIsClaimingFaucet] = useState(false);
 
   useEffect(() => {
-    if (readWriteAgent) {
+    if (readWriteAgent != undefined || user != undefined) {
       changeTotalValue();
     } else {
       setTotalValue(0);
       setBalancesArray([]);
     }
-  }, [readWriteAgent, balancesArray.toString(), JSON.stringify(pricesArray)]);
+  }, [
+    readWriteAgent,
+    JSON.stringify(balancesArray),
+    JSON.stringify(pricesArray),
+  ]);
 
   useEffect(() => {
     updateValueDetails();
     const interval = setInterval(() => {
       updateValueDetails();
-    }, 15000);
+    }, 15000); // 20 seconds
     return () => {
       clearInterval(interval);
     };
@@ -76,8 +80,12 @@ export function Dashboard() {
 
   useEffect(() => {
     fetchAndSetTopMovers();
-    const interval = setInterval(fetchAndSetTopMovers, 15000); // Fetch every 15s (three '0' added)
+    const interval = setInterval(fetchAndSetTopMovers, 35000); // Fetch every 35s (three '0' added)
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
   }, []);
 
   ///
@@ -107,53 +115,21 @@ export function Dashboard() {
     setIsWithdrawModalOpen(false);
     setSelectedAsset(null);
     // Update balances after withdrawal
-    updateValueDetails();
+    //updateValueDetails();
   };
 
-  /// Canister Interaction fucntions
-
-  const fetchAndSetTopMovers = async () => {
-    try {
-      const response = await fetchTopMovers(topPriorityCoinIds);
-      if (response.ok) {
-        const combinedTopMovers = await response.json();
-        console.log(combinedTopMovers);
-        setTopMovers(combinedTopMovers);
-      }
-    } catch (err) {
-      // console.log(`this error occured in dahsboard ${err}`);
-    }
-  };
-
-  const fetcherUserMarginBalance = async (asset: Asset): Promise<bigint> => {
-    if (asset.vaultID && readWriteAgent) {
-      let vaultActor = new VaultActor(asset.vaultID, readAgent);
-      const balance = await vaultActor.userMarginBalance(user.principal);
-      return balance;
-    }
-    return 0n;
-  };
-
-  const fetchAssetPrice = async (asset: Asset): Promise<number> => {
-    let response = await fetchDetails(asset.priceID);
-    let assetValueDetails: PriceDetails = await response.json();
-    let { price } = assetValueDetails;
-
-    return price;
-  };
-
-  const getUserAssetValue = async (asset: Asset): Promise<[number, bigint]> => {
+  const getUserAssetValue = async (asset: Asset): Promise<[number, string]> => {
     let price = await fetchAssetPrice(asset);
     let userMargin = await fetcherUserMarginBalance(asset);
-    return [price, userMargin]; //formatUnits(userMargin, asset.decimals)];
+    return [price, formatUnits(userMargin, asset.decimals)]; //formatUnits(userMargin, asset.decimals)];
   };
 
   const updateValueDetails = async () => {
     try {
-      let sendPromiseList: Promise<[number, bigint]>[] = assetList.map(
+      let sendPromiseList: Promise<[number, string]>[] = assetList.map(
         (asset) => getUserAssetValue(asset)
       );
-      let resolvedPromiseList: [number, bigint][] = await Promise.all(
+      let resolvedPromiseList: [number, string][] = await Promise.all(
         sendPromiseList
       );
       const prices = resolvedPromiseList.map(([price]) => price);
@@ -166,12 +142,43 @@ export function Dashboard() {
   const changeTotalValue = () => {
     let valueSum = 0;
     pricesArray.forEach((price, index) => {
-      let balance = balancesArray[index] || 0n;
+      let balance = balancesArray[index] || 0;
       let refAsset = assetList[index];
-      let currentValue = (price * Number(balance)) / 10 ** refAsset.decimals;
+      let currentValue = price * Number(balance);
       valueSum += currentValue;
     });
     setTotalValue(valueSum);
+  };
+
+  const fetchAndSetTopMovers = async () => {
+    try {
+      const response = await fetchTopMovers(topPriorityCoinIds);
+      if (response.ok) {
+        const combinedTopMovers = await response.json();
+        //console.log(combinedTopMovers);
+        setTopMovers(combinedTopMovers);
+      }
+    } catch (err) {
+      // console.log(`this error occured in dahsboard ${err}`);
+    }
+  };
+
+  /// Canister Interaction fucntions
+
+  const fetcherUserMarginBalance = async (asset: Asset): Promise<bigint> => {
+    if (asset.vaultID && readWriteAgent) {
+      let vaultActor = new VaultActor(asset.vaultID, readAgent);
+      return vaultActor.userMarginBalance(user.principal);
+    }
+    return 0n;
+  };
+
+  const fetchAssetPrice = async (asset: Asset): Promise<number> => {
+    let response = await fetchDetails(asset.priceID);
+    let assetValueDetails: PriceDetails = await response.json();
+    let { price } = assetValueDetails;
+
+    return price;
   };
 
   const receiveFaucet = async () => {
@@ -284,18 +291,21 @@ export function Dashboard() {
       {selectedAsset && (
         <>
           <FundingPopUp
+            readAgent={readAgent}
             asset={selectedAsset}
             isOpen={isDepositModalOpen}
             onClose={onCloseDepositModal}
+            readWriteAgent={readWriteAgent}
           />
           <WithdrawPopUp
             asset={selectedAsset}
+            readWriteAgent={readWriteAgent}
             isOpen={isWithdrawModalOpen}
             onClose={onCloseWithdrawModal}
             marginBalance={
               balancesArray[
                 assetList.findIndex((a) => a.name === selectedAsset.name)
-              ] || 0n
+              ] || "0"
             }
           />
         </>
@@ -306,7 +316,7 @@ export function Dashboard() {
 
 interface AssetListsProps {
   pricesArray: number[];
-  balancesArray: bigint[];
+  balancesArray: string[];
   onDeposit: (asset: Asset) => void;
   onWithdraw: (asset: Asset) => void;
 }
@@ -335,7 +345,7 @@ const AssetListComponent = memo(
         <div className="flex flex-col gap-5">
           {assetList.map((asset, index) => {
             const price = pricesArray[index]; // asset.priceID
-            const userBalance = balancesArray[index] || 0n; // asset.vaultid
+            const userBalance = balancesArray[index] || "0"; // asset.vaultid
 
             return (
               <div
@@ -363,7 +373,8 @@ const AssetListComponent = memo(
     return (
       JSON.stringify(prevProps.pricesArray) ==
         JSON.stringify(newProps.pricesArray) &&
-      prevProps.balancesArray.toString() == newProps.balancesArray.toString()
+      JSON.stringify(prevProps.balancesArray) ==
+        JSON.stringify(newProps.balancesArray)
     );
   }
 );

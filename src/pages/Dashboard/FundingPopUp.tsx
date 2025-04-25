@@ -1,7 +1,7 @@
 import { useAgent, useAuth } from "@nfid/identitykit/react";
 import { Asset } from "../../lists/marketlist";
 import { useEffect, useRef, useState } from "react";
-import { HttpAgent } from "@dfinity/agent";
+import { Agent, HttpAgent } from "@dfinity/agent";
 import { TokenActor } from "../../utils/Interfaces/tokenActor";
 import { Principal } from "@dfinity/principal";
 import { VaultActor } from "../../utils/Interfaces/vaultActor";
@@ -16,15 +16,21 @@ const ICP_API_HOST = "https://icp-api.io/";
 interface Props {
   asset: Asset;
   isOpen: boolean;
+  readAgent: HttpAgent;
+  readWriteAgent: Agent | undefined;
   onClose: () => void;
 }
 
-export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
-  const readWriteAgent = useAgent();
+export default function FundingPopUp({
+  readWriteAgent,
+  readAgent,
+  asset,
+  isOpen,
+  onClose,
+}: Props) {
   const { user } = useAuth();
   const [userTokenBalance, setUserTokenBalance] = useState<bigint>(0n);
   const [depositAmount, setDepositAmount] = useState<string>("");
-  const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
   const [error, setError] = useState<
     "" | "Insufficient Balance" | "Amount too Small" | "Invalid amount"
   >("");
@@ -36,18 +42,20 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
   const [view, setView] = useState<"input" | "preview" | "transaction result">(
     "input"
   );
-  //const [dollarValue, setDollarValue] = useState<string>("0.00");
+
   const [txError, setTxError] = useState<string | null>(null);
 
   const [transactionDone, setTransactionDone] = useState(false);
 
   useEffect(() => {
-    setUserBalance();
     let interval: number | undefined;
-    if (readWriteAgent) {
+    if (readWriteAgent == undefined) {
+      setUserTokenBalance(0n);
+    } else {
+      setUserBalance();
       interval = setInterval(() => {
         setUserBalance();
-      }, 15000);
+      }, 10000);
     }
     return () => {
       clearInterval(interval);
@@ -57,15 +65,14 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
   useEffect(() => {
     if (transactionDone) {
       setView("transaction result");
+      setTransactionDone(false);
     }
-  }, [transactionDone]);
+  }, [txError]);
 
   useEffect(() => {
     if (isOpen) {
       // Prevent scrolling
       document.body.style.overflow = "hidden";
-
-      HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
       // setUserBalance();
       // setView("input");
       // setDepositAmount("");
@@ -99,7 +106,7 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
     // setDepositAmount("");
     // setError("");
     // setCurrentAction("");
-    setTransactionDone(false);
+    setTxError(null);
     setIsChecked(false);
   };
 
@@ -178,19 +185,17 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
         setCurrentAction("Funding");
         let txResult = await vaultActor.fundAccount(amount, user.principal);
         if (txResult) {
-          setTxError(null);
-          setTransactionDone(true);
+          setTxError("");
         } else {
           setTxError("Funding Account failed");
-          setTransactionDone(true);
         }
       }
     } catch (err) {
       setTxError("An error occurred. Please try again.");
-      setTransactionDone(true);
     } finally {
       setIsLoading(false);
     }
+    setTransactionDone(true);
   };
 
   if (!isOpen) return null;
@@ -368,7 +373,7 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
               </IconButton>
             </div>
             <div className="flex flex-col items-center space-y-3">
-              {txError ? (
+              {txError != "" ? (
                 <>
                   <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
                     <Icon name="times circle" size="large" color="red" />

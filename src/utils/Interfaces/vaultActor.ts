@@ -17,7 +17,7 @@ export class VaultActor {
   }
 
   public async userMarginBalance(user: Principal): Promise<bigint> {
-    return await this.vault.getUserMarginBalance(user);
+    return this.vault.getUserMarginBalance(user);
   }
 
   public async fundAccount(amount: bigint, user: Principal): Promise<boolean> {

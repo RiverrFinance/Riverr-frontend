@@ -16,22 +16,32 @@ import { useEffect } from "react";
 // import '../styles/sonner.css';
 
 function App() {
+  console.log("app mounting");
   return (
     <IdentityKitProvider authType="ACCOUNTS">
-      <SubApp />
+      <Track />
     </IdentityKitProvider>
   );
 }
 
-const SubApp = () => {
-  const readWriteAgent = useAgent();
+function Track() {
   const { disconnect } = useAuth();
 
+  console.log("Track mounted");
+
   useEffect(() => {
-    if (readWriteAgent) {
-      disconnect();
-    }
+    disconnect();
   }, []);
+
+  return (
+    <>
+      <SubApp />
+    </>
+  );
+}
+
+const SubApp = () => {
+  console.log("subapp mounted ");
 
   return (
     <BrowserRouter>

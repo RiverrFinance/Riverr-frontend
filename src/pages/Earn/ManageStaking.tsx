@@ -29,6 +29,10 @@ export default function ManageStaking() {
   const [txDone, setTxDone] = useState(false);
 
   useEffect(() => {
+    HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
+  }, []);
+
+  useEffect(() => {
     let interval: number | undefined;
     if (readWriteAgent) {
       fetchSetUserBalance;

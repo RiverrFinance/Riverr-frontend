@@ -12,7 +12,7 @@ const ICP_API_HOST = "https://icp-api.io/";
 interface Props {
   price: number;
   asset: Asset;
-  userBalance: bigint;
+  userBalance: string;
   index: number;
   openAccordionIndex: number;
   onAccordionToggle: (index: number) => void;
@@ -69,7 +69,7 @@ export const AssetComponent = function AssetComponent({
           ${formatPrice(price)}
         </div>
         <div className="col-span-2 max-lg:col-span-3 text-sm font-medium">
-          {formatUnits(userBalance, asset.decimals)}
+          {userBalance}
         </div>
 
         {!isMobileView && (
