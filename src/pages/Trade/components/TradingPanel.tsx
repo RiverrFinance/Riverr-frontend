@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Icon } from "semantic-ui-react";
 import { Market } from "../../../lists/marketlist";
 import { MarketActor } from "../../../utils/Interfaces/marketActor";
-import { HttpAgent } from "@dfinity/agent";
+import { Agent, HttpAgent } from "@dfinity/agent";
 import { StateDetails } from "../../../utils/declarations/market/market.did";
 import { useAgent } from "@nfid/identitykit/react";
 import { LeverageSlider } from "./LeverageSlider";
@@ -18,14 +18,15 @@ const ICP_API_HOST = "https://icp-api.io/";
 export interface TradingPanelProps {
   market: Market;
   onOrderSubmit?: () => void;
+  readWriteAgent: Agent | undefined;
+  readAgent: HttpAgent;
 }
 
-export const TradingPanel: React.FC<TradingPanelProps> = ({ market }) => {
-  const readWriteAgent = useAgent();
-
-  const [readAgent, setUnauthenticatedAgent] = useState<HttpAgent>(
-    HttpAgent.createSync()
-  );
+export const TradingPanel: React.FC<TradingPanelProps> = ({
+  market,
+  readAgent,
+  readWriteAgent,
+}) => {
   const [error, setError] = useState<InputError>("");
   const [orderType, setOrderType] = useState<"Market" | "Limit">("Market");
   const [tradeDirection, setActiveTab] = useState<"Long" | "Short">("Long");
@@ -40,6 +41,18 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({ market }) => {
     base_token_multiple: 20,
     min_collateral: 0n,
   });
+
+  useEffect(() => {
+    fetchAndSetStatezDetails();
+    const interval = setInterval(() => {
+      fetchAndSetStatezDetails();
+    }, 10000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {});
 
   const total = () => {
     if (margin == "") {
@@ -61,15 +74,6 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({ market }) => {
   };
 
   const openOrder = () => {};
-
-  useEffect(() => {
-    // const interval = setInterval(() => {
-    //   fetchAndSetStatezDetails();
-    // }, 5000);
-    // return () => {
-    //   clearInterval(interval);
-    // };
-  }, []);
 
   return (
     <div className={`bg-[#13131F] p-3 rounded-lg border border-gray-800`}>
@@ -116,6 +120,8 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({ market }) => {
           setMargin={setMargin}
           setError={setError}
           minCollateral={marketState.min_collateral}
+          readWriteAgent={readWriteAgent}
+          readAgent={readAgent}
         />
         {/* Limit Price Input */}
         {orderType == "Limit" ? (

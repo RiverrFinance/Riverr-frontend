@@ -2,17 +2,21 @@ import { useAgent, useAuth } from "@nfid/identitykit/react";
 import React, { useEffect, useState } from "react";
 import { Asset, assetList } from "../../lists/marketlist";
 import { VaultActor } from "../../utils/Interfaces/vaultActor";
-import { HttpAgent } from "@dfinity/agent";
+import { Agent, HttpAgent } from "@dfinity/agent";
 import { parseUnits } from "ethers/lib/utils";
 import { VaultStakingDetails } from "../../utils/declarations/vault/vault.did";
 import { ICP_API_HOST } from "../../utils/utilFunction";
 import { TokenActor } from "../../utils/Interfaces/tokenActor";
 import { Principal } from "@dfinity/principal";
 
-export default function ManageLeverage() {
-  const readWriteAgent = useAgent();
+interface Props {
+  readWriteAgent: Agent | undefined;
+  readAgent: HttpAgent;
+}
+
+export default function ManageLeverage({ readWriteAgent, readAgent }: Props) {
   const { user } = useAuth();
-  const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
+
   const [selectedAsset, setSelectedAsset] = useState(assetList[0]);
   const [referenceAmount, setReferenceAmount] = useState<string>("");
   const [useMarginBalance, setUsermarginBalance] = useState<bigint>(0n);
@@ -23,10 +27,6 @@ export default function ManageLeverage() {
   const [warning, setWarning] =
     useState<"Transaction might fail as Vault is not liquid enough">();
   const [txDone, setTxDone] = useState(false);
-
-  useEffect(() => {
-    HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
-  }, []);
 
   useEffect(() => {
     let interval: number | undefined;

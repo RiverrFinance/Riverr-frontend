@@ -4,7 +4,7 @@ import { InputError } from "../types/trading";
 import { parseUnits } from "ethers/lib/utils";
 import { useAuth } from "@nfid/identitykit/react";
 import { useEffect, useState } from "react";
-import { HttpAgent } from "@dfinity/agent";
+import { Agent, HttpAgent } from "@dfinity/agent";
 import { ICP_API_HOST } from "../../../utils/utilFunction";
 import { VaultActor } from "../../../utils/Interfaces/vaultActor";
 
@@ -13,6 +13,8 @@ interface Props {
   market: Market;
   setMargin: (value: string) => void;
   setError: (err: InputError) => void;
+  readWriteAgent?: Agent | undefined;
+  readAgent: HttpAgent;
   minCollateral: bigint;
 }
 
@@ -22,25 +24,33 @@ export const MarginInput = ({
   market,
   setError,
   minCollateral,
+  readWriteAgent,
+  readAgent,
 }: Props) => {
-  const readWriteAgent = useAuth();
+  //  const readWriteAgent = useAuth();
   const { user } = useAuth();
-  const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
   const [userMarginBalance, setUserMarginBalance] = useState<bigint>(0n);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (readWriteAgent) {
-        setMarginBalance();
-      }
-    }, 5000);
+    let interval: number | undefined;
+    if (readWriteAgent) {
+      fetchSetMarginBalance();
+      interval = setInterval(() => {
+        if (readWriteAgent) {
+          fetchSetMarginBalance();
+        }
+      }, 10000);
+    } else {
+      setUserMarginBalance(0n);
+    }
+
     return () => {
       clearInterval(interval);
     };
-  }, [market]);
+  }, [readWriteAgent]);
 
   //
-  const setMarginBalance = async () => {
+  const fetchSetMarginBalance = async () => {
     try {
       if (market.quoteAsset.vaultID) {
         const vault = new VaultActor(market.quoteAsset.vaultID, readAgent);
@@ -52,13 +62,17 @@ export const MarginInput = ({
   };
 
   const onCollateralChange = (value: string) => {
+    setFunction(value);
     if (value == "") {
       setError("");
     } else {
-      let factorValue = parseUnits(value, market.quoteAsset.decimals);
-      if (factorValue.toBigInt() > userMarginBalance) {
-        setError("Insufficient Bakance");
-      } else if (factorValue.toBigInt() < minCollateral) {
+      let factorValue = parseUnits(
+        value,
+        market.quoteAsset.decimals
+      ).toBigInt();
+      if (factorValue > userMarginBalance) {
+        setError("Insufficient Balance");
+      } else if (factorValue < minCollateral) {
         setError("Smaller than min collateral");
       } else {
         setError("");
