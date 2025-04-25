@@ -63,12 +63,9 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({ market }) => {
   const openOrder = () => {};
 
   useEffect(() => {
-    HttpAgent.create({ host: ICP_API_HOST }).then(setUnauthenticatedAgent);
-
     // const interval = setInterval(() => {
     //   fetchAndSetStatezDetails();
     // }, 5000);
-
     // return () => {
     //   clearInterval(interval);
     // };

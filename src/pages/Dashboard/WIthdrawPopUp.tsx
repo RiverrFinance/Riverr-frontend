@@ -38,6 +38,26 @@ export default function WithdrawPopUp({
 
   const [transactionDone, setTransactionDone] = useState(false);
 
+  useEffect(() => {
+    if (transactionDone) {
+      setView("transaction result");
+    }
+  }, [txError]);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Prevent scrolling
+      document.body.style.overflow = "hidden";
+    } else {
+      // Re-enable scrolling
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isOpen]);
+
   const proceedToPreview = (e: React.MouseEvent) => {
     e.preventDefault();
     // if (withdrawAmount !== "" && error === "") { you disables thw button if this conditions are not met so no need to include them here
@@ -49,26 +69,26 @@ export default function WithdrawPopUp({
 
   const goBackToInput = (e: React.MouseEvent) => {
     e.preventDefault();
+    setTransactionDone(false);
     setIsChecked(false);
     setView("input");
   };
 
   const onAmountChange = (value: string) => {
-    if (value === "") {
-      setWithdrawAmount("");
-      setError("");
-      return;
-    }
-    const amount = parseUnits(value, asset.decimals).toBigInt();
-
-    if (amount > marginBalance) {
-      setError("Insufficient Balance");
-    } else if (amount <= 0n) {
-      setError("Amount too Small");
-    } else {
-      setError("");
-    }
     setWithdrawAmount(value);
+    if (value == "") {
+      setError("");
+    } else {
+      const amount = parseUnits(value, asset.decimals).toBigInt();
+
+      if (amount > marginBalance) {
+        setError("Insufficient Balance");
+      } else if (amount <= 0n) {
+        setError("Amount too Small");
+      } else {
+        setError("");
+      }
+    }
   };
 
   const withdrawFromAccount = async (e: React.MouseEvent) => {
@@ -97,26 +117,6 @@ export default function WithdrawPopUp({
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (transactionDone) {
-      setView("transaction result");
-    }
-  }, [txError]);
-
-  useEffect(() => {
-    if (isOpen) {
-      // Prevent scrolling
-      document.body.style.overflow = "hidden";
-    } else {
-      // Re-enable scrolling
-      document.body.style.overflow = "auto";
-    }
-
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, [isOpen]);
 
   if (!isOpen) return null;
 

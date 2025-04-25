@@ -2,7 +2,7 @@ import { Market } from "../../../lists/marketlist";
 import { formatUnits } from "ethers/lib/utils";
 import { InputError } from "../types/trading";
 import { parseUnits } from "ethers/lib/utils";
-import { useAgent, useAuth } from "@nfid/identitykit/react";
+import { useAuth } from "@nfid/identitykit/react";
 import { useEffect, useState } from "react";
 import { HttpAgent } from "@dfinity/agent";
 import { ICP_API_HOST } from "../../../utils/utilFunction";
@@ -23,19 +23,14 @@ export const MarginInput = ({
   setError,
   minCollateral,
 }: Props) => {
-  const readWriteAgent = useAgent();
+  const readWriteAgent = useAuth();
   const { user } = useAuth();
   const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
   const [userMarginBalance, setUserMarginBalance] = useState<bigint>(0n);
 
-  if (user) {
-    console.log(user.principal.toText());
-  }
-
   useEffect(() => {
-    HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
     const interval = setInterval(() => {
-      if (user) {
+      if (readWriteAgent) {
         setMarginBalance();
       }
     }, 5000);

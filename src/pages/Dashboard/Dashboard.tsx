@@ -55,31 +55,64 @@ export function Dashboard() {
   const [showBalances, setShowBalances] = useState(true);
   const [isClaimingFaucet, setIsClaimingFaucet] = useState(false);
 
-  const handleOpenDepositModal = (asset: Asset) => {
+  useEffect(() => {
+    if (readWriteAgent) {
+      changeTotalValue();
+    } else {
+      setTotalValue(0);
+      setBalancesArray([]);
+    }
+  }, [readWriteAgent, balancesArray.toString(), JSON.stringify(pricesArray)]);
+
+  useEffect(() => {
+    updateValueDetails();
+    const interval = setInterval(() => {
+      updateValueDetails();
+    }, 15000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [readWriteAgent]);
+
+  useEffect(() => {
+    fetchAndSetTopMovers();
+    const interval = setInterval(fetchAndSetTopMovers, 15000); // Fetch every 15s (three '0' added)
+    return () => clearInterval(interval);
+  }, []);
+
+  ///
+
+  const onShowBalances = () => {
+    setShowBalances(!showBalances);
+  };
+
+  const onOpenDepositModal = (asset: Asset) => {
     setSelectedAsset(asset);
     setIsDepositModalOpen(true);
   };
 
-  const handleCloseDepositModal = () => {
+  const onCloseDepositModal = () => {
     setIsDepositModalOpen(false);
     setSelectedAsset(null);
     // Update balances after deposit
     updateValueDetails();
   };
 
-  const handleOpenWithdrawModal = (asset: Asset) => {
+  const onOpenWithdrawModal = (asset: Asset) => {
     setSelectedAsset(asset);
     setIsWithdrawModalOpen(true);
   };
 
-  const handleCloseWithdrawModal = () => {
+  const onCloseWithdrawModal = () => {
     setIsWithdrawModalOpen(false);
     setSelectedAsset(null);
     // Update balances after withdrawal
     updateValueDetails();
   };
 
-  const fetchAndSetTopMovers = useCallback(async () => {
+  /// Canister Interaction fucntions
+
+  const fetchAndSetTopMovers = async () => {
     try {
       const response = await fetchTopMovers(topPriorityCoinIds);
       if (response.ok) {
@@ -90,46 +123,15 @@ export function Dashboard() {
     } catch (err) {
       // console.log(`this error occured in dahsboard ${err}`);
     }
-  }, [topPriorityCoinIds]);
-
-  const toggleShowBalances = () => {
-    setShowBalances(!showBalances);
-  };
-
-  const receiveFaucet = async () => {
-    if (readWriteAgent) {
-      setIsClaimingFaucet(true);
-
-      const asset = assetList[0];
-      let mintActor = new MinterActor(
-        "lmfrn-3iaaa-aaaaf-qaova-cai",
-        readWriteAgent
-      );
-      try {
-        await mintActor.mint(
-          Principal.fromText(asset.canisterID),
-          user.principal,
-          10n ** BigInt(asset.decimals + 1) // ICP tokens
-        );
-      } catch (error) {
-        console.error("Error receiving faucet:", error);
-      } finally {
-        setIsClaimingFaucet(false);
-      }
-    }
   };
 
   const fetcherUserMarginBalance = async (asset: Asset): Promise<bigint> => {
-    try {
-      if (asset.vaultID && user) {
-        let vaultActor = new VaultActor(asset.vaultID, readAgent);
-        const balance = await vaultActor.userMarginBalance(user.principal);
-        return balance;
-      }
-      return 0n;
-    } catch {
-      return 0n;
+    if (asset.vaultID && readWriteAgent) {
+      let vaultActor = new VaultActor(asset.vaultID, readAgent);
+      const balance = await vaultActor.userMarginBalance(user.principal);
+      return balance;
     }
+    return 0n;
   };
 
   const fetchAssetPrice = async (asset: Asset): Promise<number> => {
@@ -172,34 +174,28 @@ export function Dashboard() {
     setTotalValue(valueSum);
   };
 
-  useEffect(() => {
+  const receiveFaucet = async () => {
     if (readWriteAgent) {
-      changeTotalValue();
-    } else {
-      setTotalValue(0);
-      setBalancesArray([]);
+      setIsClaimingFaucet(true);
+
+      const asset = assetList[0];
+      let mintActor = new MinterActor(
+        "lmfrn-3iaaa-aaaaf-qaova-cai",
+        readWriteAgent
+      );
+      try {
+        await mintActor.mint(
+          Principal.fromText(asset.canisterID),
+          user.principal,
+          10n ** BigInt(asset.decimals + 1) // ICP tokens
+        );
+      } catch (error) {
+        console.error("Error receiving faucet:", error);
+      } finally {
+        setIsClaimingFaucet(false);
+      }
     }
-  }, [readWriteAgent, balancesArray.toString(), JSON.stringify(pricesArray)]);
-
-  useEffect(() => {
-    updateValueDetails();
-    const interval = setInterval(() => {
-      updateValueDetails();
-    }, 15000);
-    return () => {
-      clearInterval(interval);
-    };
-  }, [readWriteAgent]);
-
-  useEffect(() => {
-    fetchAndSetTopMovers();
-    const interval = setInterval(fetchAndSetTopMovers, 15000); // Fetch every 10s (three '0' added)
-    return () => clearInterval(interval);
-  }, [fetchAndSetTopMovers]);
-
-  useEffect(() => {
-    HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
-  }, []);
+  };
 
   return (
     <div className="max-h-fit bg-transparent rounded-3xl grid md:grid-cols-12 md:gap-5 gap-10 ">
@@ -219,7 +215,7 @@ export function Dashboard() {
                   <button
                     type="button"
                     title="eye"
-                    onClick={toggleShowBalances}
+                    onClick={onShowBalances}
                     className="cursor-pointer text-gray-300 hover:text-white focus:outline-none"
                   >
                     <Icon
@@ -272,8 +268,8 @@ export function Dashboard() {
             <AssetListComponent
               pricesArray={pricesArray}
               balancesArray={balancesArray}
-              onDeposit={handleOpenDepositModal}
-              onWithdraw={handleOpenWithdrawModal}
+              onDeposit={onOpenDepositModal}
+              onWithdraw={onOpenWithdrawModal}
             />
           </div>
         </div>
@@ -290,12 +286,12 @@ export function Dashboard() {
           <FundingPopUp
             asset={selectedAsset}
             isOpen={isDepositModalOpen}
-            onClose={handleCloseDepositModal}
+            onClose={onCloseDepositModal}
           />
           <WithdrawPopUp
             asset={selectedAsset}
             isOpen={isWithdrawModalOpen}
-            onClose={handleCloseWithdrawModal}
+            onClose={onCloseWithdrawModal}
             marginBalance={
               balancesArray[
                 assetList.findIndex((a) => a.name === selectedAsset.name)

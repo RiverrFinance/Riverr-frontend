@@ -20,7 +20,7 @@ interface Props {
   onWithdraw: (asset: Asset) => void;
 }
 
-export const AssetComponent = memo(function AssetComponent({
+export const AssetComponent = function AssetComponent({
   asset,
   price,
   userBalance,
@@ -142,7 +142,7 @@ export const AssetComponent = memo(function AssetComponent({
       )}
     </>
   );
-});
+};
 
 const formatPrice = (price: number) => {
   if (!price) return "0.00";

@@ -68,6 +68,17 @@ export class VaultActor {
     }
   }
 
+  public async removeLeverage(amount: bigint): Promise<string> {
+    let txResult = await this.vault.removeLeverage(amount, []);
+    if ("Ok" in txResult) {
+      console.log("Leverage removed successfully:", txResult.Ok);
+      return "";
+    } else {
+      console.error("Error removed leverage:", txResult.Err);
+      return txResult.Err;
+    }
+  }
+
   public async stakeVirtualTokens(
     amount: bigint,
     span: StakeSpan

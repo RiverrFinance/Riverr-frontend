@@ -16,9 +16,7 @@ export default function TradePosition({ account_index, market }: Props) {
   const readWriteAgent = useAgent();
   const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
 
-  useEffect(() => {
-    HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
-  }, []);
+  useEffect(() => {}, []);
 
   return (
     <div>

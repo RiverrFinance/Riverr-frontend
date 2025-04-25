@@ -29,7 +29,7 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
     "" | "Insufficient Balance" | "Amount too Small" | "Invalid amount"
   >("");
   const [currentAction, setCurrentAction] = useState<
-    "Appoving" | "Spending" | ""
+    "Appoving" | "Funding" | ""
   >("");
   const [isLoading, setIsLoading] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
@@ -39,22 +39,8 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
   //const [dollarValue, setDollarValue] = useState<string>("0.00");
   const [txError, setTxError] = useState<string | null>(null);
 
-  const [trnsactionDone, setTransactionDone] = useState(false);
+  const [transactionDone, setTransactionDone] = useState(false);
 
-  let firstMount = useRef(true);
-
-  /**
-   *
-   * Balance management fetches user balance for the parituclar asset and returns it
-   */
-
-  const setUserBalance = async () => {
-    try {
-      let tokenActor = new TokenActor(asset.canisterID, readAgent);
-      const balance = await tokenActor.balance(user.principal);
-      setUserTokenBalance(balance);
-    } catch (err) {}
-  };
   useEffect(() => {
     setUserBalance();
     let interval: number | undefined;
@@ -68,112 +54,11 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
     };
   }, [readWriteAgent]);
 
-  const approveSpending = async (approvalAmount: bigint): Promise<boolean> => {
-    let { vaultID } = asset;
-    try {
-      let tokenActor = new TokenActor(asset.canisterID, readWriteAgent);
-
-      let txResult = await tokenActor.approveSpending(
-        approvalAmount,
-        Principal.fromText(vaultID)
-      );
-      return txResult;
-    } catch {
-      console.log("error approving");
-      return false;
-    }
-  };
-
-  const getCurrentAllowance = async (): Promise<bigint> => {
-    let { vaultID } = asset;
-    try {
-      let tokenActor = new TokenActor(asset.canisterID, readAgent);
-
-      return await tokenActor.allowance(
-        user.principal,
-        Principal.fromText(vaultID)
-      );
-    } catch {
-      return 0n;
-    }
-  };
-
-  const fundAccount = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    let { vaultID } = asset;
-    // setTxError("");
-    try {
-      if (readWriteAgent && vaultID) {
-        setIsLoading(true);
-        const allowance = await getCurrentAllowance();
-        let amount = parseUnits(depositAmount, asset.decimals).toBigInt();
-        if (allowance < amount) {
-          setCurrentAction("Appoving");
-          let response = await approveSpending(amount - allowance);
-          if (!response) {
-            setTxError("Approval failed");
-            setTransactionDone(true);
-            return;
-          }
-        }
-        let vaultActor = new VaultActor(asset.vaultID, readWriteAgent);
-        setCurrentAction("Spending");
-        let txResult = await vaultActor.fundAccount(amount, user.principal);
-        if (txResult) {
-          setTxError(null);
-          setTransactionDone(true);
-        } else {
-          setTxError("Funding failed");
-          setTransactionDone(true);
-        }
-      }
-    } catch (err) {
-      setTxError("An error occurred. Please try again.");
-      setTransactionDone(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (trnsactionDone) {
+    if (transactionDone) {
       setView("transaction result");
     }
-  }, [trnsactionDone]);
-
-  const proceedToPreview = (e: React.MouseEvent) => {
-    e.preventDefault();
-    // if (depositAmount !== "" && error === "") {
-    // Calculate dollar value based on current market rate (mock)
-    //setDollarValue((parseFloat(depositAmount) * 450).toFixed(2));
-    setView("preview");
-    //  setError("");
-    //}
-  };
-
-  const goBackToInput = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setView("input");
-    // setUserBalance();
-    // setDepositAmount("");
-    // setError("");
-    // setCurrentAction("");
-    setIsChecked(false);
-  };
-
-  const onAmountUpdate = (value: string) => {
-    setDepositAmount(value);
-    if (!value) return setError("");
-
-    const amount = parseUnits(value, asset.decimals).toBigInt();
-    setError(
-      amount > userTokenBalance
-        ? "Insufficient Balance"
-        : amount <= 0n
-        ? "Amount too Small"
-        : ""
-    );
-  };
+  }, [transactionDone]);
 
   useEffect(() => {
     if (isOpen) {
@@ -196,6 +81,117 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
       document.body.style.overflow = "auto";
     };
   }, [isOpen]);
+
+  const proceedToPreview = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // if (depositAmount !== "" && error === "") {
+    // Calculate dollar value based on current market rate (mock)
+    //setDollarValue((parseFloat(depositAmount) * 450).toFixed(2));
+    setView("preview");
+    //  setError("");
+    //}
+  };
+
+  const goBackToInput = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setView("input");
+    // setUserBalance();
+    // setDepositAmount("");
+    // setError("");
+    // setCurrentAction("");
+    setTransactionDone(false);
+    setIsChecked(false);
+  };
+
+  const onAmountUpdate = (value: string) => {
+    setDepositAmount(value);
+    if (value == "") {
+      setError("");
+    } else {
+      const amount = parseUnits(value, asset.decimals).toBigInt();
+      setError(
+        amount > userTokenBalance
+          ? "Insufficient Balance"
+          : amount <= 0n
+          ? "Amount too Small"
+          : ""
+      );
+    }
+  };
+
+  /// Canister Interaction fucntions
+
+  /**
+   *
+   * Balance management fetches user balance for the parituclar asset and returns it
+   */
+
+  const setUserBalance = async () => {
+    try {
+      let tokenActor = new TokenActor(asset.canisterID, readAgent);
+      const balance = await tokenActor.balance(user.principal);
+      setUserTokenBalance(balance);
+    } catch {
+      return;
+    }
+  };
+
+  const approveSpending = async (approvalAmount: bigint): Promise<boolean> => {
+    let { vaultID } = asset;
+
+    let tokenActor = new TokenActor(asset.canisterID, readWriteAgent);
+
+    return tokenActor.approveSpending(
+      approvalAmount,
+      Principal.fromText(vaultID)
+    );
+    //return txResult;
+  };
+
+  const getCurrentAllowance = async (): Promise<bigint> => {
+    let { vaultID } = asset;
+
+    let tokenActor = new TokenActor(asset.canisterID, readAgent);
+
+    return tokenActor.allowance(user.principal, Principal.fromText(vaultID));
+  };
+
+  const fundAccount = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    let { vaultID } = asset;
+    // setTxError("");
+    try {
+      if (readWriteAgent && vaultID) {
+        setIsLoading(true);
+        const allowance = await getCurrentAllowance();
+        let amount = parseUnits(depositAmount, asset.decimals).toBigInt();
+        if (allowance < amount) {
+          setCurrentAction("Appoving");
+          let response = await approveSpending(amount - allowance);
+          if (!response) {
+            setTxError("Approval failed");
+            setTransactionDone(true);
+            return;
+          }
+        }
+        let vaultActor = new VaultActor(asset.vaultID, readWriteAgent);
+        setCurrentAction("Funding");
+        let txResult = await vaultActor.fundAccount(amount, user.principal);
+        if (txResult) {
+          setTxError(null);
+          setTransactionDone(true);
+        } else {
+          setTxError("Funding Account failed");
+          setTransactionDone(true);
+        }
+      }
+    } catch (err) {
+      setTxError("An error occurred. Please try again.");
+      setTransactionDone(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (!isOpen) return null;
 

@@ -30,9 +30,6 @@ export default function PositionsTerminal({ market }: Props) {
   >([]);
 
   useEffect(() => {
-    HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
-  }, []);
-  useEffect(() => {
     const interval = setInterval(() => {
       if (readWriteAgent) {
         fetchAndSeperate();
