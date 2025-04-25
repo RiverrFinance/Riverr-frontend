@@ -212,7 +212,7 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
               </div>
               <IconButton
                 onClick={onClose}
-                className="text-gray-400 !rounded-2xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5"
+                className="text-gray-400 !rounded-xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5 !px-2"
                 title=""
               >
                 <Icon name="close" size="small" className="pl-0.5" />
@@ -361,7 +361,7 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
               <div />
               <IconButton
                 onClick={onClose}
-                className="text-gray-400 !rounded-2xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5"
+                className="text-gray-400 !rounded-xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5 !px-2"
                 title=""
               >
                 <Icon name="close" size="small" className="pl-0.5" />

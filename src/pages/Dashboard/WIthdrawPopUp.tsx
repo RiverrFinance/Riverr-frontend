@@ -137,7 +137,7 @@ export default function WithdrawPopUp({
               </div>
               <IconButton
                 onClick={onClose}
-                className="text-gray-400 !rounded-2xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5"
+                className="text-gray-400 !rounded-xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5 !px-2"
                 title=""
               >
                 <Icon name="close" size="small" className="pl-0.5" />
@@ -261,7 +261,13 @@ export default function WithdrawPopUp({
             <Button
               onClick={withdrawFromAccount}
               disabled={isLoading}
-              className="!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !flex !items-center !gap-2 !justify-center !w-full !border !border-[#c2c0c0] hover:!-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] overflow-hidden transition-all duration-500 bg-transparent hover:border-t hover:border-b hover:border-blue-400/50"
+              className={`!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !flex !items-center !gap-2 !justify-center !w-full !border !border-[#c2c0c0] hover:!-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] overflow-hidden transition-all duration-500 bg-transparent hover:border-t hover:border-b hover:border-blue-400/50
+                ${
+                  isLoading
+                    ? "bg-[#0300ad5c] text-gray-400 cursor-not-allowed"
+                    : "bg-[#0300ad] hover:bg-[#0000003d] text-white"
+                }
+              `}
             >
               {isLoading ? "Processing..." : "Withdraw"}
             </Button>
@@ -274,7 +280,7 @@ export default function WithdrawPopUp({
               <div />
               <IconButton
                 onClick={onClose}
-                className="text-gray-400 !rounded-2xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5"
+                className="text-gray-400 !rounded-xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5 !px-2"
                 title=""
               >
                 <Icon name="close" size="small" className="pl-0.5" />
