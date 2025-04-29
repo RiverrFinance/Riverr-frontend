@@ -18,12 +18,10 @@ const DexScreenerChart: React.FC<DexScreenerChartProps> = ({ chart_id }) => {
   }, [chart_id]);
 
   return (
-    <div className="w-full h-full bg-[#13131F] rounded-lg border border-gray-800 overflow-hidden">
+    <div className="w-full h-full bg-[#18191D] !rounded-3xl !rounded-b-3xl border border-gray-800 overflow-hidden">
       <iframe
         src={chartUrl}
-        className="w-full"
-        height="600"
-        style={{ border: "none" }}
+        className="w-full lg:h-full h-[600px] border-none"
         title="Dexscreener Trading Chart"
         allowFullScreen
       />

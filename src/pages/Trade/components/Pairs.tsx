@@ -8,6 +8,7 @@ interface PairProps {
   market: Market;
   favorites: Set<string>;
   isSelected?: boolean;
+  onToggleFavorite?: (marketId: string) => void;
 }
 
 interface PriceDetails {
@@ -21,6 +22,7 @@ export const Pairs: React.FC<PairProps> = ({
   market,
   favorites,
   isSelected,
+  onToggleFavorite
 }) => {
   const [details, setDetails] = useState<PriceDetails>({
     price: 0.0,
@@ -76,31 +78,84 @@ export const Pairs: React.FC<PairProps> = ({
     };
   }, [market]);
 
+  const isFavorite = favorites.has(market.chartId)
+
   return (
+    // <div
+    //   className={`flex items-center justify-between p-3 hover:bg-[#1C1C28] rounded-lg cursor-pointer group ${
+    //     isSelected ? "bg-[#1C1C28]" : ""
+    //   }`}
+    // >
+    //   <div className="flex items-center space-x-3">
+    //     <button
+    //       className="hover:scale-110 transition-transform"
+    //       onClick={(e) => {
+    //         e.stopPropagation();
+    //       }}
+    //     >
+    //       <StarIcon filled={favorites?.has(market.baseAsset.priceID)} />
+    //     </button>
+    //     <img
+    //       src={market.baseAsset.image}
+    //       alt={market.baseAsset.symbol}
+    //       className="w-6 h-6"
+    //       // onError={(e) => {
+    //       //   e.currentTarget.src = 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png';
+    //       // }}
+    //     />
+    //     <div>
+    //       <div className="font-medium">
+    //         {market.baseAsset.symbol.toUpperCase()}/
+    //         {market.quoteAsset.symbol.toUpperCase()}
+    //       </div>
+    //       <div className="text-sm text-gray-400">{market.baseAsset.symbol}</div>
+    //     </div>
+    //   </div>
+
+    //   <div className="text-right">
+    //     <div className="text-white font-medium">
+    //       {formatPrice(details.price)}
+    //     </div>
+    //     <div
+    //       className={`text-sm ${
+    //         details.price_change_24h <= 0 ? "text-green-500" : "text-red-500"
+    //       }`}
+    //     >
+    //       {formatPercent(details.price_change_24h)}%
+    //     </div>
+    //   </div>
+    // </div>
+
     <div
       className={`flex items-center justify-between p-3 hover:bg-[#1C1C28] rounded-lg cursor-pointer group ${
-        isSelected ? "bg-[#1C1C28]" : ""
+        isSelected ? "bg-[#1C1C28]" : "" // Apply selected background
       }`}
+      // onClick handler is in the parent MarketSelector now
     >
       <div className="flex items-center space-x-3">
+        {/* Favorite Button */}
         <button
-          className="hover:scale-110 transition-transform"
+          className="hover:scale-110 transition-transform focus:outline-none" // Added focus outline none
           onClick={(e) => {
-            e.stopPropagation();
+            e.stopPropagation(); // Prevent the click from closing the dropdown
+            onToggleFavorite(market.chartId); // Changed: Call onToggleFavorite with market ID
           }}
         >
-          <StarIcon filled={favorites?.has(market.baseAsset.priceID)} />
+          {/* Using your custom StarIcon component */}
+          <StarIcon filled={isFavorite} /> {/* Changed: Use StarIcon and pass filled prop */}
         </button>
+        {/* Asset Icon */}
         <img
           src={market.baseAsset.image}
           alt={market.baseAsset.symbol}
-          className="w-6 h-6"
-          // onError={(e) => {
-          //   e.currentTarget.src = 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png';
-          // }}
+          className="w-6 h-6 rounded-full" // Added rounded-full for circular image
+           onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => { // Added type for event
+             e.currentTarget.src = 'https://react.semantic-ui.com/images/wireframe/square-image.png'; // Placeholder on error
+           }}
         />
+        {/* Asset Symbols and Name */}
         <div>
-          <div className="font-medium">
+          <div className="font-medium text-white"> {/* Added text-white */}
             {market.baseAsset.symbol.toUpperCase()}/
             {market.quoteAsset.symbol.toUpperCase()}
           </div>
@@ -108,13 +163,14 @@ export const Pairs: React.FC<PairProps> = ({
         </div>
       </div>
 
+      {/* Price and 24h Change */}
       <div className="text-right">
         <div className="text-white font-medium">
           {formatPrice(details.price)}
         </div>
         <div
           className={`text-sm ${
-            details.price_change_24h <= 0 ? "text-green-500" : "text-red-500"
+            details.price_change_24h >= 0 ? "text-green-500" : "text-red-500" // Green for positive, Red for negative
           }`}
         >
           {formatPercent(details.price_change_24h)}%
@@ -123,3 +179,7 @@ export const Pairs: React.FC<PairProps> = ({
     </div>
   );
 };
+
+
+
+

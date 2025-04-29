@@ -370,20 +370,20 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
                 className="text-gray-400 !rounded-xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5 !px-2"
                 title=""
               >
-                <Icon name="close" size="small" className="pl-0.5" />
+                <Icon name="close" size="small" className="pl-1" />
               </IconButton>
             </div>
             <div className="flex flex-col items-center space-y-3">
               {txError ? (
                 <>
-                  <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
-                    <Icon name="times circle" size="large" color="red" />
-                  </div>
+              <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
+                <Icon name="times circle" size="large" color="red" className="pl-1" />
+              </div>
                   <h2 className="text-xl font-semibold">{txError}</h2>
                   {/* <p className="text-sm text-gray-400">{txError}</p> */}
                   <Button
                     onClick={goBackToInput}
-                    className="!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !w-full"
+                    className="!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !flex !items-center !gap-2 !justify-center !w-full !border !border-[#c2c0c0] hover:!-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] overflow-hidden transition-all duration-500 bg-transparent hover:border-t hover:border-b hover:border-blue-400/50"
                   >
                     Try Again
                   </Button>
