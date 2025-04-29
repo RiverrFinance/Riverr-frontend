@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Icon } from "semantic-ui-react";
 import { Market } from "../../../lists/marketlist";
 import { MarketActor } from "../../../utils/Interfaces/marketActor";
-import { HttpAgent } from "@dfinity/agent";
+import { Agent, HttpAgent } from "@dfinity/agent";
 import { StateDetails } from "../../../utils/declarations/market/market.did";
 import { useAgent } from "@nfid/identitykit/react";
 import { LeverageSlider } from "./LeverageSlider";
@@ -18,14 +18,15 @@ const ICP_API_HOST = "https://icp-api.io/";
 export interface TradingPanelProps {
   market: Market;
   onOrderSubmit?: () => void;
+  readWriteAgent: Agent | undefined;
+  readAgent: HttpAgent;
 }
 
-export const TradingPanel: React.FC<TradingPanelProps> = ({ market }) => {
-  const readWriteAgent = useAgent();
-
-  const [readAgent, setUnauthenticatedAgent] = useState<HttpAgent>(
-    HttpAgent.createSync()
-  );
+export const TradingPanel: React.FC<TradingPanelProps> = ({
+  market,
+  readAgent,
+  readWriteAgent,
+}) => {
   const [error, setError] = useState<InputError>("");
   const [orderType, setOrderType] = useState<"Market" | "Limit">("Market");
   const [tradeDirection, setActiveTab] = useState<"Long" | "Short">("Long");
@@ -42,6 +43,18 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({ market }) => {
     base_token_multiple: 20,
     min_collateral: 0n,
   });
+
+  useEffect(() => {
+    fetchAndSetStatezDetails();
+    const interval = setInterval(() => {
+      fetchAndSetStatezDetails();
+    }, 10000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {});
 
   const total = () => {
     if (margin == "") {
@@ -232,61 +245,29 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({ market }) => {
       </div>
 
       <div className="p-4 space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-400 mb-2">
-            Pay
-          </label>
-          <div className="flex items-center bg-[#242529] rounded-md pr-3">
-            <input
-              type="text" 
-              className="w-full bg-transparent border-none focus:outline-none p-3 text-white"
-              placeholder="0.0"
-              value={payAmount}
-              onChange={handlePayAmountChange}
-              disabled={!isWalletConnected}
-            />
-            <span className="text-gray-300">{market.baseAsset.symbol}</span> 
-          </div>
-          <p className="text-gray-500 text-xs mt-1">Available: 0.0 {market.baseAsset.symbol}</p>
-        </div>
-
-         <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
-              {tradeDirection === 'Long' ? 'Long' : 'Short'}
-            </label>
-            <div className="flex items-center bg-[#242529] rounded-md pr-3">
-              <input
-                type="text" 
-                className="w-full bg-transparent border-none focus:outline-none p-3 text-white"
-                placeholder="0.0"
-                value={baseAssetAmount} 
-                onChange={handleBaseAssetAmountChange} 
-                disabled={!isWalletConnected}
-              />
-              <span className="text-gray-300">{market.quoteAsset.symbol}</span> 
-            </div>
-          </div>
-
-       
-        {orderType === "Limit" && (
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
-              Limit Price
-            </label>
-            <div className="flex items-center bg-[#242529] rounded-md pr-3">
-              <PriceInput
-                market={market}
-                value={limitPrice}
-                initialTick={marketState.current_tick}
-                setLimitPrice={setLimitPrice}
-              />
-
-              <span className="text-gray-300">{market.quoteAsset.symbol}</span>
-            </div>
-          </div>
+        {/* margin Input */}
+        <MarginInput
+          value={margin}
+          market={market}
+          setMargin={setMargin}
+          setError={setError}
+          minCollateral={marketState.min_collateral}
+          readWriteAgent={readWriteAgent}
+          readAgent={readAgent}
+        />
+        {/* Limit Price Input */}
+        {orderType == "Limit" ? (
+          <PriceInput
+            market={market}
+            value={limitPrice}
+            initialTick={marketState.current_tick}
+            setLimitPrice={setLimitPrice}
+          />
+        ) : (
+          <></>
         )}
-
-        <LeverageSlider 
+        {/* Leverage Slider */}
+        <LeverageSlider
           value={leverage}
           maxLeverage={marketState.max_leveragex10 / 10}
           setLeverage={setLeverage}

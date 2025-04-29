@@ -17,7 +17,7 @@ export class VaultActor {
   }
 
   public async userMarginBalance(user: Principal): Promise<bigint> {
-    return await this.vault.getUserMarginBalance(user);
+    return this.vault.getUserMarginBalance(user);
   }
 
   public async fundAccount(amount: bigint, user: Principal): Promise<boolean> {
@@ -65,6 +65,17 @@ export class VaultActor {
     } else {
       console.error("Error providing leverage:", txResult.Err);
       return false;
+    }
+  }
+
+  public async removeLeverage(amount: bigint): Promise<string> {
+    let txResult = await this.vault.removeLeverage(amount, []);
+    if ("Ok" in txResult) {
+      console.log("Leverage removed successfully:", txResult.Ok);
+      return "";
+    } else {
+      console.error("Error removed leverage:", txResult.Err);
+      return txResult.Err;
     }
   }
 

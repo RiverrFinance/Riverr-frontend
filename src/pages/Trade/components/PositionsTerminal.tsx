@@ -1,4 +1,4 @@
-import { HttpAgent } from "@dfinity/agent";
+import { Agent, HttpAgent } from "@dfinity/agent";
 import { useAgent } from "@nfid/identitykit/react";
 import { useEffect, useState } from "react";
 import {
@@ -15,11 +15,17 @@ const maxSubAccount = 4;
 
 interface Props {
   market: Market;
+  readWriteAgent: Agent | undefined;
+  readAgent: HttpAgent;
 }
 
-export default function PositionsTerminal({ market }: Props) {
-  const readWriteAgent = useAgent();
-  const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
+export default function PositionsTerminal({
+  market,
+  readWriteAgent,
+  readAgent,
+}: Props) {
+  // const readWriteAgent = useAgent();
+  // const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
   const [currentTick, setCurrentTick] = useState<bigint>(0n);
   const [currentTab, setCurrentTab] = useState<"Orders" | "Positions">(
     "Positions"
@@ -29,9 +35,6 @@ export default function PositionsTerminal({ market }: Props) {
     [number, PositionParameters][]
   >([]);
 
-  useEffect(() => {
-    HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
-  }, []);
   useEffect(() => {
     const interval = setInterval(() => {
       if (readWriteAgent) {

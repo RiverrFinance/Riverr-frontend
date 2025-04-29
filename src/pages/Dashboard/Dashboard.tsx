@@ -41,7 +41,7 @@ export function Dashboard() {
   const { user } = useAuth();
   const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
   const [pricesArray, setPricesArray] = useState<number[]>([]);
-  const [balancesArray, setBalancesArray] = useState<bigint[]>([]);
+  const [balancesArray, setBalancesArray] = useState<string[]>([]);
   const [totalValue, setTotalValue] = useState<number>(0);
 
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
@@ -55,45 +55,130 @@ export function Dashboard() {
   const [showBalances, setShowBalances] = useState(true);
   const [isClaimingFaucet, setIsClaimingFaucet] = useState(false);
 
-  const handleOpenDepositModal = (asset: Asset) => {
+  useEffect(() => {
+    if (readWriteAgent != undefined || user != undefined) {
+      changeTotalValue();
+    } else {
+      setTotalValue(0);
+      setBalancesArray([]);
+    }
+  }, [
+    readWriteAgent,
+    JSON.stringify(balancesArray),
+    JSON.stringify(pricesArray),
+  ]);
+
+  useEffect(() => {
+    updateValueDetails();
+    const interval = setInterval(() => {
+      updateValueDetails();
+    }, 15000); // 20 seconds
+    return () => {
+      clearInterval(interval);
+    };
+  }, [readWriteAgent]);
+
+  useEffect(() => {
+    fetchAndSetTopMovers();
+    const interval = setInterval(fetchAndSetTopMovers, 35000); // Fetch every 35s (three '0' added)
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
+  }, []);
+
+  ///
+
+  const onShowBalances = () => {
+    setShowBalances(!showBalances);
+  };
+
+  const onOpenDepositModal = (asset: Asset) => {
     setSelectedAsset(asset);
     setIsDepositModalOpen(true);
   };
 
-  const handleCloseDepositModal = () => {
+  const onCloseDepositModal = () => {
     setIsDepositModalOpen(false);
     setSelectedAsset(null);
     // Update balances after deposit
     updateValueDetails();
   };
 
-  const handleOpenWithdrawModal = (asset: Asset) => {
+  const onOpenWithdrawModal = (asset: Asset) => {
     setSelectedAsset(asset);
     setIsWithdrawModalOpen(true);
   };
 
-  const handleCloseWithdrawModal = () => {
+  const onCloseWithdrawModal = () => {
     setIsWithdrawModalOpen(false);
     setSelectedAsset(null);
     // Update balances after withdrawal
-    updateValueDetails();
+    //updateValueDetails();
   };
 
-  const fetchAndSetTopMovers = useCallback(async () => {
+  const getUserAssetValue = async (asset: Asset): Promise<[number, string]> => {
+    let price = await fetchAssetPrice(asset);
+    let userMargin = await fetcherUserMarginBalance(asset);
+    return [price, formatUnits(userMargin, asset.decimals)]; //formatUnits(userMargin, asset.decimals)];
+  };
+
+  const updateValueDetails = async () => {
+    try {
+      let sendPromiseList: Promise<[number, string]>[] = assetList.map(
+        (asset) => getUserAssetValue(asset)
+      );
+      let resolvedPromiseList: [number, string][] = await Promise.all(
+        sendPromiseList
+      );
+      const prices = resolvedPromiseList.map(([price]) => price);
+      const balances = resolvedPromiseList.map(([, balance]) => balance);
+      setPricesArray(prices);
+      setBalancesArray(balances);
+    } catch {}
+  };
+
+  const changeTotalValue = () => {
+    let valueSum = 0;
+    pricesArray.forEach((price, index) => {
+      let balance = balancesArray[index] || 0;
+      let refAsset = assetList[index];
+      let currentValue = price * Number(balance);
+      valueSum += currentValue;
+    });
+    setTotalValue(valueSum);
+  };
+
+  const fetchAndSetTopMovers = async () => {
     try {
       const response = await fetchTopMovers(topPriorityCoinIds);
       if (response.ok) {
         const combinedTopMovers = await response.json();
-        console.log(combinedTopMovers);
+        //console.log(combinedTopMovers);
         setTopMovers(combinedTopMovers);
       }
     } catch (err) {
       // console.log(`this error occured in dahsboard ${err}`);
     }
-  }, [topPriorityCoinIds]);
+  };
 
-  const toggleShowBalances = () => {
-    setShowBalances(!showBalances);
+  /// Canister Interaction fucntions
+
+  const fetcherUserMarginBalance = async (asset: Asset): Promise<bigint> => {
+    if (asset.vaultID && readWriteAgent) {
+      let vaultActor = new VaultActor(asset.vaultID, readAgent);
+      return vaultActor.userMarginBalance(user.principal);
+    }
+    return 0n;
+  };
+
+  const fetchAssetPrice = async (asset: Asset): Promise<number> => {
+    let response = await fetchDetails(asset.priceID);
+    let assetValueDetails: PriceDetails = await response.json();
+    let { price } = assetValueDetails;
+
+    return price;
   };
 
   const receiveFaucet = async () => {
@@ -119,88 +204,6 @@ export function Dashboard() {
     }
   };
 
-  const fetcherUserMarginBalance = async (asset: Asset): Promise<bigint> => {
-    try {
-      if (asset.vaultID && user) {
-        let vaultActor = new VaultActor(asset.vaultID, readAgent);
-        const balance = await vaultActor.userMarginBalance(user.principal);
-        return balance;
-      }
-      return 0n;
-    } catch {
-      return 0n;
-    }
-  };
-
-  const fetchAssetPrice = async (asset: Asset): Promise<number> => {
-    let response = await fetchDetails(asset.priceID);
-    let assetValueDetails: PriceDetails = await response.json();
-    let { price } = assetValueDetails;
-
-    return price;
-  };
-
-  const getUserAssetValue = async (asset: Asset): Promise<[number, bigint]> => {
-    let price = await fetchAssetPrice(asset);
-    let userMargin = await fetcherUserMarginBalance(asset);
-    return [price, userMargin]; //formatUnits(userMargin, asset.decimals)];
-  };
-
-  const updateValueDetails = async () => {
-    try {
-      let sendPromiseList: Promise<[number, bigint]>[] = assetList.map(
-        (asset) => getUserAssetValue(asset)
-      );
-      let resolvedPromiseList: [number, bigint][] = await Promise.all(
-        sendPromiseList
-      );
-      const prices = resolvedPromiseList.map(([price]) => price);
-      const balances = resolvedPromiseList.map(([, balance]) => balance);
-      setPricesArray(prices);
-      setBalancesArray(balances);
-    } catch {}
-  };
-
-  const changeTotalValue = () => {
-    let valueSum = 0;
-    pricesArray.forEach((price, index) => {
-      let balance = balancesArray[index] || 0n;
-      let refAsset = assetList[index];
-      let currentValue = (price * Number(balance)) / 10 ** refAsset.decimals;
-      valueSum += currentValue;
-    });
-    setTotalValue(valueSum);
-  };
-
-  useEffect(() => {
-    if (readWriteAgent) {
-      changeTotalValue();
-    } else {
-      setTotalValue(0);
-      setBalancesArray([]);
-    }
-  }, [readWriteAgent, balancesArray.toString(), JSON.stringify(pricesArray)]);
-
-  useEffect(() => {
-    updateValueDetails();
-    const interval = setInterval(() => {
-      updateValueDetails();
-    }, 15000);
-    return () => {
-      clearInterval(interval);
-    };
-  }, [readWriteAgent]);
-
-  useEffect(() => {
-    fetchAndSetTopMovers();
-    const interval = setInterval(fetchAndSetTopMovers, 15000); // Fetch every 10s (three '0' added)
-    return () => clearInterval(interval);
-  }, [fetchAndSetTopMovers]);
-
-  useEffect(() => {
-    HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
-  }, []);
-
   return (
     <div className="max-h-fit bg-transparent rounded-3xl grid md:grid-cols-12 md:gap-5 gap-10 ">
       <div className="md:space-y-6 space-y-3 lg:col-span-8 md:col-span-7 h-full overflow-hidden flex flex-col">
@@ -219,7 +222,7 @@ export function Dashboard() {
                   <button
                     type="button"
                     title="eye"
-                    onClick={toggleShowBalances}
+                    onClick={onShowBalances}
                     className="cursor-pointer text-gray-300 hover:text-white focus:outline-none"
                   >
                     <Icon
@@ -272,8 +275,8 @@ export function Dashboard() {
             <AssetListComponent
               pricesArray={pricesArray}
               balancesArray={balancesArray}
-              onDeposit={handleOpenDepositModal}
-              onWithdraw={handleOpenWithdrawModal}
+              onDeposit={onOpenDepositModal}
+              onWithdraw={onOpenWithdrawModal}
             />
           </div>
         </div>
@@ -288,18 +291,21 @@ export function Dashboard() {
       {selectedAsset && (
         <>
           <FundingPopUp
+            readAgent={readAgent}
             asset={selectedAsset}
             isOpen={isDepositModalOpen}
-            onClose={handleCloseDepositModal}
+            onClose={onCloseDepositModal}
+            readWriteAgent={readWriteAgent}
           />
           <WithdrawPopUp
             asset={selectedAsset}
+            readWriteAgent={readWriteAgent}
             isOpen={isWithdrawModalOpen}
-            onClose={handleCloseWithdrawModal}
+            onClose={onCloseWithdrawModal}
             marginBalance={
               balancesArray[
                 assetList.findIndex((a) => a.name === selectedAsset.name)
-              ] || 0n
+              ] || "0"
             }
           />
         </>
@@ -310,7 +316,7 @@ export function Dashboard() {
 
 interface AssetListsProps {
   pricesArray: number[];
-  balancesArray: bigint[];
+  balancesArray: string[];
   onDeposit: (asset: Asset) => void;
   onWithdraw: (asset: Asset) => void;
 }
@@ -339,7 +345,7 @@ const AssetListComponent = memo(
         <div className="flex flex-col gap-5">
           {assetList.map((asset, index) => {
             const price = pricesArray[index]; // asset.priceID
-            const userBalance = balancesArray[index] || 0n; // asset.vaultid
+            const userBalance = balancesArray[index] || "0"; // asset.vaultid
 
             return (
               <div
@@ -367,7 +373,8 @@ const AssetListComponent = memo(
     return (
       JSON.stringify(prevProps.pricesArray) ==
         JSON.stringify(newProps.pricesArray) &&
-      prevProps.balancesArray.toString() == newProps.balancesArray.toString()
+      JSON.stringify(prevProps.balancesArray) ==
+        JSON.stringify(newProps.balancesArray)
     );
   }
 );

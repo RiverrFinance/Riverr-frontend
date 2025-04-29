@@ -48,7 +48,7 @@ export class TokenActor {
   }
 
   public async balance(user: Principal): Promise<bigint> {
-    return await this.token.icrc1_balance_of({
+    return this.token.icrc1_balance_of({
       owner: user,
       subaccount: [],
     });

@@ -1,7 +1,7 @@
 import { useAgent, useAuth } from "@nfid/identitykit/react";
 import { Asset } from "../../lists/marketlist";
 import { useEffect, useRef, useState } from "react";
-import { HttpAgent } from "@dfinity/agent";
+import { Agent, HttpAgent } from "@dfinity/agent";
 import { TokenActor } from "../../utils/Interfaces/tokenActor";
 import { Principal } from "@dfinity/principal";
 import { VaultActor } from "../../utils/Interfaces/vaultActor";
@@ -16,32 +16,117 @@ const ICP_API_HOST = "https://icp-api.io/";
 interface Props {
   asset: Asset;
   isOpen: boolean;
+  readAgent: HttpAgent;
+  readWriteAgent: Agent | undefined;
   onClose: () => void;
 }
 
-export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
-  const readWriteAgent = useAgent();
+export default function FundingPopUp({
+  readWriteAgent,
+  readAgent,
+  asset,
+  isOpen,
+  onClose,
+}: Props) {
   const { user } = useAuth();
   const [userTokenBalance, setUserTokenBalance] = useState<bigint>(0n);
   const [depositAmount, setDepositAmount] = useState<string>("");
-  const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
   const [error, setError] = useState<
     "" | "Insufficient Balance" | "Amount too Small" | "Invalid amount"
   >("");
   const [currentAction, setCurrentAction] = useState<
-    "Appoving" | "Spending" | ""
+    "Appoving" | "Funding" | ""
   >("");
   const [isLoading, setIsLoading] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const [view, setView] = useState<"input" | "preview" | "transaction result">(
     "input"
   );
-  //const [dollarValue, setDollarValue] = useState<string>("0.00");
+
   const [txError, setTxError] = useState<string | null>(null);
 
-  const [trnsactionDone, setTransactionDone] = useState(false);
+  const [transactionDone, setTransactionDone] = useState(false);
 
-  let firstMount = useRef(true);
+  useEffect(() => {
+    let interval: number | undefined;
+    if (readWriteAgent == undefined) {
+      setUserTokenBalance(0n);
+    } else {
+      setUserBalance();
+      interval = setInterval(() => {
+        setUserBalance();
+      }, 10000);
+    }
+    return () => {
+      clearInterval(interval);
+    };
+  }, [readWriteAgent]);
+
+  useEffect(() => {
+    if (transactionDone) {
+      setView("transaction result");
+      setTransactionDone(false);
+    }
+  }, [txError]);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Prevent scrolling
+      document.body.style.overflow = "hidden";
+      // setUserBalance();
+      // setView("input");
+      // setDepositAmount("");
+      // setError("");
+      // setCurrentAction("");
+      // setIsChecked(false);
+    } else {
+      // Re-enable scrolling
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isOpen]);
+
+  const proceedToPreview = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // if (depositAmount !== "" && error === "") {
+    // Calculate dollar value based on current market rate (mock)
+    //setDollarValue((parseFloat(depositAmount) * 450).toFixed(2));
+    setView("preview");
+    //  setError("");
+    //}
+  };
+
+  const goBackToInput = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setView("input");
+    // setUserBalance();
+    // setDepositAmount("");
+    // setError("");
+    // setCurrentAction("");
+    setTxError(null);
+    setIsChecked(false);
+  };
+
+  const onAmountUpdate = (value: string) => {
+    setDepositAmount(value);
+    if (value == "") {
+      setError("");
+    } else {
+      const amount = parseUnits(value, asset.decimals).toBigInt();
+      setError(
+        amount > userTokenBalance
+          ? "Insufficient Balance"
+          : amount <= 0n
+          ? "Amount too Small"
+          : ""
+      );
+    }
+  };
+
+  /// Canister Interaction fucntions
 
   /**
    *
@@ -53,49 +138,29 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
       let tokenActor = new TokenActor(asset.canisterID, readAgent);
       const balance = await tokenActor.balance(user.principal);
       setUserTokenBalance(balance);
-    } catch (err) {}
-  };
-  useEffect(() => {
-    setUserBalance();
-    let interval: number | undefined;
-    if (readWriteAgent) {
-      interval = setInterval(() => {
-        setUserBalance();
-      }, 15000);
+    } catch {
+      return;
     }
-    return () => {
-      clearInterval(interval);
-    };
-  }, [readWriteAgent]);
+  };
 
   const approveSpending = async (approvalAmount: bigint): Promise<boolean> => {
     let { vaultID } = asset;
-    try {
-      let tokenActor = new TokenActor(asset.canisterID, readWriteAgent);
 
-      let txResult = await tokenActor.approveSpending(
-        approvalAmount,
-        Principal.fromText(vaultID)
-      );
-      return txResult;
-    } catch {
-      console.log("error approving");
-      return false;
-    }
+    let tokenActor = new TokenActor(asset.canisterID, readWriteAgent);
+
+    return tokenActor.approveSpending(
+      approvalAmount,
+      Principal.fromText(vaultID)
+    );
+    //return txResult;
   };
 
   const getCurrentAllowance = async (): Promise<bigint> => {
     let { vaultID } = asset;
-    try {
-      let tokenActor = new TokenActor(asset.canisterID, readAgent);
 
-      return await tokenActor.allowance(
-        user.principal,
-        Principal.fromText(vaultID)
-      );
-    } catch {
-      return 0n;
-    }
+    let tokenActor = new TokenActor(asset.canisterID, readAgent);
+
+    return tokenActor.allowance(user.principal, Principal.fromText(vaultID));
   };
 
   const fundAccount = async (e: React.MouseEvent) => {
@@ -117,87 +182,21 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
           }
         }
         let vaultActor = new VaultActor(asset.vaultID, readWriteAgent);
-        setCurrentAction("Spending");
+        setCurrentAction("Funding");
         let txResult = await vaultActor.fundAccount(amount, user.principal);
         if (txResult) {
-          setTxError(null);
-          setTransactionDone(true);
+          setTxError("");
         } else {
-          setTxError("Funding failed");
-          setTransactionDone(true);
+          setTxError("Funding Account failed");
         }
       }
     } catch (err) {
       setTxError("An error occurred. Please try again.");
-      setTransactionDone(true);
     } finally {
       setIsLoading(false);
     }
+    setTransactionDone(true);
   };
-
-  useEffect(() => {
-    if (trnsactionDone) {
-      setView("transaction result");
-    }
-  }, [trnsactionDone]);
-
-  const proceedToPreview = (e: React.MouseEvent) => {
-    e.preventDefault();
-    // if (depositAmount !== "" && error === "") {
-    // Calculate dollar value based on current market rate (mock)
-    //setDollarValue((parseFloat(depositAmount) * 450).toFixed(2));
-    setView("preview");
-    //  setError("");
-    //}
-  };
-
-  const goBackToInput = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setView("input");
-    // setUserBalance();
-    // setDepositAmount("");
-    // setError("");
-    // setCurrentAction("");
-    setIsChecked(false);
-  };
-
-  const onAmountUpdate = (value: string) => {
-    setIsChecked(false); // Reset checkbox when amount changes
-    setDepositAmount(value);
-    if (!value) return setError("");
-
-    const amount = parseUnits(value, asset.decimals).toBigInt();
-    setError(
-      amount > userTokenBalance
-        ? "Insufficient Balance"
-        : amount <= 0n
-        ? "Amount too Small"
-        : ""
-    );
-  };
-
-  useEffect(() => {
-    if (isOpen) {
-      // Prevent scrolling
-      document.body.style.overflow = "hidden";
-
-      HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
-      // setUserBalance();
-      // setView("input");
-      // setDepositAmount("");
-      // setError("");
-      // setCurrentAction("");
-      // setIsChecked(false);
-    } else {
-      // Re-enable scrolling
-      document.body.style.overflow = "auto";
-    }
-
-    return () => {
-      document.body.style.overflow = "auto";
-      setIsChecked(false); // Reset checkbox when modal closes
-    };
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -222,7 +221,7 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
                 title=""
               >
                 <Icon name="close" size="small" className="pl-0.5" />
-              </IconButton> 
+              </IconButton>
             </div>
             <div className="space-y-3">
               <div>
@@ -374,7 +373,7 @@ export default function FundingPopUp({ asset, isOpen, onClose }: Props) {
               </IconButton>
             </div>
             <div className="flex flex-col items-center space-y-3">
-              {txError ? (
+              {txError != "" ? (
                 <>
               <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
                 <Icon name="times circle" size="large" color="red" className="pl-1" />

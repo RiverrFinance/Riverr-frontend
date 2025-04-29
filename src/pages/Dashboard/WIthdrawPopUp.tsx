@@ -1,4 +1,4 @@
-import { HttpAgent } from "@dfinity/agent";
+import { Agent, HttpAgent } from "@dfinity/agent";
 import { useAgent, useAuth } from "@nfid/identitykit/react";
 import React, { useEffect, useState } from "react";
 import { ICP_API_HOST } from "../../utils/utilFunction";
@@ -13,16 +13,17 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   asset: Asset;
-  marginBalance: bigint;
+  readWriteAgent: Agent | undefined;
+  marginBalance: string;
 }
 
 export default function WithdrawPopUp({
+  readWriteAgent,
   asset,
   isOpen,
   onClose,
   marginBalance,
 }: Props) {
-  const readWriteAgent = useAgent();
   const { user } = useAuth();
   const [withdrawAmount, setWithdrawAmount] = useState<string>("");
   const [error, setError] = useState<
@@ -33,10 +34,30 @@ export default function WithdrawPopUp({
   const [view, setView] = useState<"input" | "preview" | "transaction result">(
     "input"
   );
-  // const [dollarValue, setDollarValue] = useState<string>("0.00");
   const [txError, setTxError] = useState<string | null>(null);
 
   const [transactionDone, setTransactionDone] = useState(false);
+
+  useEffect(() => {
+    if (transactionDone) {
+      setView("transaction result");
+      setTransactionDone(false);
+    }
+  }, [txError]);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Prevent scrolling
+      document.body.style.overflow = "hidden";
+    } else {
+      // Re-enable scrolling
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isOpen]);
 
   const proceedToPreview = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -50,29 +71,25 @@ export default function WithdrawPopUp({
   const goBackToInput = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsChecked(false);
+    setTxError(null);
     setView("input");
-    setWithdrawAmount("");
-    setError("");
-    setIsChecked(false); 
   };
 
   const onAmountChange = (value: string) => {
-    setIsChecked(false);
-    if (value === "") {
-      setWithdrawAmount("");
-      setError("");
-      return;
-    }
-    const amount = parseUnits(value, asset.decimals).toBigInt();
-
-    if (amount > marginBalance) {
-      setError("Insufficient Balance");
-    } else if (amount <= 0n) {
-      setError("Amount too Small");
-    } else {
-      setError("");
-    }
     setWithdrawAmount(value);
+    if (value == "") {
+      setError("");
+    } else {
+      const amount = parseUnits(value, asset.decimals).toBigInt();
+
+      if (amount > parseUnits(marginBalance, asset.decimals).toBigInt()) {
+        setError("Insufficient Balance");
+      } else if (amount <= 0n) {
+        setError("Amount too Small");
+      } else {
+        setError("");
+      }
+    }
   };
 
   const withdrawFromAccount = async (e: React.MouseEvent) => {
@@ -87,44 +104,18 @@ export default function WithdrawPopUp({
         );
         console.log(txResult);
         if (txResult) {
-          setTxError(null);
-          setTransactionDone(true);
+          setTxError("");
         } else {
           setTxError("Transaction failed. Please try again.");
-          setTransactionDone(true);
         }
       }
     } catch (error) {
       setTxError("An error occurred. Please try again.");
-      setTransactionDone(true);
     } finally {
       setIsLoading(false);
     }
+    setTransactionDone(true);
   };
-
-  useEffect(() => {
-    if (transactionDone) {
-      setView("transaction result");
-    }
-  }, [txError]);
-
-  useEffect(() => {
-    if (isOpen) {
-      // Prevent scrolling
-      document.body.style.overflow = "hidden";
-      setIsChecked(false); 
-      setWithdrawAmount(""); 
-      setError("");
-    } else {
-      // Re-enable scrolling
-      document.body.style.overflow = "auto"; 
-    }
-
-    return () => {
-      document.body.style.overflow = "auto";
-      setIsChecked(false); // Reset checkbox state when modal is closed
-    };
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -189,8 +180,7 @@ export default function WithdrawPopUp({
                     <span className="text-white">
                       Available:{" "}
                       <span className="text-xs text-gray-400">
-                        {formatUnits(marginBalance, asset.decimals)}{" "}
-                        {asset.symbol}
+                        {marginBalance} {asset.symbol}
                       </span>
                     </span>
                     {error && <span className="text-red-500">{error}</span>}
@@ -295,7 +285,7 @@ export default function WithdrawPopUp({
               </IconButton>
             </div>
             <div className="flex flex-col items-center space-y-3">
-              {txError ? (
+              {txError != "" ? (
                 <>
               <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
                 <Icon name="times circle" size="large" color="red" className="pl-1" />
