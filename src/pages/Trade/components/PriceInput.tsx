@@ -20,41 +20,38 @@ export const PriceInput = ({
   long,
 }: Props) => {
   const [fetchSuccess, setFetchSuccess] = useState<boolean>(false);
-  // const [highestBuyOffer, setHighestBuyOffer] = useState<bigint>(0n);
+  const [highestBuyOffer, setHighestBuyOffer] = useState<bigint>(0n);
   const [lowestSellOffer, setLowestSellOffer] = useState<bigint>(0n);
 
   useEffect(() => {
-    fetchSetBestOffers();
     let interval: undefined | number;
     if (market.market_id) {
+      fetchSetBestOffers();
       interval = setInterval(() => {
         fetchSetBestOffers();
-      }, 5000);
+      }, 15000);
     }
     return () => {
       clearInterval(interval);
-      setFetchSuccess(false);
     };
   }, [market, long]);
 
-  const setDefaultPrice = (lso: bigint, hbo: bigint) => {
+  const startingPoint = (): string => {
     if (long) {
-      setLimitPrice(tickToPrice(hbo));
+      return tickToPrice(highestBuyOffer);
     } else {
-      setLimitPrice(tickToPrice(lso));
+      return tickToPrice(lowestSellOffer);
     }
   };
-  // highest buy ,lowest sell offer
+
   const fetchSetBestOffers = async () => {
     try {
       const marketActor = new MarketActor(market.market_id, readAgent);
       const [hbo, lso] = await marketActor.getBestOffersTicks();
-      // setHighestBuyOffer(hbo);
+      //console.log(hbo, lso);
+      setHighestBuyOffer(hbo);
       setLowestSellOffer(lso);
-      if (!fetchSuccess) {
-        setDefaultPrice(lso, hbo);
-        setFetchSuccess(true);
-      }
+      setFetchSuccess(true);
     } catch {}
   };
 
@@ -66,8 +63,9 @@ export const PriceInput = ({
       </div>
       <div className="flex items-center gap-2 bg-[#1C1C28] rounded-lg p-3">
         <input
-          disabled={!fetchSuccess}
           type="number"
+          disabled={!fetchSuccess}
+          aria-placeholder={`${startingPoint()}`}
           value={value}
           onChange={(e) => {
             let { value } = e.target;

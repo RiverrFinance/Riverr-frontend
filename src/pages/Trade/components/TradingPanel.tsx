@@ -11,6 +11,7 @@ import { MarginInput } from "./MarginInput";
 import { InputError } from "../types/trading";
 import ActionButton from "./ActionButton";
 import { priceToTick, tickToPrice } from "../utilFunctions";
+import { useAuth } from "@nfid/identitykit/react";
 
 const ICP_API_HOST = "https://icp-api.io/";
 
@@ -28,13 +29,14 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
   readWriteAgent,
   accountIndex,
 }) => {
+  const { user } = useAuth();
   const [error, setError] = useState<InputError>("");
   const [orderType, setOrderType] = useState<"Market" | "Limit">("Market");
   const [tradeDirection, setTradeDirection] = useState<"Long" | "Short">(
     "Long"
   );
   const [margin, setMargin] = useState<string>("");
-  const [limitPrice, setLimitPrice] = useState<string>("0.0");
+  const [limitPrice, setLimitPrice] = useState<string>("");
   const [leverage, setLeverage] = useState<number>(1);
 
   const [marketState, setMarketState] = useState<StateDetails>({
@@ -46,19 +48,19 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
   });
 
   useEffect(() => {
-    fetchAndSetStatesDetails();
     let interval: undefined | number;
 
     if (market.market_id) {
+      fetchAndSetStatesDetails();
       const interval = setInterval(() => {
         fetchAndSetStatesDetails();
-      }, 10000); // 10 seconds
+      }, 20000); // 20 seconds
     }
 
     return () => {
       clearInterval(interval);
     };
-  }, []);
+  }, [market]);
 
   const total = () => {
     if (margin == "") {
@@ -71,7 +73,8 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
     try {
       let marketActor = new MarketActor(market.market_id, readAgent);
       let details = await marketActor.getStateDetails();
-      console.log(details);
+
+      // console.log(details);
       setMarketState(details);
     } catch (e) {
       console.log("Error fetching states details", e);
@@ -80,8 +83,10 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
 
   const openOrder = async () => {
     try {
-      if (error == "" && Number(margin) > 0) {
+      if (error == "" && Number(margin) > 0 && Number(limitPrice) > 0) {
         const marketActor = new MarketActor(market.market_id, readWriteAgent);
+
+        // let response = await marketActor.closePosition(accountIndex);
 
         let type;
         let max_tick;
@@ -96,7 +101,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
           margin,
           market.quoteAsset.decimals
         ).toBigInt();
-        let txresponse = await marketActor.openPosition(
+        let txresponse: boolean = await marketActor.openPosition(
           accountIndex,
           marginIn,
           tradeDirection == "Long",

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import fetch from "isomorphic-fetch";
 import { MarketSelector } from "./components/MarketSelector";
 import { Market } from "../../lists/marketlist";
 import DexScreenerChart from "./components/DexScreenerChart";
@@ -17,7 +18,9 @@ export const Trade = ({}: Props) => {
   const [accountIndex, setAccountIndex] = useState<number>(0);
 
   useEffect(() => {
-    HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
+    HttpAgent.create({ fetch, host: ICP_API_HOST, retryTimes: 5 }).then(
+      setReadAgent
+    );
   }, []);
   return (
     <div className="p-4 pt-0">

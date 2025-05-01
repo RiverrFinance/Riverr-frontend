@@ -21,6 +21,7 @@ export class MarketActor {
 
   public async closePosition(account_index: number): Promise<bigint> {
     let amount = await this.market.closePosition(account_index, []);
+    console.log(`the amount out is ${amount}`);
 
     return amount;
   }
@@ -44,8 +45,10 @@ export class MarketActor {
       BigInt(1)
     );
     if ("Ok" in result) {
+      console.log(result.Ok);
       return true;
     } else {
+      console.log(result.Err);
       return false;
     }
   }
@@ -58,7 +61,7 @@ export class MarketActor {
   }
 
   public async getStateDetails(): Promise<StateDetails> {
-    return await this.market.getStateDetails();
+    return this.market.getStateDetails();
   }
 
   public async getMarketDetails(): Promise<MarketDetails> {

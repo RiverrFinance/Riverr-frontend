@@ -27,12 +27,6 @@ function App() {
 function Track() {
   const { disconnect } = useAuth();
 
-  console.log("Track mounted");
-
-  useEffect(() => {
-    disconnect();
-  }, []);
-
   return (
     <>
       <SubApp />

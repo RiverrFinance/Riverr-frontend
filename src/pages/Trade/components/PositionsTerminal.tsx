@@ -36,8 +36,9 @@ export default function PositionsTerminal({
 
   useEffect(() => {
     let interval: undefined | number;
-    if (market.market_id != undefined) {
-      if (readWriteAgent != undefined) {
+    if (market.market_id) {
+      if (readWriteAgent) {
+        fetchAndSeperate();
         interval = setInterval(() => {
           fetchAndSeperate();
         }, 10000);

@@ -40,7 +40,7 @@ export const MarginInput = ({
           if (readWriteAgent) {
             fetchSetMarginBalance();
           }
-        }, 10000);
+        }, 10000); //10 seconds
         return;
       }
     }
@@ -57,7 +57,9 @@ export const MarginInput = ({
       const margin = await vault.userMarginBalance(user.principal);
 
       setUserMarginBalance(margin);
-    } catch (error) {}
+    } catch {
+      return;
+    }
   };
 
   const onCollateralChange = (value: string) => {
@@ -65,17 +67,18 @@ export const MarginInput = ({
     if (value == "") {
       setError("");
     } else {
-      let factorValue = parseUnits(
-        value,
-        market.quoteAsset.decimals
-      ).toBigInt();
-      if (factorValue > userMarginBalance) {
-        setError("Insufficient Balance");
-      } else if (factorValue < minCollateral) {
-        setError("Smaller than min collateral");
-      } else {
-        setError("");
-      }
+      setError("");
+      // let factorValue = parseUnits(
+      //   value,
+      //   market.quoteAsset.decimals
+      // ).toBigInt();
+      // if (factorValue > userMarginBalance) {
+      //   setError("Insufficient Balance");
+      // } else if (factorValue < minCollateral) {
+      //   setError("Smaller than min collateral");
+      // } else {
+      //   setError("");
+      // }
     }
   };
   return (
@@ -84,8 +87,9 @@ export const MarginInput = ({
         <span className="text-gray-400">Collateral</span>
         <span className="text-gray-400">
           Available:{" "}
-          {formatUnits(userMarginBalance, market.quoteAsset.decimals)}
-          {market.quoteAsset.symbol}
+          {`${formatUnits(userMarginBalance, market.quoteAsset.decimals)}  ${
+            market.quoteAsset.symbol
+          }`}
         </span>
       </div>
       <div className="flex items-center gap-2 bg-[#1C1C28] rounded-lg p-3">

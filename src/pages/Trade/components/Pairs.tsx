@@ -22,12 +22,24 @@ export const Pairs: React.FC<PairProps> = ({
   market,
   favorites,
   isSelected,
-  onToggleFavorite
+  onToggleFavorite,
 }) => {
   const [details, setDetails] = useState<PriceDetails>({
     price: 0.0,
     price_change_24h: 0.0,
   });
+  useEffect(() => {
+    updateDetails();
+    const intervalId = setInterval(() => {
+      updateDetails();
+    }, PRICE_TIMER_INTERVL);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [market]);
+
+  const isFavorite = favorites.has(market.chartId);
 
   const updateDetails = async () => {
     try {
@@ -67,18 +79,6 @@ export const Pairs: React.FC<PairProps> = ({
     if (!percent) return "0.00";
     return percent.toFixed(2);
   };
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      updateDetails();
-    }, PRICE_TIMER_INTERVL);
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [market]);
-
-  const isFavorite = favorites.has(market.chartId)
 
   return (
     // <div
@@ -142,20 +142,25 @@ export const Pairs: React.FC<PairProps> = ({
           }}
         >
           {/* Using your custom StarIcon component */}
-          <StarIcon filled={isFavorite} /> {/* Changed: Use StarIcon and pass filled prop */}
+          <StarIcon filled={isFavorite} />{" "}
+          {/* Changed: Use StarIcon and pass filled prop */}
         </button>
         {/* Asset Icon */}
         <img
           src={market.baseAsset.image}
           alt={market.baseAsset.symbol}
           className="w-6 h-6 rounded-full" // Added rounded-full for circular image
-           onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => { // Added type for event
-             e.currentTarget.src = 'https://react.semantic-ui.com/images/wireframe/square-image.png'; // Placeholder on error
-           }}
+          onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+            // Added type for event
+            e.currentTarget.src =
+              "https://react.semantic-ui.com/images/wireframe/square-image.png"; // Placeholder on error
+          }}
         />
         {/* Asset Symbols and Name */}
         <div>
-          <div className="font-medium text-white"> {/* Added text-white */}
+          <div className="font-medium text-white">
+            {" "}
+            {/* Added text-white */}
             {market.baseAsset.symbol.toUpperCase()}/
             {market.quoteAsset.symbol.toUpperCase()}
           </div>
@@ -179,7 +184,3 @@ export const Pairs: React.FC<PairProps> = ({
     </div>
   );
 };
-
-
-
-
