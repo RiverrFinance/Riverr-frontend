@@ -63,10 +63,10 @@ export const idlFactory = ({ IDL }) => {
     'closePosition' : IDL.Func([IDL.Nat8, IDL.Opt(IDL.Nat64)], [IDL.Nat], []),
     'getAccountPositionDetails' : IDL.Func(
         [IDL.Principal, IDL.Nat8],
-        [IDL.Opt(IDL.Tuple(PositionParameters, PositionStatus))],
+        [IDL.Opt(IDL.Tuple(PositionParameters, PositionStatus, IDL.Int64))],
         ['query'],
       ),
-    'getBestOfferTick' : IDL.Func([IDL.Bool], [IDL.Nat64], ['query']),
+    'getBestOffers' : IDL.Func([], [IDL.Nat64, IDL.Nat64], ['query']),
     'getMarketDetails' : IDL.Func([], [MarketDetails], ['query']),
     'getStateDetails' : IDL.Func([], [StateDetails], ['query']),
     'getTickDetails' : IDL.Func([IDL.Nat64], [TickDetails], ['query']),

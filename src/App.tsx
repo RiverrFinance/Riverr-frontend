@@ -54,7 +54,7 @@ const SubApp = () => {
       />
       <Sidebar>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<Trade />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/trade" element={<Trade />} />
           <Route path="/earn" element={<Earn />} />

@@ -20,7 +20,7 @@ export const createActor = (canisterId, options = {}) => {
   //   );
   // }
 
-  // Fetch root key for certificate validation during development
+  // // Fetch root key for certificate validation during development
   // if (process.env.DFX_NETWORK !== "ic") {
   //   agent.fetchRootKey().catch((err) => {
   //     console.warn(

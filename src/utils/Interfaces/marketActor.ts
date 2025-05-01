@@ -53,7 +53,7 @@ export class MarketActor {
   public async getaccountPositiondetails(
     user: Principal,
     index: number
-  ): Promise<[[PositionParameters, PositionStatus]] | []> {
+  ): Promise<[[PositionParameters, PositionStatus, bigint]] | []> {
     return await this.market.getAccountPositionDetails(user, index);
   }
 
@@ -65,7 +65,7 @@ export class MarketActor {
     return await this.market.getMarketDetails();
   }
 
-  public async getBestOfferTick(buy: boolean): Promise<bigint> {
-    return await this.market.getBestOfferTick(buy);
+  public async getBestOffersTicks(): Promise<[bigint, bigint]> {
+    return await this.market.getBestOffers();
   }
 }

@@ -67,7 +67,7 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
     window.addEventListener("resize", mobileIs480);
 
     // Redirect to dashboard if on root path
-    if (location.pathname === "/") navigate("/dashboard");
+    if (location.pathname === "/") navigate("/trade");
 
     return () => window.removeEventListener("resize", checkIfMobile);
   }, []);

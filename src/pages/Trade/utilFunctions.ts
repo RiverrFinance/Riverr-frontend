@@ -5,3 +5,7 @@ export const tickToPrice = (tick: bigint): string => {
 
   return price.toString();
 };
+
+export const priceToTick = (price: string): bigint => {
+  return BigInt(Number(price) * 100 * ONE_PERCENT);
+};

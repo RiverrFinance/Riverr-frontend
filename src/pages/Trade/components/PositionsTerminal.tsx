@@ -1,5 +1,5 @@
 import { Agent, HttpAgent } from "@dfinity/agent";
-import { useAgent } from "@nfid/identitykit/react";
+import { useAuth } from "@nfid/identitykit/react";
 import { useEffect, useState } from "react";
 import {
   PositionParameters,
@@ -9,7 +9,6 @@ import {
 import { MarketActor } from "../../../utils/Interfaces/marketActor";
 import { Market } from "../../../lists/marketlist";
 import TradePosition from "./TradePosition";
-import { ICP_API_HOST } from "../../../utils/utilFunction";
 
 const maxSubAccount = 4;
 
@@ -24,83 +23,88 @@ export default function PositionsTerminal({
   readWriteAgent,
   readAgent,
 }: Props) {
-  // const readWriteAgent = useAgent();
-  // const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
-  const [currentTick, setCurrentTick] = useState<bigint>(0n);
+  const { user } = useAuth();
   const [currentTab, setCurrentTab] = useState<"Orders" | "Positions">(
     "Positions"
   );
-  const [orders, setOrdersIndex] = useState<[number, PositionParameters][]>([]);
+  const [orders, setOrdersIndex] = useState<
+    [number, PositionParameters, bigint][]
+  >([]);
   const [positions, setPositionIndex] = useState<
-    [number, PositionParameters][]
+    [number, PositionParameters, bigint][]
   >([]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (readWriteAgent) {
-        fetchAndSeperate();
-      } else {
-        setOrdersIndex([]);
-        setPositionIndex([]);
+    let interval: undefined | number;
+    if (market.market_id != undefined) {
+      if (readWriteAgent != undefined) {
+        interval = setInterval(() => {
+          fetchAndSeperate();
+        }, 10000);
+        return;
       }
-    }, 10000);
+    }
+    setOrdersIndex([]);
+    setPositionIndex([]);
 
     return () => {
       clearInterval(interval);
     };
-  }, [readWriteAgent]);
-
-  const fetchAndSetCurrentTick = async () => {
-    try {
-      let marketActor = new MarketActor(market.market_id, readAgent);
-      let { current_tick } = await marketActor.getStateDetails();
-      setCurrentTick(current_tick);
-    } catch {}
-  };
+  }, [readWriteAgent, market]);
 
   /**
    *
    * This function fetches the users order and positions and seperate them accordingly
    * NOtE: The positionsare orders that have been executed
    */
-
   const fetchAndSeperate = async () => {
     try {
-      if (readWriteAgent && market.market_id) {
-        let user = await readWriteAgent.getPrincipal();
-        const marketActor = new MarketActor(market.market_id, readAgent);
-        let orderList: [number, PositionParameters][],
-          positionsList: [number, PositionParameters][];
-        for (let i = 0; i <= maxSubAccount; i++) {
-          let details: [[PositionParameters, PositionStatus]] | [] =
-            await marketActor.getaccountPositiondetails(user, i);
-          if (details.length == 0) {
-            continue;
-          }
-          let [position, status] = details[0];
-          if ("FILLED" in status) {
-            positionsList.push([i, position]);
-          } else {
-            orderList.push([i, position]);
-          }
+      const marketActor = new MarketActor(market.market_id, readAgent);
+      let orderList: [number, PositionParameters, bigint][],
+        positionsList: [number, PositionParameters, bigint][];
+      for (let i = 0; i <= maxSubAccount; i++) {
+        let details: [[PositionParameters, PositionStatus, bigint]] | [] =
+          await marketActor.getaccountPositiondetails(user.principal, i);
+        if (details.length == 0) {
+          continue;
         }
-        setOrdersIndex(orderList);
-        setPositionIndex(positionsList);
+        let [position, status, pnl] = details[0];
+        if ("FILLED" in status) {
+          positionsList.push([i, position, pnl]);
+        } else {
+          orderList.push([i, position, pnl]);
+        }
       }
+      setOrdersIndex(orderList);
+      setPositionIndex(positionsList);
     } catch {}
   };
 
   const returnElement = (): JSX.Element[] => {
     if (currentTab == "Positions") {
-      return positions.map(([index, order]) => {
+      return positions.map(([index, order, pnl]) => {
         return (
-          <TradePosition account_index={index} market={market} order={order} />
+          <TradePosition
+            pnl={pnl}
+            accountIndex={index}
+            market={market}
+            order={order}
+            readAgent={readAgent}
+            readWriteAgent={readWriteAgent}
+          />
         );
       });
     } else {
-      return orders.map(([index, order]) => {
+      return orders.map(([index, order, pnl]) => {
         return (
-          <TradePosition account_index={index} market={market} order={order} />
+          <TradePosition
+            pnl={pnl}
+            accountIndex={index}
+            market={market}
+            order={order}
+            readAgent={readAgent}
+            readWriteAgent={readWriteAgent}
+          />
         );
       });
     }

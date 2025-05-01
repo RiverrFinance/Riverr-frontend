@@ -56,7 +56,7 @@ export function Dashboard() {
   const [isClaimingFaucet, setIsClaimingFaucet] = useState(false);
 
   useEffect(() => {
-    if (readWriteAgent != undefined || user != undefined) {
+    if (readWriteAgent) {
       changeTotalValue();
     } else {
       setTotalValue(0);
@@ -72,7 +72,7 @@ export function Dashboard() {
     updateValueDetails();
     const interval = setInterval(() => {
       updateValueDetails();
-    }, 15000); // 20 seconds
+    }, 10000); // 10 seconds
     return () => {
       clearInterval(interval);
     };

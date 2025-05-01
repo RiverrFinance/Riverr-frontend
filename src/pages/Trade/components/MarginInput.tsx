@@ -1,4 +1,4 @@
-import { Market } from "../../../lists/marketlist";
+import { Market, markets } from "../../../lists/marketlist";
 import { formatUnits } from "ethers/lib/utils";
 import { InputError } from "../types/trading";
 import { parseUnits } from "ethers/lib/utils";
@@ -33,31 +33,30 @@ export const MarginInput = ({
 
   useEffect(() => {
     let interval: number | undefined;
-    if (readWriteAgent) {
-      fetchSetMarginBalance();
-      interval = setInterval(() => {
-        if (readWriteAgent) {
-          fetchSetMarginBalance();
-        }
-      }, 10000);
-    } else {
-      setUserMarginBalance(0n);
+    if (market.quoteAsset.vaultID) {
+      if (readWriteAgent) {
+        fetchSetMarginBalance();
+        interval = setInterval(() => {
+          if (readWriteAgent) {
+            fetchSetMarginBalance();
+          }
+        }, 10000);
+        return;
+      }
     }
-
+    setUserMarginBalance(0n);
     return () => {
       clearInterval(interval);
     };
-  }, [readWriteAgent]);
+  }, [readWriteAgent, market]);
 
   //
   const fetchSetMarginBalance = async () => {
     try {
-      if (market.quoteAsset.vaultID) {
-        const vault = new VaultActor(market.quoteAsset.vaultID, readAgent);
-        const margin = await vault.userMarginBalance(user.principal);
+      const vault = new VaultActor(market.quoteAsset.vaultID, readAgent);
+      const margin = await vault.userMarginBalance(user.principal);
 
-        setUserMarginBalance(margin);
-      }
+      setUserMarginBalance(margin);
     } catch (error) {}
   };
 
@@ -78,21 +77,20 @@ export const MarginInput = ({
         setError("");
       }
     }
-
-    setFunction(value);
   };
   return (
     <div>
       <div className="flex justify-between text-sm mb-2">
         <span className="text-gray-400">Collateral</span>
         <span className="text-gray-400">
-          Available: {formatUnits(userMarginBalance, market.quoteAsset.decimals)}
+          Available:{" "}
+          {formatUnits(userMarginBalance, market.quoteAsset.decimals)}
           {market.quoteAsset.symbol}
         </span>
       </div>
       <div className="flex items-center gap-2 bg-[#1C1C28] rounded-lg p-3">
         <input
-          disabled={market.market_id == null}
+          disabled={!market.market_id}
           type="number"
           value={value}
           onChange={(e) => {
