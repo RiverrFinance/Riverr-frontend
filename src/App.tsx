@@ -27,12 +27,6 @@ function App() {
 function Track() {
   const { disconnect } = useAuth();
 
-  console.log("Track mounted");
-
-  useEffect(() => {
-    disconnect();
-  }, []);
-
   return (
     <>
       <SubApp />
@@ -45,23 +39,21 @@ const SubApp = () => {
 
   return (
     <BrowserRouter>
-      <div className="relative w-full h-screen overflow-hidden">
-        <Toaster
-          position="top-right"
-          richColors
-          closeButton
-          theme="dark"
-          className="sonner-toast"
-        />
-        <Sidebar>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/trade" element={<Trade />} />
-            <Route path="/earn" element={<Earn />} />
-          </Routes>
-        </Sidebar>
-      </div>
+      <Toaster
+        position="top-right"
+        richColors
+        closeButton
+        theme="dark"
+        className="sonner-toast"
+      />
+      <Sidebar>
+        <Routes>
+          <Route path="/" element={<Trade />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/trade" element={<Trade />} />
+          <Route path="/earn" element={<Earn />} />
+        </Routes>
+      </Sidebar>
     </BrowserRouter>
   );
 };

@@ -1,10 +1,15 @@
 import { memo, useCallback, useEffect, useState } from "react";
+import fetch from "isomorphic-fetch";
 import { Asset, assetList } from "../../lists/marketlist";
 import { HttpAgent } from "@dfinity/agent";
 import { AssetComponent } from "./AssetComponent";
 import { useAgent, useAuth } from "@nfid/identitykit/react";
 import { VaultActor } from "../../utils/Interfaces/vaultActor";
-import { fetchDetails, fetchTopMovers } from "../../utils/utilFunction";
+import {
+  fetchDetails,
+  fetchTopMovers,
+  ICP_API_HOST,
+} from "../../utils/utilFunction";
 import { formatUnits, parseUnits } from "ethers/lib/utils";
 import FundingPopUp from "./FundingPopUp";
 import WithdrawPopUp from "./WIthdrawPopUp";
@@ -13,7 +18,6 @@ import { MinterActor } from "../../utils/Interfaces/tokenActor";
 import { Principal } from "@dfinity/principal";
 import { GlowingEffect } from "../../components/Glowing-effect";
 
-const ICP_API_HOST = "https://icp-api.io/";
 const COIN_GECKO_API_URL = "https://api.coingecko.com/api/v3";
 
 interface PriceDetails {
@@ -59,7 +63,7 @@ export function Dashboard() {
   const [isClaimingFaucet, setIsClaimingFaucet] = useState(false);
 
   useEffect(() => {
-    if (readWriteAgent != undefined || user != undefined) {
+    if (readWriteAgent) {
       changeTotalValue();
     } else {
       setTotalValue(0);
@@ -75,7 +79,7 @@ export function Dashboard() {
     updateValueDetails();
     const interval = setInterval(() => {
       updateValueDetails();
-    }, 15000); // 20 seconds
+    }, 15000); // 10 seconds
     return () => {
       clearInterval(interval);
     };
@@ -88,7 +92,9 @@ export function Dashboard() {
   }, []);
 
   useEffect(() => {
-    HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
+    HttpAgent.create({ fetch, host: ICP_API_HOST, retryTimes: 5 }).then(
+      setReadAgent
+    );
   }, []);
 
   ///

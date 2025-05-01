@@ -64,7 +64,7 @@ export const markets: Array<Market> = [
     baseAsset: assetList[2],
     quoteAsset: quoteCurrencies[0],
     chartId: "xmiu5-jqaaa-aaaag-qbz7q-cai",
-    market_id: "",
+    market_id: "i4w3l-hiaaa-aaaaf-qao5a-cai",
     isFavorite: true,
   },
   {

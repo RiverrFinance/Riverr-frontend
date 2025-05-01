@@ -49,13 +49,13 @@ export default function FundingPopUp({
 
   useEffect(() => {
     let interval: number | undefined;
-    if (readWriteAgent == undefined) {
-      setUserTokenBalance(0n);
-    } else {
+    if (readWriteAgent) {
       setUserBalance();
       interval = setInterval(() => {
         setUserBalance();
       }, 10000);
+    } else {
+      setUserTokenBalance(0n);
     }
     return () => {
       clearInterval(interval);
@@ -373,11 +373,16 @@ export default function FundingPopUp({
               </IconButton>
             </div>
             <div className="flex flex-col items-center space-y-3">
-              {txError != "" ? (
+              {txError !== "" ? (
                 <>
-              <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
-                <Icon name="times circle" size="large" color="red" className="pl-1" />
-              </div>
+                  <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
+                    <Icon
+                      name="times circle"
+                      size="large"
+                      color="red"
+                      className="pl-1"
+                    />
+                  </div>
                   <h2 className="text-xl font-semibold">{txError}</h2>
                   {/* <p className="text-sm text-gray-400">{txError}</p> */}
                   <Button

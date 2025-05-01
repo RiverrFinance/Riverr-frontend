@@ -63,9 +63,9 @@ export interface _SERVICE {
   'closePosition' : ActorMethod<[number, [] | [bigint]], bigint>,
   'getAccountPositionDetails' : ActorMethod<
     [Principal, number],
-    [] | [[PositionParameters, PositionStatus]]
+    [] | [[PositionParameters, PositionStatus, bigint]]
   >,
-  'getBestOfferTick' : ActorMethod<[boolean], bigint>,
+  'getBestOffers' : ActorMethod<[], [bigint, bigint]>,
   'getMarketDetails' : ActorMethod<[], MarketDetails>,
   'getStateDetails' : ActorMethod<[], StateDetails>,
   'getTickDetails' : ActorMethod<[bigint], TickDetails>,
