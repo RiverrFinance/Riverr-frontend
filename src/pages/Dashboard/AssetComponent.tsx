@@ -18,6 +18,8 @@ interface Props {
   onAccordionToggle: (index: number) => void;
   onDeposit: (asset: Asset) => void;
   onWithdraw: (asset: Asset) => void;
+  isPriceLoading?: boolean;
+  isPriceError?: boolean;
 }
 
 export const AssetComponent = function AssetComponent({
@@ -29,6 +31,8 @@ export const AssetComponent = function AssetComponent({
   onAccordionToggle,
   onDeposit,
   onWithdraw,
+  isPriceLoading = false,
+  isPriceError = false,
 }: Props) {
   const isAccordionOpen = index === openAccordionIndex;
   const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 1000);
@@ -41,6 +45,10 @@ export const AssetComponent = function AssetComponent({
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  const PriceSkeleton = () => (
+    <div className="h-4 w-16 bg-gray-700 rounded animate-pulse"></div>
+  );
 
   return (
     <>
@@ -66,7 +74,11 @@ export const AssetComponent = function AssetComponent({
           </div>
         </div>
         <div className="col-span-2 max-lg:col-span-3 text-sm">
-          ${formatPrice(price)}
+          {isPriceLoading || isPriceError ? (
+            <PriceSkeleton />
+          ) : (
+            `$${formatPrice(price)}`
+          )}
         </div>
         <div className="col-span-2 max-lg:col-span-3 text-sm font-medium">
           {userBalance}

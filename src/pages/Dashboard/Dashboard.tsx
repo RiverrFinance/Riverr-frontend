@@ -11,6 +11,7 @@ import WithdrawPopUp from "./WIthdrawPopUp";
 import { Icon } from "semantic-ui-react";
 import { MinterActor } from "../../utils/Interfaces/tokenActor";
 import { Principal } from "@dfinity/principal";
+import { GlowingEffect } from "../../components/Glowing-effect";
 
 const ICP_API_HOST = "https://icp-api.io/";
 const COIN_GECKO_API_URL = "https://api.coingecko.com/api/v3";
@@ -49,6 +50,8 @@ export function Dashboard() {
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
 
   const [topMovers, setTopMovers] = useState<CoinGeckoMarketData[]>([]);
+  const [isTopMoversLoading, setIsTopMoversLoading] = useState(true);
+  const [isTopMoversError, setIsTopMoversError] = useState(false);
   const topPriorityCoinIds =
     "bitcoin,ethereum,binancecoin,aave,solana,ripple,internet-computer,usd-coin";
 
@@ -152,14 +155,19 @@ export function Dashboard() {
 
   const fetchAndSetTopMovers = async () => {
     try {
+      setIsTopMoversLoading(true);
+      setIsTopMoversError(false);
       const response = await fetchTopMovers(topPriorityCoinIds);
       if (response.ok) {
         const combinedTopMovers = await response.json();
-        //console.log(combinedTopMovers);
-        setTopMovers(combinedTopMovers);
+        setTopMovers(combinedTopMovers); // Update top movers state
+      } else {
+        setIsTopMoversError(true);
       }
     } catch (err) {
-      // console.log(`this error occured in dahsboard ${err}`);
+      setIsTopMoversError(true);
+    } finally {
+      setIsTopMoversLoading(false);
     }
   };
 
@@ -205,10 +213,19 @@ export function Dashboard() {
   };
 
   return (
-    <div className="max-h-fit bg-transparent rounded-3xl grid md:grid-cols-12 md:gap-5 gap-10 ">
+    <div className="max-h-screen h-full bg-transparent rounded-3xl grid md:grid-cols-12 md:gap-5 gap-10 ">
       <div className="md:space-y-6 space-y-3 lg:col-span-8 md:col-span-7 h-full overflow-hidden flex flex-col">
-        <div className="py-5 px-5 h-fit bg-[#18191D] rounded-2xl md:rounded-3xl">
-          <div className="bg-[#0300AD] rounded-lg md:rounded-2xl py-10 md:px-5 px-12 h-fit flex justify-between items-center">
+
+        {/* Total Balance Card with Glowing Effect */}
+        <div className="py-5 px-5 h-fit bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl md:rounded-3xl relative">
+          <GlowingEffect
+            spread={10}
+            glow={true}
+            disabled={false}
+            proximity={64}
+            inactiveZone={0.01}
+          />
+          <div className="bg-[#0300AD] rounded-lg md:rounded-2xl py-10 md:px-5 px-12 h-fit flex justify-between items-center relative z-10">
             <div className="flex flex-col max-xs:items-center">
               <div className="text-3xl font-black tracking-wide mb-4">
                 Dashboard
@@ -269,7 +286,9 @@ export function Dashboard() {
             </div>
           </div>
         </div>
-        <div className="flex-grow py-8 px-5 bg-[#18191D] rounded-2xl md:rounded-3xl h-screen">
+
+        {/* Portfolio Section */}
+        <div className="flex-grow py-8 px-5 bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl md:rounded-3xl h-screen">
           <div className="text-2xl font-bold mb-4 capitalize">portfolio</div>
           <div>
             <AssetListComponent
@@ -281,11 +300,24 @@ export function Dashboard() {
           </div>
         </div>
       </div>
-      <div className="lg:col-span-4 md:col-span-5 py-7 h-full bg-[#18191D] rounded-2xl md:rounded-3xl">
-        <div className="capitalize flex px-7">
+
+      {/* Top Movers Section */}
+      <div className="lg:col-span-4 md:col-span-5 py-7 h-full bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl md:rounded-3xl relative">
+        <GlowingEffect
+          spread={10}
+          glow={true}
+          disabled={false}
+          proximity={64}
+          inactiveZone={0.01}
+        />
+        <div className="capitalize flex px-7 relative z-10">
           <h2 className="text-2xl">top movers</h2>
         </div>
-        <TopMoversComponent topMovers={topMovers} />
+        <TopMoversComponent
+          topMovers={topMovers}
+          isLoading={isTopMoversLoading}
+          isError={isTopMoversError}
+        />
       </div>
 
       {selectedAsset && (
@@ -348,20 +380,32 @@ const AssetListComponent = memo(
             const userBalance = balancesArray[index] || "0"; // asset.vaultid
 
             return (
-              <div
+              <div 
                 key={asset.name}
-                className="hover:px-4 p-2 hover:border border-[#27272b]  hover:border-[#27272b] rounded-2xl transition-all duration-300"
+                className="relative rounded-2xl transition-all duration-300"
               >
-                <AssetComponent
-                  asset={asset}
-                  price={price}
-                  userBalance={userBalance}
-                  index={index}
-                  openAccordionIndex={openAccordionIndex}
-                  onAccordionToggle={handleAccordionToggle}
-                  onDeposit={onDeposit}
-                  onWithdraw={onWithdraw}
+                <GlowingEffect
+                  spread={30}
+                  glow={true}
+                  disabled={false}
+                  proximity={28}
+                  inactiveZone={0.01}
                 />
+                <div
+                  // key={asset.name}
+                  className="hover:px-4 p-2 hover:border border-[#27272b]  hover:border-[#27272b] rounded-2xl transition-all duration-300 relative  bg-[#18191D]"
+                >
+                  <AssetComponent
+                    asset={asset}
+                    price={price}
+                    userBalance={userBalance}
+                    index={index}
+                    openAccordionIndex={openAccordionIndex}
+                    onAccordionToggle={handleAccordionToggle}
+                    onDeposit={onDeposit}
+                    onWithdraw={onWithdraw}
+                  />
+                </div>
               </div>
             );
           })}
@@ -381,17 +425,53 @@ const AssetListComponent = memo(
 
 interface TopMoversProps {
   topMovers: CoinGeckoMarketData[];
+  isLoading: boolean;
+  isError: boolean;
 }
 
 const TopMoversComponent = memo(
-  ({ topMovers }: TopMoversProps) => {
+  ({ topMovers, isLoading, isError }: TopMoversProps) => {
+    if (isLoading || isError) {
+      return (
+        <div className="mt-5 p-5 max-h-screen h-full overflow-y-scroll overflow-x-hidden">
+          <div className="flex flex-col gap-3">
+            {[...Array(28)].map((_, index) => (
+              <div
+                key={index}
+                className="py-4 grid grid-cols-12 items-center justify-between gap-3 relative z-10"
+              >
+                <div className="col-span-6 flex items-center">
+                  <div className="w-6 h-6 mr-2 bg-gray-700 rounded-full animate-pulse"></div>
+                  <div className="space-y-2">
+                    <div className="h-4 w-20 bg-gray-700 rounded animate-pulse"></div>
+                    <div className="h-3 w-12 bg-gray-700 rounded animate-pulse"></div>
+                  </div>
+                </div>
+                <div className="col-span-3">
+                  <div className="h-4 w-16 bg-gray-700 rounded animate-pulse"></div>
+                </div>
+                <div className="col-span-3">
+                  <div className="h-4 w-16 bg-gray-700 rounded animate-pulse"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* {isError && !isLoading && (
+            <div className="text-center text-red-500 mt-4">
+              Failed to load top movers
+            </div>
+          )} */}        
+        </div>
+      );
+    }
+
     return (
       <div className="mt-5 p-5 max-h-screen h-full overflow-y-scroll overflow-x-hidden">
         <div className="flex flex-col gap-3">
           {topMovers.map((coin) => (
             <div
-              key={coin.id}
-              className="py-4 grid grid-cols-12 items-center justify-between gap-3"
+              // key={coin.id}
+              className="py-4 grid grid-cols-12 items-center justify-between gap-3 relative z-10 bg-[#18191D]"
             >
               <div className="col-span-6 flex items-center">
                 <img
@@ -427,7 +507,9 @@ const TopMoversComponent = memo(
     );
   },
   (prevProps, nextProps) =>
-    JSON.stringify(prevProps.topMovers) === JSON.stringify(nextProps.topMovers)
+    JSON.stringify(prevProps.topMovers) === JSON.stringify(nextProps.topMovers) &&
+    prevProps.isLoading === nextProps.isLoading &&
+    prevProps.isError === nextProps.isError // no change in loading or error state
 );
 
 const format = (price: number) => {

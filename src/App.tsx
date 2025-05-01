@@ -45,21 +45,23 @@ const SubApp = () => {
 
   return (
     <BrowserRouter>
-      <Toaster
-        position="top-right"
-        richColors
-        closeButton
-        theme="dark"
-        className="sonner-toast"
-      />
-      <Sidebar>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/trade" element={<Trade />} />
-          <Route path="/earn" element={<Earn />} />
-        </Routes>
-      </Sidebar>
+      <div className="relative w-full h-screen overflow-hidden">
+        <Toaster
+          position="top-right"
+          richColors
+          closeButton
+          theme="dark"
+          className="sonner-toast"
+        />
+        <Sidebar>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/trade" element={<Trade />} />
+            <Route path="/earn" element={<Earn />} />
+          </Routes>
+        </Sidebar>
+      </div>
     </BrowserRouter>
   );
 };

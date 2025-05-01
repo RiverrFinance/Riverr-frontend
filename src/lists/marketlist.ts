@@ -22,7 +22,7 @@ export const assetList: Asset[] = [
   {
     priceID: "internet-computer",
     symbol: "ICP",
-    name: "internt computer coin",
+    name: "internet computer coin",
     vaultID: "5se5w-zaaaa-aaaaf-qanmq-cai",
     canisterID: "4yl7m-3qaaa-aaaaf-qanlq-cai",
     decimals: 8,
