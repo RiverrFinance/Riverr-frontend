@@ -236,7 +236,7 @@ export function Dashboard() {
   };
 
   return (
-    <div className="max-h-screen h-full bg-transparent rounded-3xl grid md:grid-cols-12 md:gap-5 gap-10 ">
+    <div className="min-h-screen h-full bg-transparent rounded-3xl grid md:grid-cols-12 md:gap-5 gap-10 ">
       <div className="md:space-y-6 space-y-3 lg:col-span-8 md:col-span-7 h-full overflow-hidden flex flex-col">
         {/* Total Balance Card with Glowing Effect */}
         <div className="py-5 px-5 h-fit bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl md:rounded-3xl relative">
@@ -247,7 +247,7 @@ export function Dashboard() {
             proximity={64}
             inactiveZone={0.01}
           />
-          <div className="bg-[#0300AD] rounded-lg md:rounded-2xl py-10 md:px-5 px-12 h-fit flex justify-between items-center relative z-10">
+          <div className="bg-[#0300AD] rounded-lg md:rounded-2xl py-10 md:px-5 px-12 h-fit flex max-xs:flex-col max-xs:gap-10 justify-between items-center max-xs:items-start relative z-10">
             <div className="flex flex-col max-xs:items-center">
               <div className="text-3xl font-black tracking-wide mb-4">
                 Dashboard
@@ -277,6 +277,7 @@ export function Dashboard() {
                 </div>
               </div>
             </div>
+            <div className="flex flex-col items-end max-lg:items-center justify-items-center  gap-2 w-fit overflow-hidden">
             <div className="flex flex-col items-end max-lg:items-center justify-items-center  gap-2 w-fit overflow-hidden">
               <button
                 type="button"

@@ -76,8 +76,8 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
   // Active link styling
   const isActiveLink = (path: string): string => {
     const isActive =
-      path === "/dashboard"
-        ? ["/", "/dashboard"].includes(location.pathname)
+      path === "/trade"
+        ? ["/", "/trade"].includes(location.pathname)
         : location.pathname === path;
     return isActive
       ? "text-white font-medium text-md max-lg:rounded-2xl px-4 py-1 transition-all duration-200 hover:text-white max-lg:border-2 border-b-2 border-opacity-40 border-dashed border-[#7c7f88]"
@@ -167,7 +167,7 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
       {/* Right side with actions */}
       <div className="flex items-center space-x-2 md:space-x-4">
         <div className="bg-[#0300AD] hover:bg-[#02007a] rounded-md flex justify-items-center items-center gap-2 px-5">
-          <Icon name="google wallet" />
+          <Icon name="google wallet" className="max-sm:sr-only" />
           <ConnectWallet
             connectButtonComponent={ConnectWalletButton}
             //    connectedButtonComponent={ConnectedWalletButton}
