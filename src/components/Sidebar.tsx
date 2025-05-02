@@ -8,7 +8,6 @@ import {
   ConnectWalletDropdownMenu,
 } from "@nfid/identitykit/react";
 
-
 import LogoImg from "../images/Logo.png";
 import { BackgroundBeams } from "./Background-beams";
 import { GlowingEffect } from "./Glowing-effect";
@@ -261,7 +260,7 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
                   </div>
                 )}
               </div>
-              
+
               {/* Mobile Menu Drawer */}
               {isMobile && (
                 <div
@@ -323,7 +322,7 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
                     </div>
                   </div>
                 </div>
-              )}              
+              )}
             </div>
           </div>
         </div>
@@ -345,7 +344,7 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
             className="fixed inset-0 bg-black transition-opacity duration-300 ease-in-out opacity-50 z-40"
             onClick={() => setVisible(false)}
           />
-        )}        
+        )}
       </div>
     </div>
   );

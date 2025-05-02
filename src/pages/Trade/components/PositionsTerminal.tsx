@@ -118,6 +118,8 @@ export default function PositionsTerminal({
         <div className="flex relative z-10">
           {(["Positions", "Orders"] as const).map((tab) => (
             <button
+              type="button"
+              title="tabs"
               key={tab}
               onClick={() => setCurrentTab(tab)}
               className="flex-1 py-2 px-4 text-sm font-medium relative transition-colors duration-300"
@@ -136,7 +138,7 @@ export default function PositionsTerminal({
         </div>
         {/* Sliding background */}
         <div
-          className="absolute top-1 h-[calc(100%-8px)] w-[calc(50%-0px)] bg-[#0300ad18] border-b-2 border-[#0300AD] transition-transform duration-300 ease-in-out rounded-sm"
+          className="absolute top-1 h-[calc(100%-8px)] w-[calc(50%-0px)] bg-[#0300ad18] border-b-2 border-[#0300AD] transition-transform duration-100 linear rounded-sm"
           style={{
             transform: `translateX(${
               currentTab === "Positions" ? "0%" : "100%"

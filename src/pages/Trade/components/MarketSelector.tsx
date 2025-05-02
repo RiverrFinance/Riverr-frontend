@@ -46,13 +46,13 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
 
   const tabs = ["All", "Favorites"];
 
-  const toggleFavorite = useCallback((marketId: string) => {
-    console.log('Toggling:', marketId); 
+  const toggleFavorite = useCallback((chartId: string) => {
+    console.log('Toggling:', chartId); 
     setFavorites(prev => {
       const newFavorites = new Set(prev);
-      newFavorites.has(marketId) 
-        ? newFavorites.delete(marketId)
-        : newFavorites.add(marketId);
+      newFavorites.has(chartId) 
+        ? newFavorites.delete(chartId)
+        : newFavorites.add(chartId);
       console.log('New favorites:', Array.from(newFavorites)); 
       return newFavorites;
     });
@@ -93,17 +93,21 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
   }, [favorites]);
 
   const filteredMarkets = markets.filter((market) => {
-    const matchesQuoteCurrency = 
-      market.quoteAsset.priceID === selectedQuoteCurrency.priceID;
-    
     const matchesSearch = 
       market.baseAsset.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
       market.baseAsset.name.toLowerCase().includes(searchQuery.toLowerCase());
   
-    const matchesTab =
-      activeTab === "All" ||
-      (activeTab === "Favorites" && favorites.has(market.chartId))
+    // Favorites tab shows all favorited pairs regardless of quote currency
+    if (activeTab === "Favorites") {
+      return favorites.has(market.chartId) && matchesSearch;
+    }
   
+    // Other tabs filter by selected quote currency
+    const matchesQuoteCurrency =
+      market.quoteAsset.priceID === selectedQuoteCurrency.priceID;
+  
+    const matchesTab =
+      activeTab === "All"   
     return matchesQuoteCurrency && matchesSearch && matchesTab;
   });
 
@@ -146,15 +150,18 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                 />
               )}
               <div className="flex items-center">
-                {selectedMarket.baseAsset.symbol.toUpperCase()} /{" "}
-                {selectedMarket.quoteAsset.symbol.toUpperCase()}
+                <span className="max-xs:text-sm">
+                  {selectedMarket.baseAsset.symbol.toUpperCase()} /{" "}
+                  {selectedMarket.quoteAsset.symbol.toUpperCase()}                  
+                </span>
+
                 <Icon
                   name={`caret ${isDropdownOpen ? "up" : "down"}`}
                   className="ml-1 text-gray-400"
                 />
               </div>
             </button>
-            <div className="text-gray-400 text-sm ml-8">
+            <div className="text-gray-400 text-sm  max-xs:text-xs ml-8">
               {selectedMarket.baseAsset.name}
             </div>
 

@@ -302,7 +302,7 @@ export function Dashboard() {
               </button>
               {!readWriteAgent && (
                 <span className="text-xs text-gray-300">
-                  Connect wallet 
+                  Connect wallet
                   <br className="lg:sr-only max-xs:sr-only" />
                   to claim faucet
                 </span>

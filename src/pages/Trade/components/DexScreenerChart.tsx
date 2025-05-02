@@ -38,7 +38,7 @@ const DexScreenerChart: React.FC<DexScreenerChartProps> = ({ chart_id }) => {
       {!isError && (
         <iframe
           src={chartUrl}
-          className="w-full lg:h-full h-[600px] border-none"
+          className="w-full h-full border-none"
           title="Dexscreener Trading Chart"
           allowFullScreen
           onLoad={handleLoad}

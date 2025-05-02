@@ -10,10 +10,8 @@ import { MarginInput } from "./MarginInput";
 
 import { InputError } from "../types/trading";
 import ActionButton from "./ActionButton";
-import { priceToTick, tickToPrice } from "../utilFunctions";
-import { useAgent, useAuth } from "@nfid/identitykit/react";
-
-const ICP_API_HOST = "https://icp-api.io/";
+import { priceToTick } from "../utilFunctions";
+import { useAgent } from "@nfid/identitykit/react";
 
 export interface TradingPanelProps {
   market: Market;
@@ -29,7 +27,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
 }) => {
   const readWriteAgent = useAgent();
   const [error, setError] = useState<InputError>("");
-  const [orderType, setOrderType] = useState<"Market" | "Limit">("Market");
+  const [orderType, setOrderType] = useState<"Market" | "Limit">("Limit");
   const [tradeDirection, setTradeDirection] = useState<"Long" | "Short">(
     "Long"
   );
@@ -115,8 +113,8 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
   };
 
   return (
-    <div className={`py-8 px-0 rounded-lg`}>
-      <div className="mb-5">
+    <div className={`py-8 px-0 rounded-lg xxxl:space-y-8`}>
+      <div className="mb-5 xxxl:mt-5 xxxl:space-y-8">
         {/* Order Type Selector */}
         <div className="relative p-1 mb-5 mx-3">
           <div className="flex relative z-10">
@@ -151,14 +149,18 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
         </div>
 
         {/* Trade Direction Selector */}
-        <div className="relative mx-4 border border-[#363c52] rounded-lg border-opacity-40 bg-[#18191de9]">
-          <div className="flex relative z-10">
+        <div className="relative mx-4 border border-[#363c52] border-dashed rounded-lg border-opacity-40 bg-[#18191de9] w-32">
+          <div className="flex z-10">
             {(["Long", "Short"] as const).map((type) => (
               <button
                 type="button"
                 key={type}
                 onClick={() => setTradeDirection(type)}
-                className="flex-1 py-2  text-sm font-medium relative transition-colors duration-300"
+                className={`flex-1 py-2 text-sm font-medium relative  duration-300 ${
+                  tradeDirection === type
+                    ? "bg-[#0300adfd] rounded-md"
+                    : "border-none"
+                }`}
               >
                 <span
                   className={`relative z-10 ${
@@ -184,7 +186,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
         </div>
       </div>
 
-      <div className="px-4 pt-4 space-y-14">
+      <div className="px-4 pt-4 space-y-14  xxxl:space-y-18">
         {/* Limit Price Input */}
         {orderType == "Limit" ? (
           <PriceInput

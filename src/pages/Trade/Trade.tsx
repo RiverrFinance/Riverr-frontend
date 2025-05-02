@@ -43,7 +43,8 @@ export const Trade = ({}: Props) => {
               inactiveZone={0.01}
             />
             <div className="absolute inset-0">
-            <DexScreenerChart chart_id={selectedMarket.chartId} />
+              <DexScreenerChart chart_id={selectedMarket.chartId} />
+            </div>
           </div>
 
           <div className="col-span-12 lg:col-span-4 xxxl:col-span-2 max-lg:row-span-1 bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl relative h-fit xxxl:h-full">
@@ -58,15 +59,14 @@ export const Trade = ({}: Props) => {
               <TradingPanel
                 accountIndex={accountIndex}
                 readAgent={readAgent}
-              
                 market={selectedMarket}
               />
             </div>
           </div>
         </div>
 
-        {/* Trading Panel */}
-        <div className="xl:col-span-3 lg:col-span-4 rounded-2xl bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 relative">
+        <div className="max-lg:-mt-[2rem] bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl relative h-full">
+          {/* GlowingEffect wrapper */}
           <GlowingEffect
             spread={10}
             glow={true}
@@ -74,12 +74,9 @@ export const Trade = ({}: Props) => {
             proximity={64}
             inactiveZone={0.01}
           />
-          <div className="relative z-10">
-            <TradingPanel
-              accountIndex={accountIndex}
-              readAgent={readAgent}
-              market={selectedMarket}
-            />
+          {/* Positions Terminal content - relative positioning and overflow for internal scrolling */}
+          <div className="relative z-10 h-full overflow-auto">
+            <PositionsTerminal market={selectedMarket} readAgent={readAgent} />
           </div>
         </div>
       </div>
