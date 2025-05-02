@@ -8,7 +8,7 @@ import {
   ConnectWalletDropdownMenu,
 } from "@nfid/identitykit/react";
 
-import { useAgent } from "@nfid/identitykit/react";
+
 import LogoImg from "../images/Logo.png";
 import { BackgroundBeams } from "./Background-beams";
 import { GlowingEffect } from "./Glowing-effect";
@@ -69,7 +69,7 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
     window.addEventListener("resize", mobileIs480);
 
     // Redirect to dashboard if on root path
-    if (location.pathname === "/") navigate("/dashboard");
+    if (location.pathname === "/") navigate("/trade");
 
     return () => window.removeEventListener("resize", checkIfMobile);
   }, []);
@@ -221,7 +221,9 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
                         {/* Top bar */}
                         <div
                           className={`absolute w-6 h-0.5 bg-white transition-all duration-300 ease-in-out ${
-                            visible ? "top-1/2 -translate-y-1/2 rotate-45" : "top-0"
+                            visible
+                              ? "top-1/2 -translate-y-1/2 rotate-45"
+                              : "top-0"
                           }`}
                         />
 
@@ -323,7 +325,6 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
                 </div>
               )}              
             </div>
-
           </div>
         </div>
 
@@ -346,7 +347,6 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
           />
         )}        
       </div>
-
     </div>
   );
 };

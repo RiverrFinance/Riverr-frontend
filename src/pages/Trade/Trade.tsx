@@ -21,8 +21,8 @@ export const Trade = ({}: Props) => {
   }, []);
 
   return (
-    <div className="p-4 pt-0 flex flex-col gap-5">
-      <div>
+    <div className="p-4 max-xs:px-0 pt-0 grid grid-rows-12 gap-5 h-full min-h-screen">
+      <div className=" row-span-1 z-20">
         <MarketSelector
           selectedMarket={selectedMarket}
           onMarketSelect={(market) => {
@@ -32,16 +32,9 @@ export const Trade = ({}: Props) => {
         />
       </div>
 
-      {/* Chart and Trading Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <div className="xl:col-span-9 lg:col-span-8 space-y-5">
-          {/* Chart */}
-          <div className="w-full h-[600px] lg:h-[70vh]">
-            <DexScreenerChart chart_id={selectedMarket.chartId} />
-          </div>
-
-          {/* Positions Terminal */}
-          <div className="bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl relative">
+      <div className="row-span-11 gap-5 flex flex-col h-full max-lg:-mt-20 xxxl:-mt-20">
+        <div className="grid max-lg:grid-rows-2 max-lg:min-h-[100rem] max-h-[50rem] h-full xxxl:min-h-[750px] grid-cols-12 gap-5 max-lg:gap-y-18 ">
+          <div className="col-span-12 lg:col-span-8 xxxl:col-span-10 max-lg:row-span-1 max-lg:min-h-[50rem] max-lg:h-[50rem] min-h-[47.5rem] bg-[#18191D] rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40 relative">
             <GlowingEffect
               spread={10}
               glow={true}
@@ -49,10 +42,24 @@ export const Trade = ({}: Props) => {
               proximity={64}
               inactiveZone={0.01}
             />
-            <div className="relative z-10">
-              <PositionsTerminal
-                market={selectedMarket}
+            <div className="absolute inset-0">
+            <DexScreenerChart chart_id={selectedMarket.chartId} />
+          </div>
+
+          <div className="col-span-12 lg:col-span-4 xxxl:col-span-2 max-lg:row-span-1 bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl relative h-fit xxxl:h-full">
+            <GlowingEffect
+              spread={10}
+              glow={true}
+              disabled={false}
+              proximity={64}
+              inactiveZone={0.01}
+            />
+            <div className="relative z-10 h-fit overflow-auto">
+              <TradingPanel
+                accountIndex={accountIndex}
                 readAgent={readAgent}
+              
+                market={selectedMarket}
               />
             </div>
           </div>
