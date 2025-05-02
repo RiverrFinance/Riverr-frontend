@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import RingLoader from "react-spinners/RingLoader";
 
 interface DexScreenerChartProps {
   chart_id: string;
@@ -6,6 +7,8 @@ interface DexScreenerChartProps {
 
 const DexScreenerChart: React.FC<DexScreenerChartProps> = ({ chart_id }) => {
   const [chartUrl, setChartUrl] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
 
   useEffect(() => {
     const baseUrl = "https://dexscreener.com";
@@ -15,16 +18,34 @@ const DexScreenerChart: React.FC<DexScreenerChartProps> = ({ chart_id }) => {
     let url = `${baseUrl}/icp/${chart_id}?${chartParams}`;
 
     setChartUrl(url);
+    setIsLoading(true);
+    setIsError(false);
   }, [chart_id]);
 
+  const handleLoad = () => setIsLoading(false);
+  const handleError = () => {
+    setIsLoading(false);
+    setIsError(true);
+  };
+
   return (
-    <div className="w-full h-full bg-[#18191D] !rounded-3xl !rounded-b-3xl border border-gray-800 overflow-hidden">
-      <iframe
-        src={chartUrl}
-        className="w-full lg:h-full h-[600px] border-none"
-        title="Dexscreener Trading Chart"
-        allowFullScreen
-      />
+    <div className="w-full h-full !rounded-3xl !rounded-b-3xl bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 overflow-hidden relative">
+      {(isLoading || isError) && (
+        <div className="absolute inset-0 flex items-center justify-center bg-[#18191D] z-10">
+          <RingLoader color="#ffffff" size={90} />
+        </div>
+      )}
+      {!isError && (
+        <iframe
+          src={chartUrl}
+          className="w-full lg:h-full h-[600px] border-none"
+          title="Dexscreener Trading Chart"
+          allowFullScreen
+          onLoad={handleLoad}
+          onError={handleError}
+          style={{ visibility: isLoading ? "hidden" : "visible" }}
+        />
+      )}
     </div>
   );
 };

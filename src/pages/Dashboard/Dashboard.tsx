@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useState } from "react";
-import fetch from "isomorphic-fetch";
+// import fetch from "isomorphic-fetch";
 import { Asset, assetList } from "../../lists/marketlist";
 import { HttpAgent } from "@dfinity/agent";
 import { AssetComponent } from "./AssetComponent";
@@ -225,7 +225,7 @@ export function Dashboard() {
         {/* Total Balance Card with Glowing Effect */}
         <div className="py-5 px-5 h-fit bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl md:rounded-3xl relative">
           <GlowingEffect
-            spread={10}
+            spread={5}
             glow={true}
             disabled={false}
             proximity={64}
@@ -294,23 +294,33 @@ export function Dashboard() {
         </div>
 
         {/* Portfolio Section */}
-        <div className="flex-grow py-8 px-5 bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl md:rounded-3xl h-screen">
-          <div className="text-2xl font-bold mb-4 capitalize">portfolio</div>
+        <div className="flex-grow py-8 px-5 bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl md:rounded-3xl h-screen relative">
+          <GlowingEffect
+            spread={5}
+            glow={true}
+            disabled={false}
+            proximity={64}
+            inactiveZone={0.01}
+          />
           <div>
-            <AssetListComponent
-              pricesArray={pricesArray}
-              balancesArray={balancesArray}
-              onDeposit={onOpenDepositModal}
-              onWithdraw={onOpenWithdrawModal}
-            />
+            <div className="text-2xl font-bold mb-4 capitalize">portfolio</div>
+            <div>
+              <AssetListComponent
+                pricesArray={pricesArray}
+                balancesArray={balancesArray}
+                onDeposit={onOpenDepositModal}
+                onWithdraw={onOpenWithdrawModal}
+              />
+            </div>            
           </div>
+
         </div>
       </div>
 
       {/* Top Movers Section */}
       <div className="lg:col-span-4 md:col-span-5 py-7 h-full bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl md:rounded-3xl relative">
         <GlowingEffect
-          spread={10}
+          spread={5}
           glow={true}
           disabled={false}
           proximity={64}

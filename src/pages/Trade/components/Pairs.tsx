@@ -24,10 +24,16 @@ export const Pairs: React.FC<PairProps> = ({
   isSelected,
   onToggleFavorite,
 }) => {
+
   const [details, setDetails] = useState<PriceDetails>({
     price: 0.0,
     price_change_24h: 0.0,
   });
+
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
   useEffect(() => {
     updateDetails();
     const intervalId = setInterval(() => {
@@ -39,7 +45,10 @@ export const Pairs: React.FC<PairProps> = ({
     };
   }, [market]);
 
-  const isFavorite = favorites.has(market.chartId);
+  useEffect(() => {
+    setImageLoaded(false);
+    setImageError(false);
+  }, [market.baseAsset.image]);
 
   const updateDetails = async () => {
     try {
@@ -81,86 +90,52 @@ export const Pairs: React.FC<PairProps> = ({
   };
 
   return (
-    // <div
-    //   className={`flex items-center justify-between p-3 hover:bg-[#1C1C28] rounded-lg cursor-pointer group ${
-    //     isSelected ? "bg-[#1C1C28]" : ""
-    //   }`}
-    // >
-    //   <div className="flex items-center space-x-3">
-    //     <button
-    //       className="hover:scale-110 transition-transform"
-    //       onClick={(e) => {
-    //         e.stopPropagation();
-    //       }}
-    //     >
-    //       <StarIcon filled={favorites?.has(market.baseAsset.priceID)} />
-    //     </button>
-    //     <img
-    //       src={market.baseAsset.image}
-    //       alt={market.baseAsset.symbol}
-    //       className="w-6 h-6"
-    //       // onError={(e) => {
-    //       //   e.currentTarget.src = 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png';
-    //       // }}
-    //     />
-    //     <div>
-    //       <div className="font-medium">
-    //         {market.baseAsset.symbol.toUpperCase()}/
-    //         {market.quoteAsset.symbol.toUpperCase()}
-    //       </div>
-    //       <div className="text-sm text-gray-400">{market.baseAsset.symbol}</div>
-    //     </div>
-    //   </div>
-
-    //   <div className="text-right">
-    //     <div className="text-white font-medium">
-    //       {formatPrice(details.price)}
-    //     </div>
-    //     <div
-    //       className={`text-sm ${
-    //         details.price_change_24h <= 0 ? "text-green-500" : "text-red-500"
-    //       }`}
-    //     >
-    //       {formatPercent(details.price_change_24h)}%
-    //     </div>
-    //   </div>
-    // </div>
-
     <div
-      className={`flex items-center justify-between p-3 hover:bg-[#1C1C28] rounded-lg cursor-pointer group ${
-        isSelected ? "bg-[#1C1C28]" : "" // Apply selected background
+      className={`flex items-center justify-between p-3 hover:px-4 rounded-lg cursor-pointer group transition-all duration-200 ${
+        isSelected ? "bg-[#0300ad18]" : "" 
       }`}
-      // onClick handler is in the parent MarketSelector now
     >
       <div className="flex items-center space-x-3">
         {/* Favorite Button */}
         <button
-          className="hover:scale-110 transition-transform focus:outline-none" // Added focus outline none
+          type="button"
+          title="Favorite"
+          className="hover:scale-110 transition-transform focus:outline-none" 
           onClick={(e) => {
-            e.stopPropagation(); // Prevent the click from closing the dropdown
-            onToggleFavorite(market.chartId); // Changed: Call onToggleFavorite with market ID
+            e.preventDefault();
+            e.stopPropagation();
+            // if (onToggleFavorite) {
+              onToggleFavorite(market.chartId);
+            // }
           }}
         >
-          {/* Using your custom StarIcon component */}
-          <StarIcon filled={isFavorite} />{" "}
-          {/* Changed: Use StarIcon and pass filled prop */}
+          <StarIcon filled={favorites.has(market.chartId)} />{" "}
         </button>
-        {/* Asset Icon */}
-        <img
-          src={market.baseAsset.image}
-          alt={market.baseAsset.symbol}
-          className="w-6 h-6 rounded-full" // Added rounded-full for circular image
-          onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-            // Added type for event
-            e.currentTarget.src =
-              "https://react.semantic-ui.com/images/wireframe/square-image.png"; // Placeholder on error
-          }}
-        />
+        {/* Asset Icon with Loading State */}
+        <div className="relative w-6 h-6">
+          {isFirstLoad && !imageLoaded && (
+            <div className="absolute inset-0 bg-gray-700 rounded-full animate-pulse" />
+          )}
+          <img
+            src={market.baseAsset.logoUrl || market.baseAsset.image}
+            alt={market.baseAsset.symbol}
+            className="w-6 h-6 rounded-full"
+            onLoad={() => {
+              setImageLoaded(true);
+              setIsFirstLoad(false);
+            }}
+            onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+              setImageLoaded(true);
+              setIsFirstLoad(false);
+              e.currentTarget.src =
+                "https://react.semantic-ui.com/images/wireframe/square-image.png"; 
+            }}
+          />
+        </div>
         {/* Asset Symbols and Name */}
         <div>
           <div className="font-medium text-white">
             {" "}
-            {/* Added text-white */}
             {market.baseAsset.symbol.toUpperCase()}/
             {market.quoteAsset.symbol.toUpperCase()}
           </div>
@@ -175,7 +150,7 @@ export const Pairs: React.FC<PairProps> = ({
         </div>
         <div
           className={`text-sm ${
-            details.price_change_24h >= 0 ? "text-green-500" : "text-red-500" // Green for positive, Red for negative
+            details.price_change_24h >= 0 ? "text-green-500" : "text-red-500" 
           }`}
         >
           {formatPercent(details.price_change_24h)}%

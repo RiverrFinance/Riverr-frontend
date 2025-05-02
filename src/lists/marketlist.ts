@@ -65,24 +65,24 @@ export const markets: Array<Market> = [
     quoteAsset: quoteCurrencies[0],
     chartId: "xmiu5-jqaaa-aaaag-qbz7q-cai",
     market_id: "i4w3l-hiaaa-aaaaf-qao5a-cai",
-    isFavorite: true,
+    isFavorite: false,
   },
   {
     baseAsset: assetList[3],
     quoteAsset: quoteCurrencies[0],
     chartId: "angxa-baaaa-aaaag-qcvnq-cai",
-    isFavorite: true,
+    isFavorite: false,
   },
   {
     baseAsset: assetList[2],
     quoteAsset: quoteCurrencies[1],
     chartId: "xmiu5-jqaaa-aaaag-qbz7q-cai",
-    isFavorite: true,
+    isFavorite: false,
   },
   {
     baseAsset: assetList[3],
     quoteAsset: quoteCurrencies[1],
     chartId: "angxa-baaaa-aaaag-qcvnq-cai",
-    isFavorite: true,
+    isFavorite: false,
   },
 ];

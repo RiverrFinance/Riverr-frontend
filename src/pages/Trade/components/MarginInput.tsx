@@ -101,7 +101,7 @@ export const MarginInput = ({
             let { value } = e.target;
             onCollateralChange(value);
           }}
-          className="flex-1 bg-transparent text-white outline-none text-lg"
+          className="flex-1 bg-transparent text-white outline-none text-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           placeholder="0.00"
         />
         <div>{market.quoteAsset.symbol}</div>

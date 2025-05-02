@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Icon } from "semantic-ui-react";
 import { Pairs } from "./Pairs";
 import {
@@ -8,6 +8,8 @@ import {
   quoteCurrencies,
 } from "../../../lists/marketlist";
 import { AccessList } from "ethers/lib/utils";
+import MarketPrice from "./MarketPrice";
+
 
 // import { toast } from 'sonner';
 
@@ -34,96 +36,79 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
   const [selectedQuoteCurrency, setSelectedQuoteCurrency] = useState<Asset>(
     quoteCurrencies[0]
   );
-  const [isOpen, setIsOpen] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Renamed from isOpen
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("All");
-  const [loading, setLoading] = useState(false);
-  const [favorites, setFavorites] = useState<Set<string>>(new Set()); // Changed to Set for better performance, set means no duplicates it helps to store unique values and it is faster than array for searching and deleting
+  const [priceData, setPriceData] = useState<PriceDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);  
+  const [favorites, setFavorites] = useState<Set<string>>(new Set()); // set means no duplicates it helps to store unique values and it is faster than array for searching and deleting
 
-  const tabs = ["All", "Favorites", "Top Volume"];
+  const tabs = ["All", "Favorites"];
 
-  const toggleFavorite = (marketId: string) => {
-    setFavorites((prev) => {
+  const toggleFavorite = useCallback((marketId: string) => {
+    console.log('Toggling:', marketId); 
+    setFavorites(prev => {
       const newFavorites = new Set(prev);
-      if (newFavorites.has(marketId)) {
-        newFavorites.delete(marketId);
-      } else {
-        newFavorites.add(marketId);
-      }
-      // Persist favorites to local storage
-      // localStorage.setItem('favorites', JSON.stringify(Array.from(newFavorites)));
+      newFavorites.has(marketId) 
+        ? newFavorites.delete(marketId)
+        : newFavorites.add(marketId);
+      console.log('New favorites:', Array.from(newFavorites)); 
       return newFavorites;
     });
-  };
+  }, []);
 
   // Load favorites from local storage on initial mount
   useEffect(() => {
-    const savedFavorites = localStorage.getItem("favorites");
-    if (savedFavorites) {
-      try {
-        setFavorites(new Set(JSON.parse(savedFavorites)));
-      } catch (e) {
-        console.error("Failed to parse favorites from local storage:", e);
+    try {
+      const savedFavorites = localStorage.getItem("favorites");
+      if (savedFavorites) {
+        const parsed = JSON.parse(savedFavorites);
+        // Validate it's an array of strings
+        if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string')) {
+          setFavorites(new Set(parsed));
+        }
       }
+    } catch (e) {
+      // console.error("Failed to load favorites:", e);
+      localStorage.removeItem("favorites");
     }
   }, []);
-
+  
   useEffect(() => {
-    try {
-      localStorage.setItem("favorites", JSON.stringify(Array.from(favorites)));
-    } catch (e) {
-      console.error("Failed to save favorites to local storage:", e);
-    }
+    const saveFavorites = () => {
+      try {
+        localStorage.setItem(
+          "favorites",
+          JSON.stringify(Array.from(favorites))
+        );
+      } catch (e) {
+        // console.error("Failed to save favorites:", e);
+      }
+    };
+  
+    // Debounce to prevent excessive writes
+    const debounceTimer = setTimeout(saveFavorites, 500);
+    return () => clearTimeout(debounceTimer);
   }, [favorites]);
 
-  // Filter markets based on selected quote currency, search query, and active tab
   const filteredMarkets = markets.filter((market) => {
-    // Filter by selected quote currency
-    const matchesQuoteCurrency =
-      market.quoteAsset.priceID === selectedQuoteCurrency.priceID; // Assuming priceID is a unique identifier for Asset
-
-    // Filter by search query (checking base asset symbol and name)
-    const matchesSearch =
-      market.baseAsset.symbol
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
+    const matchesQuoteCurrency = 
+      market.quoteAsset.priceID === selectedQuoteCurrency.priceID;
+    
+    const matchesSearch = 
+      market.baseAsset.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
       market.baseAsset.name.toLowerCase().includes(searchQuery.toLowerCase());
-
-    // Filter by active tab
+  
     const matchesTab =
       activeTab === "All" ||
-      (activeTab === "Favorites" && favorites.has(market.chartId));
-
+      (activeTab === "Favorites" && favorites.has(market.chartId))
+  
     return matchesQuoteCurrency && matchesSearch && matchesTab;
   });
 
-  const currentPrice = "60,423.71";
-  const priceChange24h = "+1.25 %";
-  const high24h = "61,234.12";
-  const low24h = "59,344.32";
-  const volume24h = "26,109,351,565";
-
-  // const formatPrice = (price: number | string) => {
-  //   if (typeof price === 'string') return price;
-  //   if (!price) return "0.00";
-  //   return price < 1
-  //     ? price.toFixed(6)
-  //     : price.toLocaleString(undefined, {
-  //         minimumFractionDigits: 2,
-  //         maximumFractionDigits: 2,
-  //       });
-  // };
-
-  //  // Function to format percentage (copied from your Pairs component)
-  //  const formatPercent = (percent: number | string) => { // Added string type for placeholder
-  //    if (typeof percent === 'string') return percent; // Handle placeholder string
-  //    if (!percent) return "0.00";
-  //    return percent.toFixed(2);
-  //  };
-
   return (
-    <div className="relative bg-transparent p-3 pt-0 rounded-md">
+    <div className="relative bg-transparent px-3 pt-0 rounded-md">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <button
@@ -131,8 +116,11 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
             type="button"
             className="hover:scale-110 transition-transform mr-2 focus:outline-none"
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
-              toggleFavorite(selectedMarket.chartId);
+              // if (selectedMarket?.chartId) {
+                toggleFavorite(selectedMarket.chartId);
+              // }
             }}
           >
             <StarIcon
@@ -147,23 +135,32 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
           <div className="relative">
             <button
               type="button"
-              className="flex items-center text-white text-lg font-bold focus:outline-none"
+              className="flex items-center gap-2 text-white text-lg font-bold focus:outline-none"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
-              {selectedMarket.baseAsset.symbol.toUpperCase()} /{" "}
-              {selectedMarket.quoteAsset.symbol.toUpperCase()}
-              <Icon
-                name={`caret ${isDropdownOpen ? "up" : "down"}`}
-                className="ml-1 text-gray-400"
-              />
+              {selectedMarket.baseAsset.logoUrl && (
+                <img 
+                  src={selectedMarket.baseAsset.logoUrl} 
+                  alt={selectedMarket.baseAsset.symbol}
+                  className="w-6 h-6 rounded-full"
+                />
+              )}
+              <div className="flex items-center">
+                {selectedMarket.baseAsset.symbol.toUpperCase()} /{" "}
+                {selectedMarket.quoteAsset.symbol.toUpperCase()}
+                <Icon
+                  name={`caret ${isDropdownOpen ? "up" : "down"}`}
+                  className="ml-1 text-gray-400"
+                />
+              </div>
             </button>
-            <div className="text-gray-400 text-sm">
+            <div className="text-gray-400 text-sm ml-8">
               {selectedMarket.baseAsset.name}
             </div>
 
             {/* Dropdown Menu */}
             {isDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 w-80 p-5 bg-[#18191D] rounded-md shadow-lg z-10 overflow-hidden">
+              <div className="absolute top-full left-0 mt-2 w-80 p-5 bg-[#18191D] rounded-md shadow-lg z-10 overflow-hidden border-2 border-dashed border-[#363c52] border-opacity-40">
                 <div className="p-3 border-b border-gray-700 flex items-center justify-between">
                   <span className="text-white font-semibold">
                     Select Crypto Pair
@@ -179,13 +176,13 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                 </div>
 
                 {/* Search Input */}
-                <div className="p-3 border-b border-gray-700">
+                <div className="pt-5">
                   <div className="flex items-center bg-[#242529] rounded-md px-3 py-2">
                     <Icon name="search" className="text-gray-400 mr-2" />
                     <input
                       type="text"
                       placeholder="Search crypto"
-                      className="w-full bg-transparent border-none focus:outline-none text-white text-sm"
+                      className="w-full bg-transparent border-none focus:outline-none text-white text-sm mt-1"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -193,39 +190,68 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                 </div>
 
                 {/* Quote Currency Tabs */}
-                <div className="flex gap-2 p-3 border-b border-gray-700 overflow-x-auto">
-                  {quoteCurrencies.map((currency) => (
-                    <button
-                      type="button"
-                      key={currency.priceID}
-                      onClick={() => setSelectedQuoteCurrency(currency)}
-                      className={`px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 flex-shrink-0 ${
-                        selectedQuoteCurrency === currency
-                          ? "bg-blue-500 text-white"
-                          : "bg-[#1C1C28] text-gray-400 hover:text-white"
-                      }`}
-                    >
-                      {currency.symbol}
-                    </button>
-                  ))}
+                <div className="relative p-1 my-3">
+                  <div className="flex relative z-10">
+                    {quoteCurrencies.map((currency) => (
+                      <button
+                        type="button"
+                        key={currency.priceID}
+                        onClick={() => setSelectedQuoteCurrency(currency)}
+                        className="flex-1 py-2 px-2 text-xs font-medium relative transition-colors duration-300"
+                      >
+                        <span className={`relative z-10 flex items-center justify-center gap-2 ${
+                          selectedQuoteCurrency === currency 
+                            ? 'text-white' 
+                            : 'text-gray-400 hover:text-white'
+                        }`}>
+                          {currency.logoUrl && (
+                            <img 
+                              src={currency.logoUrl} 
+                              alt={currency.symbol}
+                              className="w-4 h-4 rounded-full"
+                            />
+                          )}
+                          {currency.symbol}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  {/* Sliding background */}
+                  <div 
+                    className="absolute top-1 h-[calc(100%-8px)] w-[calc(50%-0px)] bg-[#0300ad18] border-b-2 border-[#0300AD] transition-transform duration-300 ease-in-out rounded-sm"
+                    style={{
+                      transform: `translateX(${selectedQuoteCurrency.priceID === quoteCurrencies[0].priceID ? "0%" : "100%"})`,
+                    }}
+                  />
                 </div>
 
-                {/* Filtering Tabs (All, Favorites, Top Volume) */}
-                <div className="flex gap-2 p-3 border-b border-gray-700 overflow-x-auto">
-                  {tabs.map((tab) => (
-                    <button
-                      type="button"
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className={`px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 flex-shrink-0 ${
-                        activeTab === tab
-                          ? "bg-blue-500 text-white"
-                          : "bg-[#1C1C28] text-gray-400 hover:text-white"
-                      }`}
-                    >
-                      {tab}
-                    </button>
-                  ))}
+                {/* Filtering Tabs (All, Favorites ) */}
+                <div className="relative p-1 mb-3">
+                  <div className="flex relative z-10">
+                    {tabs.map((tab) => (
+                      <button
+                        type="button"
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        className="flex-1 py-2 px-2 text-xs font-medium relative transition-colors duration-300"
+                      >
+                        <span className={`relative z-10 ${
+                          activeTab === tab 
+                            ? 'text-white' 
+                            : 'text-gray-400 hover:text-white'
+                        }`}>
+                          {tab}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  {/* Sliding background */}
+                  <div 
+                    className="absolute top-1 h-[calc(100%-8px)] w-[calc(50%-0px)] bg-[#0300ad18] border-b-2 border-[#0300AD] transition-transform duration-300 ease-in-out rounded-sm"
+                    style={{
+                      transform: `translateX(${activeTab === "All" ? "0%" : "100%"})`,
+                    }}
+                  />
                 </div>
 
                 {/* List of Pairs (Filtered) */}
@@ -234,14 +260,14 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                     <div
                       key={market.chartId}
                       onClick={() => {
-                        onMarketSelect(market); // Call the parent's select handler
+                        onMarketSelect(market);
                         setIsDropdownOpen(false);
                       }}
                     >
                       <Pairs
                         market={market}
                         favorites={favorites}
-                        isSelected={selectedMarket.chartId === market.chartId} // Check if this market is currently selected
+                        isSelected={selectedMarket.chartId === market.chartId}
                         onToggleFavorite={toggleFavorite}
                       />
                     </div>
@@ -249,48 +275,19 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                 </div>
               </div>
             )}
+
           </div>
         </div>
 
         {/* Right side: Market Details */}
-        <div className="flex items-center space-x-6 text-sm text-gray-400">
-          <div>
-            <div className="">Price</div>
-            <div className="text-white font-semibold">{currentPrice}</div>
-          </div>
-
-          <div>
-            <div className="">24h Change</div>
-            <div
-              className={`font-semibold ${
-                priceChange24h.startsWith("+")
-                  ? "text-green-500"
-                  : "text-red-500"
-              }`}
-            >
-              {priceChange24h}
-            </div>
-          </div>
-
-          <div>
-            <div className="">24h High</div>
-            <div className="text-white font-semibold">{high24h}</div>
-          </div>
-
-          <div>
-            <div className="">24h Low</div>
-            <div className="text-white font-semibold">{low24h}</div>
-          </div>
-
-          <div>
-            <div className="">24h Volume</div>
-            <div className="text-white font-semibold">{volume24h}</div>
-          </div>
+        <div className="flex items-center">
+          <MarketPrice market={selectedMarket} />
         </div>
       </div>
     </div>
   );
 };
+
 
 const StarIcon = ({ filled }: { filled: boolean }) => (
   <svg

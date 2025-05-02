@@ -114,48 +114,60 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
   };
 
   return (
-    <div className={`p-3 rounded-lg`}>
+    <div className={`py-8 px-0 rounded-lg`}>
       <div className="mb-5">
-        <div className="flex p-1 mb-5 mx-3">
-          {(["Limit", "Market"] as const).map((type) => (
-            <button
-              type="button"
-              key={type}
-              onClick={() => setOrderType(type)}
-              className={`flex-1 py-2 px-4 text-sm font-medium transition-all duration-200
-                ${
-                  orderType === type
-                    ? "text-blue-500 font-medium text-md border-b border-b-blue-500 px-4 py-1 transition-all duration-200"
-                    : "text-gray-400 hover:text-white transition-colors duration-200 text-md"
-                }`}
-              // disabled={!isWalletConnected}
-            >
-              {type}
-            </button>
-          ))}
+        {/* Order Type Selector */}
+        <div className="relative p-1 mb-5 mx-3">
+          <div className="flex relative z-10">
+            {(["Limit", "Market"] as const).map((type) => (
+              <button
+                type="button"
+                key={type}
+                onClick={() => setOrderType(type)}
+                className="flex-1 py-2 px-4 text-sm font-medium relative transition-colors duration-300"
+              >
+                <span className={`relative z-10 ${orderType === type ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+                  {type}
+                </span>
+              </button>
+            ))}
+          </div>
+          {/* Sliding background */}
+          <div 
+            className="absolute top-1 h-[calc(100%-8px)] w-1/2 bg-[#0300ad18] border-b-2 border-[#0300AD] transition-transform duration-300 ease-in-out"
+            style={{
+              transform: `translateX(${orderType === "Market" ? "100%" : "0%"})`
+            }}
+          />
         </div>
 
-        <div className="flex bg-[#1C1C28] p-1 mx-4 border border-gray-700 rounded-md ">
-          {(["Long", "Short"] as const).map((type) => (
-            <button
-              type="button"
-              key={type}
-              onClick={() => setTradeDirection(type)}
-              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200
-                ${
-                  tradeDirection === type
-                    ? "text-gray-900 font-medium text-md bg-blue-500 rounded-md px-4 py-1 transition-all duration-200"
-                    : "text-white transition-colors duration-200 text-md"
-                }`}
-              // disabled={!isWalletConnected}
-            >
-              {type}
-            </button>
-          ))}
+        {/* Trade Direction Selector */}
+        <div className="relative mx-4 border border-[#363c52] rounded-lg border-opacity-40 bg-[#18191de9]">
+          <div className="flex relative z-10">
+            {(["Long", "Short"] as const).map((type) => (
+              <button
+                type="button"
+                key={type}
+                onClick={() => setTradeDirection(type)}
+                className="flex-1 py-2  text-sm font-medium relative transition-colors duration-300"
+              >
+                <span className={`relative z-10 ${tradeDirection === type ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+                  {type}
+                </span>
+              </button>
+            ))}
+          </div>
+          {/* Sliding background */}
+          <div 
+            className="absolute top-0 left-0 h-[calc(100%-0px)] w-[calc(50%-0px)] bg-[#0300ad18] border-2 border-dashed border-[#0300AD] transition-transform duration-300 ease-in-out rounded-md"
+            style={{
+              transform: `translateX(${tradeDirection === "Short" ? "100%" : "0%"})`
+            }}
+          />
         </div>
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className="px-4 pt-4 space-y-14">
         {/* Limit Price Input */}
         {orderType == "Limit" ? (
           <PriceInput
@@ -187,21 +199,20 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
           setLeverage={setLeverage}
         />
 
-        <div className="space-y-2 text-sm text-gray-400">
-          <div>
-            Total: {total()}
+        <div className="space-y-4 text-sm text-gray-400 pt-10 border-b border-gray-700 pb-5">
+          <div className="flex justify-between">
+            <span>Total: {total()}</span>
             {market.quoteAsset.symbol}
           </div>
-          <hr />
-          <div>
-            Market: {market.baseAsset.symbol}-{market.quoteAsset.symbol}{" "}
+          <div className="flex justify-between">
+            <span>Market: </span>
+            {market.baseAsset.symbol}-{market.quoteAsset.symbol}{" "}
           </div>
-          <hr />
         </div>
 
-        <div className="flex justify-center mt-4">
+        {/* <div className="mt-5 "> */}
           <ActionButton currentError={error} onClick={openOrder} />
-        </div>
+        {/* </div> */}
       </div>
     </div>
   );

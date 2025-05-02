@@ -19,15 +19,21 @@ export default function ActionButton({ currentError, onClick }: Props) {
     }
   };
   return (
-    <div>
+    <div className="flex flex-col justify-items-center">
       {readwrietAgent == undefined ? (
-        <div className="bg-[#0300AD] rounded-md flex justify-items-center items-center gap-2 px-5 cursor-pointer">
-          <Icon name="google wallet" />
-          <ConnectWallet />
+        <div className="bg-[#0300AD] hover:bg-[#02007a] rounded-md flex justify-center items-center gap-2 px-5 py-0 w-full">
+          <div className="inline-flex items-center justify-center gap-2">
+            <Icon name="google wallet" />
+            <ConnectWallet />
+          </div>
         </div>
       ) : (
-        <button type="button" onClick={onClickAction}>
-          Open Order
+        <button 
+          type="button" 
+          className="bg-[#0300AD] rounded-md flex justify-center items-center gap-2 px-5 py-3 w-full cursor-pointer" 
+          onClick={onClickAction}
+        >
+          <span className="text-center font-semibold text-[13px]">Open Order</span> 
         </button>
       )}
     </div>
