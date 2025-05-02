@@ -35,7 +35,7 @@ export default function PositionsTerminal({
   >([]);
 
   useEffect(() => {
-    let interval;
+    let interval: NodeJS.Timeout;
     if (market.market_id) {
       if (readWriteAgent) {
         fetchAndSeperate();
@@ -61,8 +61,8 @@ export default function PositionsTerminal({
   const fetchAndSeperate = async () => {
     try {
       const marketActor = new MarketActor(market.market_id, readAgent);
-      let orderList: [number, PositionParameters, bigint][],
-        positionsList: [number, PositionParameters, bigint][];
+      let orderList: [number, PositionParameters, bigint][] = [];
+      let positionsList: [number, PositionParameters, bigint][] = [];
       for (let i = 0; i <= maxSubAccount; i++) {
         let details: [[PositionParameters, PositionStatus, bigint]] | [] =
           await marketActor.getaccountPositiondetails(user.principal, i);

@@ -10,6 +10,6 @@
       "@/*": ["./src/*"]
     },
     "forceConsistentCasingInFileNames": true,
-    "strict": true
+    "strict": false
   }
 }

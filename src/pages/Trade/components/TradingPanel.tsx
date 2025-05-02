@@ -5,7 +5,7 @@ import { Agent, HttpAgent } from "@dfinity/agent";
 import { StateDetails } from "../../../utils/declarations/market/market.did";
 import { LeverageSlider } from "./LeverageSlider";
 import { PriceInput } from "./PriceInput";
-import { parseUnits } from "ethers/lib/utils";
+import { formatUnits, parseUnits } from "ethers/lib/utils";
 import { MarginInput } from "./MarginInput";
 
 import { InputError } from "../types/trading";
@@ -46,11 +46,11 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
   });
 
   useEffect(() => {
-    let interval;
+    let interval: NodeJS.Timeout;
 
     if (market.market_id) {
       fetchAndSetStatesDetails();
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         fetchAndSetStatesDetails();
       }, 20000); // 20 seconds
     }
@@ -64,7 +64,10 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
     if (margin == "") {
       return "--";
     }
-    return Number(margin) * Number(leverage);
+    return formatUnits(
+      Number(margin) * Number(leverage),
+      market.quoteAsset.decimals
+    );
   };
 
   const fetchAndSetStatesDetails = async () => {
@@ -87,7 +90,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
         // let response = await marketActor.closePosition(accountIndex);
 
         let type;
-        let max_tick;
+        let max_tick: [bigint] | [];
         if (orderType == "Limit") {
           type = { Limit: null };
           max_tick = [priceToTick(limitPrice)];

@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
-// import fetch from "isomorphic-fetch";
 import { MarketSelector } from "./components/MarketSelector";
 import { Market } from "../../lists/marketlist";
 import DexScreenerChart from "./components/DexScreenerChart";
 import { TradingPanel } from "./components/TradingPanel";
 import { markets } from "../../lists/marketlist";
-import { useAgent } from "@nfid/identitykit/react";
 import { HttpAgent } from "@dfinity/agent";
 import { ICP_API_HOST } from "../../utils/utilFunction";
 import { GlowingEffect } from "../../components/Glowing-effect";
@@ -19,7 +17,7 @@ export const Trade = ({}: Props) => {
   const [accountIndex, setAccountIndex] = useState<number>(0);
 
   useEffect(() => {
-    HttpAgent.create({ fetch, host: ICP_API_HOST }).then(setReadAgent);
+    HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
   }, []);
 
   return (

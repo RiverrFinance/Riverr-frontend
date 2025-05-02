@@ -1,5 +1,4 @@
 import { memo, useCallback, useEffect, useState } from "react";
-// import fetch from "isomorphic-fetch";
 import { Asset, assetList } from "../../lists/marketlist";
 import { HttpAgent } from "@dfinity/agent";
 import { AssetComponent } from "./AssetComponent";
@@ -66,7 +65,6 @@ export function Dashboard() {
       changeTotalValue();
     } else {
       setTotalValue(0);
-      setBalancesArray([]);
     }
   }, [
     readWriteAgent,
@@ -75,13 +73,26 @@ export function Dashboard() {
   ]);
 
   useEffect(() => {
-    updateValueDetails();
+    updatePrices();
+
     const interval: NodeJS.Timeout = setInterval(() => {
-      updateValueDetails();
-    }, 10000); // 10 seconds
+      //updatePrices();
+    }, 5000); // 10 seconds
     return () => {
       clearInterval(interval);
     };
+  }, [readWriteAgent]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (readWriteAgent) {
+      updateBalances();
+      interval = setInterval(() => {
+        updateBalances();
+      }, 3000);
+    } else {
+      setBalancesArray([]);
+    }
   }, [readWriteAgent]);
 
   useEffect(() => {
@@ -91,7 +102,7 @@ export function Dashboard() {
   }, []);
 
   useEffect(() => {
-    HttpAgent.create({ fetch, host: ICP_API_HOST }).then(setReadAgent);
+    HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
   }, []);
 
   ///
@@ -109,7 +120,7 @@ export function Dashboard() {
     setIsDepositModalOpen(false);
     setSelectedAsset(null);
     // Update balances after deposit
-    updateValueDetails();
+    updatePrices();
   };
 
   const onOpenWithdrawModal = (asset: Asset) => {
@@ -124,25 +135,37 @@ export function Dashboard() {
     //updateValueDetails();
   };
 
-  const getUserAssetValue = async (asset: Asset): Promise<[number, string]> => {
-    let price = await fetchAssetPrice(asset);
-    let userMargin = await fetcherUserMarginBalance(asset);
-    return [price, formatUnits(userMargin, asset.decimals)]; //formatUnits(userMargin, asset.decimals)];
+  // const getUserAssetValue = async (asset: Asset): Promise<[number, string]> => {
+  //   let userMargin = await fetcherUserMarginBalance(asset);
+  //   let price = await fetchAssetPrice(asset);
+  //   return [price, formatUnits(userMargin, asset.decimals)]; //formatUnits(userMargin, asset.decimals)];
+  // };
+
+  const updatePrices = async () => {
+    try {
+      let sendPromiseList: Promise<number>[] = assetList.map((asset) =>
+        fetchAssetPrice(asset)
+      );
+      let prices: number[] = await Promise.all(sendPromiseList);
+      // const balances = resolvedPromiseList.map(([, balance]) => balance);
+      setPricesArray(prices);
+    } catch {
+      return;
+    }
   };
 
-  const updateValueDetails = async () => {
+  const updateBalances = async () => {
     try {
-      let sendPromiseList: Promise<[number, string]>[] = assetList.map(
-        (asset) => getUserAssetValue(asset)
+      let promiseList = assetList.map((asset) =>
+        fetcherUserMarginBalance(asset)
       );
-      let resolvedPromiseList: [number, string][] = await Promise.all(
-        sendPromiseList
-      );
-      const prices = resolvedPromiseList.map(([price]) => price);
-      const balances = resolvedPromiseList.map(([, balance]) => balance);
-      setPricesArray(prices);
-      setBalancesArray(balances);
-    } catch {}
+
+      let resolvedList: string[] = await Promise.all(promiseList);
+
+      setBalancesArray(resolvedList);
+    } catch {
+      return;
+    }
   };
 
   const changeTotalValue = () => {
@@ -163,22 +186,22 @@ export function Dashboard() {
         const combinedTopMovers = await response.json();
         setTopMovers(combinedTopMovers); // Update top movers state
       }
-      // setIsTopMoversError(true);
     } catch (err) {
-      // setIsTopMoversError(true);
     } finally {
-      // setIsTopMoversLoading(false);
     }
   };
 
   /// Canister Interaction fucntions
 
-  const fetcherUserMarginBalance = async (asset: Asset): Promise<bigint> => {
-    if (asset.vaultID !== undefined && readWriteAgent) {
+  const fetcherUserMarginBalance = async (asset: Asset): Promise<string> => {
+    if (asset.vaultID != undefined) {
       let vaultActor = new VaultActor(asset.vaultID, readAgent);
-      return vaultActor.userMarginBalance(user.principal);
+      let balance = await vaultActor.userMarginBalance(user.principal);
+      // console.log(balance);
+      return formatUnits(balance, asset.decimals);
+    } else {
+      return "0";
     }
-    return 0n;
   };
 
   const fetchAssetPrice = async (asset: Asset): Promise<number> => {

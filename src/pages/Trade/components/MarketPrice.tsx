@@ -78,7 +78,7 @@ const formatPrice = (price: number | string) => {
       });
 };
 
-//  // Function to format percentage (copied from your Pairs component)
+// //  // Function to format percentage (copied from your Pairs component)
 const formatPercent = (percent: number | string) => {
   // Added string type for placeholder
   if (typeof percent === "string") return percent; // Handle placeholder string

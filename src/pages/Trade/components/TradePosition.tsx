@@ -35,8 +35,6 @@ export default function TradePosition({
   };
 
   const handleClosePosition = async () => {
-    if (!readWriteAgent) return;
-
     try {
       setIsClosing(true);
       await closePosition();
@@ -47,10 +45,9 @@ export default function TradePosition({
     }
   };
 
-  const formatPnL = (value: bigint) => {
-    const formatted = formatUnits(value, market.quoteAsset.decimals);
-    const num = parseFloat(formatted);
-    return num.toFixed(2);
+  const formatPnL = (value: bigint): string => {
+    const formatted = formatUnits(value, 5);
+    return formatted;
   };
 
   return (
@@ -86,15 +83,15 @@ export default function TradePosition({
                 BigInt(pnl) >= 0n ? "text-green-500" : "text-red-500"
               }`}
             >
-              {formatPnL(pnl)} {market.quoteAsset.symbol}
+              {formatPnL(pnl)}%
             </div>
           </div>
 
           {/* Close Button */}
           <button
             onClick={handleClosePosition}
-            disabled={isClosing || !readWriteAgent}
-            className={`px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 
+            disabled={isClosing}
+            className={`px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2
               ${
                 isClosing
                   ? "bg-gray-700 cursor-not-allowed"

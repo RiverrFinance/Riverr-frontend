@@ -36,9 +36,7 @@ export const MarginInput = ({
       if (readWriteAgent) {
         fetchSetMarginBalance();
         interval = setInterval(() => {
-          if (readWriteAgent) {
-            fetchSetMarginBalance();
-          }
+          fetchSetMarginBalance();
         }, 10000); //10 seconds
         return;
       }
@@ -52,10 +50,12 @@ export const MarginInput = ({
   //
   const fetchSetMarginBalance = async () => {
     try {
-      const vault = new VaultActor(market.quoteAsset.vaultID, readAgent);
-      const margin = await vault.userMarginBalance(user.principal);
+      if (market.quoteAsset.vaultID && user) {
+        const vault = new VaultActor(market.quoteAsset.vaultID, readAgent);
+        const margin = await vault.userMarginBalance(user.principal);
 
-      setUserMarginBalance(margin);
+        setUserMarginBalance(margin);
+      }
     } catch {
       return;
     }

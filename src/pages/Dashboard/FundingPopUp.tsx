@@ -52,7 +52,7 @@ export default function FundingPopUp({
       setUserBalance();
       interval = setInterval(() => {
         setUserBalance();
-      }, 10000);
+      }, 5000);
     } else {
       setUserTokenBalance(0n);
     }
@@ -138,6 +138,7 @@ export default function FundingPopUp({
       const balance = await tokenActor.balance(user.principal);
       setUserTokenBalance(balance);
     } catch {
+      alert("fetched tokenbalance with error");
       return;
     }
   };
