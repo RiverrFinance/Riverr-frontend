@@ -44,7 +44,7 @@ const MarketPrice = ({ market }: { market: Market }) => {
   }, [market]);
 
   return (
-    <div className="flex items-center space-x-6 text-sm text-gray-400">
+    <div className="flex items-center space-x-6 text-sm text-gray-400  max-xs:text-[10px]">
       <div>
         <div>Price</div>
         <div className="text-white font-semibold">

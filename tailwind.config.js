@@ -7,7 +7,8 @@ export default {
   ],  theme: {
   	extend: {
   		screens: {
-  			xs: '480px'
+  			xs: '480px',
+				xxxl: '2000px'
   		},
   		backdropBlur: {
   			xs: '2px'

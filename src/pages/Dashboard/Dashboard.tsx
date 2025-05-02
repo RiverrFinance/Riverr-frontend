@@ -219,7 +219,7 @@ export function Dashboard() {
   };
 
   return (
-    <div className="max-h-screen h-full bg-transparent rounded-3xl grid md:grid-cols-12 md:gap-5 gap-10 ">
+    <div className="min-h-screen h-full bg-transparent rounded-3xl grid md:grid-cols-12 md:gap-5 gap-10 ">
       <div className="md:space-y-6 space-y-3 lg:col-span-8 md:col-span-7 h-full overflow-hidden flex flex-col">
 
         {/* Total Balance Card with Glowing Effect */}
@@ -231,7 +231,7 @@ export function Dashboard() {
             proximity={64}
             inactiveZone={0.01}
           />
-          <div className="bg-[#0300AD] rounded-lg md:rounded-2xl py-10 md:px-5 px-12 h-fit flex justify-between items-center relative z-10">
+          <div className="bg-[#0300AD] rounded-lg md:rounded-2xl py-10 md:px-5 px-12 h-fit flex max-xs:flex-col max-xs:gap-10 justify-between items-center max-xs:items-start relative z-10">
             <div className="flex flex-col max-xs:items-center">
               <div className="text-3xl font-black tracking-wide mb-4">
                 Dashboard
@@ -261,7 +261,7 @@ export function Dashboard() {
                 </div>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-col items-end max-lg:items-center justify-items-center  gap-2 w-fit overflow-hidden">
               <button
                 type="button"
                 className={`bg-white hover:bg-gray-100 text-[#0300AD] text-sm font-medium px-4 py-2 rounded-full flex gap-1 transition-all duration-300 hover:-translate-y-0.5 border border-black hover:border-t hover:border-b hover:shadow-[0_4px_0_0_#000000] ${
@@ -286,7 +286,9 @@ export function Dashboard() {
               </button>
               {!readWriteAgent && (
                 <span className="text-xs text-gray-300">
-                  Connect wallet to claim faucet
+                  Connect wallet 
+                  <br className="lg:sr-only max-xs:sr-only" />
+                  to claim faucet
                 </span>
               )}
             </div>

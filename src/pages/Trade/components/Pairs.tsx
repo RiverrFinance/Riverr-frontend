@@ -111,6 +111,7 @@ export const Pairs: React.FC<PairProps> = ({
         >
           <StarIcon filled={favorites.has(market.chartId)} />{" "}
         </button>
+        
         {/* Asset Icon with Loading State */}
         <div className="relative w-6 h-6">
           {isFirstLoad && !imageLoaded && (
