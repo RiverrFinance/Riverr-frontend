@@ -32,7 +32,7 @@ export const Trade = ({}: Props) => {
         />
       </div>
 
-      <div className="row-span-11 gap-5 flex flex-col h-full max-lg:-mt-20 xxxl:-mt-20">
+      <div className="row-span-11 gap-5 flex flex-col h-full max-lg:-mt-20 xxxl:-mt-20 -mt-5">
         <div className="grid max-lg:grid-rows-2 max-lg:min-h-[100rem] max-h-[50rem] h-full xxxl:min-h-[750px] grid-cols-12 gap-5 max-lg:gap-y-18 ">
           <div className="col-span-12 lg:col-span-8 xxxl:col-span-10 max-lg:row-span-1 max-lg:min-h-[50rem] max-lg:h-[50rem] min-h-[47.5rem] bg-[#18191D] rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40 relative">
             <div className="absolute inset-0">
