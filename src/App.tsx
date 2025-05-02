@@ -19,24 +19,12 @@ function App() {
   console.log("app mounting");
   return (
     <IdentityKitProvider authType="ACCOUNTS">
-      <Track />
+      <SubApp />
     </IdentityKitProvider>
   );
 }
 
-function Track() {
-  const { disconnect } = useAuth();
-
-  return (
-    <>
-      <SubApp />
-    </>
-  );
-}
-
 const SubApp = () => {
-  console.log("subapp mounted ");
-
   return (
     <BrowserRouter>
       <Toaster

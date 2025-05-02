@@ -17,17 +17,16 @@ interface Props {
   asset: Asset;
   isOpen: boolean;
   readAgent: HttpAgent;
-  readWriteAgent: Agent | undefined;
   onClose: () => void;
 }
 
 export default function FundingPopUp({
-  readWriteAgent,
   readAgent,
   asset,
   isOpen,
   onClose,
 }: Props) {
+  const readWriteAgent = useAgent();
   const { user } = useAuth();
   const [userTokenBalance, setUserTokenBalance] = useState<bigint>(0n);
   const [depositAmount, setDepositAmount] = useState<string>("");
@@ -48,7 +47,7 @@ export default function FundingPopUp({
   const [transactionDone, setTransactionDone] = useState(false);
 
   useEffect(() => {
-    let interval: number | undefined;
+    let interval: NodeJS.Timeout;
     if (readWriteAgent) {
       setUserBalance();
       interval = setInterval(() => {

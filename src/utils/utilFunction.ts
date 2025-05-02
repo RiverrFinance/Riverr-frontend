@@ -12,4 +12,4 @@ export const fetchTopMovers = async (ids: string) => {
   }
 };
 
-export const ICP_API_HOST = "https://ic0.app";
+export const ICP_API_HOST = "https://icp-api.io/";

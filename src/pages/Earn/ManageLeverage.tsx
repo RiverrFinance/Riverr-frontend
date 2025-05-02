@@ -29,7 +29,7 @@ export default function ManageLeverage({ readWriteAgent, readAgent }: Props) {
   const [txDone, setTxDone] = useState(false);
 
   useEffect(() => {
-    let interval: number | undefined;
+    let interval: NodeJS.Timeout;
     if (readWriteAgent) {
       fetchSetBalances();
       interval = setInterval(() => {
@@ -47,7 +47,7 @@ export default function ManageLeverage({ readWriteAgent, readAgent }: Props) {
 
   useEffect(() => {
     fetchSetVaultStakingDetails();
-    let interval: number | undefined = setInterval(() => {
+    const interval: NodeJS.Timeout = setInterval(() => {
       fetchSetVaultStakingDetails();
     }, 15000);
 

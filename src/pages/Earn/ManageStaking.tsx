@@ -33,7 +33,7 @@ export default function ManageStaking() {
   }, []);
 
   useEffect(() => {
-    let interval: number | undefined;
+    let interval: NodeJS.Timeout;
     if (readWriteAgent) {
       fetchSetUserBalance;
       interval = setInterval(() => {
@@ -49,7 +49,7 @@ export default function ManageStaking() {
   }, [readWriteAgent]);
 
   useEffect(() => {
-    let interval: number | undefined;
+    let interval;
     if (readWriteAgent) {
       fetchSetUserPositions();
       interval = setInterval(() => {

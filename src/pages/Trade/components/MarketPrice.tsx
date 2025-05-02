@@ -10,9 +10,11 @@ interface PriceDetails {
   volume?: number;
 }
 
-
 const MarketPrice = ({ market }: { market: Market }) => {
-  const [details, setDetails] = useState<PriceDetails>({ price: 0, price_change_24h: 0 });
+  const [details, setDetails] = useState<PriceDetails>({
+    price: 0,
+    price_change_24h: 0,
+  });
 
   useEffect(() => {
     const updateDetails = async () => {
@@ -39,7 +41,7 @@ const MarketPrice = ({ market }: { market: Market }) => {
       }
     };
     updateDetails();
-    const interval = setInterval(updateDetails, 10000);
+    const interval: NodeJS.Timeout = setInterval(updateDetails, 10000);
     return () => clearInterval(interval);
   }, [market]);
 
@@ -53,7 +55,11 @@ const MarketPrice = ({ market }: { market: Market }) => {
       </div>
       <div>
         <div>24h Change</div>
-        <div className={`font-semibold ${details.price_change_24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+        <div
+          className={`font-semibold ${
+            details.price_change_24h >= 0 ? "text-green-500" : "text-red-500"
+          }`}
+        >
           {formatPercent(details.price_change_24h)}%
         </div>
       </div>
@@ -62,7 +68,7 @@ const MarketPrice = ({ market }: { market: Market }) => {
 };
 
 const formatPrice = (price: number | string) => {
-  if (typeof price === 'string') return price;
+  if (typeof price === "string") return price;
   if (!price) return "0.00";
   return price < 1
     ? price.toFixed(6)
@@ -73,11 +79,11 @@ const formatPrice = (price: number | string) => {
 };
 
 //  // Function to format percentage (copied from your Pairs component)
- const formatPercent = (percent: number | string) => { // Added string type for placeholder
-   if (typeof percent === 'string') return percent; // Handle placeholder string
-   if (!percent) return "0.00";
-   return percent.toFixed(2);
- };
+const formatPercent = (percent: number | string) => {
+  // Added string type for placeholder
+  if (typeof percent === "string") return percent; // Handle placeholder string
+  if (!percent) return "0.00";
+  return percent.toFixed(2);
+};
 
-
-export default MarketPrice
+export default MarketPrice;

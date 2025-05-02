@@ -24,12 +24,12 @@ export const PriceInput = ({
   const [lowestSellOffer, setLowestSellOffer] = useState<bigint>(0n);
 
   useEffect(() => {
-    let interval: undefined | number;
+    let interval: NodeJS.Timeout;
     if (market.market_id) {
       fetchSetBestOffers();
       interval = setInterval(() => {
         fetchSetBestOffers();
-      }, 15000);
+      }, 10000);
     }
     return () => {
       clearInterval(interval);
@@ -59,7 +59,7 @@ export const PriceInput = ({
     <div>
       <div className="flex justify-between text-sm mb-2">
         <span className="text-gray-400">Current Price</span>{" "}
-        <span className="text-gray-400">{tickToPrice(lowestSellOffer)}</span>
+        <span className="text-gray-400">{tickToPrice(highestBuyOffer)}</span>
       </div>
       <div className="flex items-center gap-2 bg-[#1C1C28] rounded-lg p-3">
         <input
@@ -74,6 +74,9 @@ export const PriceInput = ({
           className="flex-1 bg-transparent text-white outline-none text-lg"
           placeholder="0.00"
         />
+        <span>
+          {tickToPrice(highestBuyOffer)} {tickToPrice(lowestSellOffer)}
+        </span>
       </div>
     </div>
   );

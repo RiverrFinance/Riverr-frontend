@@ -13,7 +13,6 @@ interface Props {
   market: Market;
   setMargin: (value: string) => void;
   setError: (err: InputError) => void;
-  readWriteAgent?: Agent | undefined;
   readAgent: HttpAgent;
   minCollateral: bigint;
 }
@@ -24,15 +23,15 @@ export const MarginInput = ({
   market,
   setError,
   minCollateral,
-  readWriteAgent,
   readAgent,
 }: Props) => {
-  //  const readWriteAgent = useAuth();
+  const readWriteAgent = useAuth();
+
   const { user } = useAuth();
   const [userMarginBalance, setUserMarginBalance] = useState<bigint>(0n);
 
   useEffect(() => {
-    let interval: number | undefined;
+    let interval: NodeJS.Timeout;
     if (market.quoteAsset.vaultID) {
       if (readWriteAgent) {
         fetchSetMarginBalance();

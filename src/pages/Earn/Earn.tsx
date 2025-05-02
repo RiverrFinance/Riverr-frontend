@@ -11,7 +11,7 @@ export const Earn = () => {
   const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
 
   useEffect(() => {
-    HttpAgent.create({ host: ICP_API_HOST, retryTimes: 1 }).then(setReadAgent);
+    HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
   }, []);
 
   return (

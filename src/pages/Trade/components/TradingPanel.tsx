@@ -11,14 +11,13 @@ import { MarginInput } from "./MarginInput";
 import { InputError } from "../types/trading";
 import ActionButton from "./ActionButton";
 import { priceToTick, tickToPrice } from "../utilFunctions";
-import { useAuth } from "@nfid/identitykit/react";
+import { useAgent, useAuth } from "@nfid/identitykit/react";
 
 const ICP_API_HOST = "https://icp-api.io/";
 
 export interface TradingPanelProps {
   market: Market;
   onOrderSubmit?: () => void;
-  readWriteAgent: Agent | undefined;
   readAgent: HttpAgent;
   accountIndex: number;
 }
@@ -26,10 +25,9 @@ export interface TradingPanelProps {
 export const TradingPanel: React.FC<TradingPanelProps> = ({
   market,
   readAgent,
-  readWriteAgent,
   accountIndex,
 }) => {
-  const { user } = useAuth();
+  const readWriteAgent = useAgent();
   const [error, setError] = useState<InputError>("");
   const [orderType, setOrderType] = useState<"Market" | "Limit">("Market");
   const [tradeDirection, setTradeDirection] = useState<"Long" | "Short">(
@@ -48,7 +46,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
   });
 
   useEffect(() => {
-    let interval: undefined | number;
+    let interval;
 
     if (market.market_id) {
       fetchAndSetStatesDetails();
@@ -126,17 +124,25 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
                 onClick={() => setOrderType(type)}
                 className="flex-1 py-2 px-4 text-sm font-medium relative transition-colors duration-300"
               >
-                <span className={`relative z-10 ${orderType === type ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+                <span
+                  className={`relative z-10 ${
+                    orderType === type
+                      ? "text-white"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
                   {type}
                 </span>
               </button>
             ))}
           </div>
           {/* Sliding background */}
-          <div 
+          <div
             className="absolute top-1 h-[calc(100%-8px)] w-1/2 bg-[#0300ad18] border-b-2 border-[#0300AD] transition-transform duration-300 ease-in-out"
             style={{
-              transform: `translateX(${orderType === "Market" ? "100%" : "0%"})`
+              transform: `translateX(${
+                orderType === "Market" ? "100%" : "0%"
+              })`,
             }}
           />
         </div>
@@ -151,17 +157,25 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
                 onClick={() => setTradeDirection(type)}
                 className="flex-1 py-2  text-sm font-medium relative transition-colors duration-300"
               >
-                <span className={`relative z-10 ${tradeDirection === type ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+                <span
+                  className={`relative z-10 ${
+                    tradeDirection === type
+                      ? "text-white"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
                   {type}
                 </span>
               </button>
             ))}
           </div>
           {/* Sliding background */}
-          <div 
+          <div
             className="absolute top-0 left-0 h-[calc(100%-0px)] w-[calc(50%-0px)] bg-[#0300ad18] border-2 border-dashed border-[#0300AD] transition-transform duration-300 ease-in-out rounded-md"
             style={{
-              transform: `translateX(${tradeDirection === "Short" ? "100%" : "0%"})`
+              transform: `translateX(${
+                tradeDirection === "Short" ? "100%" : "0%"
+              })`,
             }}
           />
         </div>
@@ -188,7 +202,6 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
           setMargin={setMargin}
           setError={setError}
           minCollateral={marketState.min_collateral}
-          readWriteAgent={readWriteAgent}
           readAgent={readAgent}
         />
 
@@ -211,7 +224,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
         </div>
 
         {/* <div className="mt-5 "> */}
-          <ActionButton currentError={error} onClick={openOrder} />
+        <ActionButton currentError={error} onClick={openOrder} />
         {/* </div> */}
       </div>
     </div>

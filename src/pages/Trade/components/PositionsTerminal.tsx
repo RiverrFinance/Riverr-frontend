@@ -1,5 +1,5 @@
 import { Agent, HttpAgent } from "@dfinity/agent";
-import { useAuth } from "@nfid/identitykit/react";
+import { useAgent, useAuth } from "@nfid/identitykit/react";
 import { useEffect, useState } from "react";
 import {
   PositionParameters,
@@ -14,15 +14,15 @@ const maxSubAccount = 4;
 
 interface Props {
   market: Market;
-  readWriteAgent: Agent | undefined;
   readAgent: HttpAgent;
 }
 
 export default function PositionsTerminal({
   market,
-  readWriteAgent,
+
   readAgent,
 }: Props) {
+  const readWriteAgent = useAgent();
   const { user } = useAuth();
   const [currentTab, setCurrentTab] = useState<"Orders" | "Positions">(
     "Positions"
@@ -35,7 +35,7 @@ export default function PositionsTerminal({
   >([]);
 
   useEffect(() => {
-    let interval: undefined | number;
+    let interval;
     if (market.market_id) {
       if (readWriteAgent) {
         fetchAndSeperate();
@@ -138,7 +138,9 @@ export default function PositionsTerminal({
         <div
           className="absolute top-1 h-[calc(100%-8px)] w-[calc(50%-0px)] bg-[#0300ad18] border-b-2 border-[#0300AD] transition-transform duration-300 ease-in-out rounded-sm"
           style={{
-            transform: `translateX(${currentTab === "Positions" ? "0%" : "100%"})`,
+            transform: `translateX(${
+              currentTab === "Positions" ? "0%" : "100%"
+            })`,
           }}
         />
       </div>

@@ -33,6 +33,7 @@ export const assetList: Asset[] = [
     priceID: "tether",
     symbol: "USDT",
     name: "usdt",
+    vaultID: undefined,
     decimals: 6,
     canisterID: "cngnf-vqaaa-aaaar-qag4q-cai",
     logoUrl:
@@ -42,6 +43,7 @@ export const assetList: Asset[] = [
     priceID: "bitcoin",
     symbol: "BTC",
     name: "bitcoin",
+    vaultID: undefined,
     decimals: 6,
     canisterID: "mxzaz-hqaaa-aaaar-qaada-cai",
     logoUrl:
@@ -51,6 +53,7 @@ export const assetList: Asset[] = [
     priceID: "ethereum",
     symbol: "ETH",
     name: "ethereum",
+    vaultID: undefined,
     decimals: 18,
     canisterID: "ss2fx-dyaaa-aaaar-qacoq-cai",
     logoUrl:
@@ -71,17 +74,20 @@ export const markets: Array<Market> = [
     baseAsset: assetList[3],
     quoteAsset: quoteCurrencies[0],
     chartId: "angxa-baaaa-aaaag-qcvnq-cai",
+    market_id: undefined,
     isFavorite: false,
   },
   {
     baseAsset: assetList[2],
     quoteAsset: quoteCurrencies[1],
     chartId: "xmiu5-jqaaa-aaaag-qbz7q-cai",
+    market_id: undefined,
     isFavorite: false,
   },
   {
     baseAsset: assetList[3],
     quoteAsset: quoteCurrencies[1],
+    market_id: undefined,
     chartId: "angxa-baaaa-aaaag-qcvnq-cai",
     isFavorite: false,
   },

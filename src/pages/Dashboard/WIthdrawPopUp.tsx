@@ -13,17 +13,16 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   asset: Asset;
-  readWriteAgent: Agent | undefined;
   marginBalance: string;
 }
 
 export default function WithdrawPopUp({
-  readWriteAgent,
   asset,
   isOpen,
   onClose,
   marginBalance,
 }: Props) {
+  const readWriteAgent = useAgent();
   const { user } = useAuth();
   const [withdrawAmount, setWithdrawAmount] = useState<string>("");
   const [error, setError] = useState<
@@ -287,9 +286,14 @@ export default function WithdrawPopUp({
             <div className="flex flex-col items-center space-y-3">
               {txError != "" ? (
                 <>
-              <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
-                <Icon name="times circle" size="large" color="red" className="pl-1" />
-              </div>
+                  <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
+                    <Icon
+                      name="times circle"
+                      size="large"
+                      color="red"
+                      className="pl-1"
+                    />
+                  </div>
                   <h2 className="text-xl font-semibold">{txError}</h2>
                   {/* <p className="text-sm text-gray-400">{txError}</p> */}
                   <Button

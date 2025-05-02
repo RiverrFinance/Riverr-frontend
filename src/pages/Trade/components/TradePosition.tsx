@@ -36,7 +36,7 @@ export default function TradePosition({
 
   const handleClosePosition = async () => {
     if (!readWriteAgent) return;
-    
+
     try {
       setIsClosing(true);
       await closePosition();
@@ -67,8 +67,8 @@ export default function TradePosition({
           {/* Position Details */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <img 
-                src={market.baseAsset.logoUrl} 
+              <img
+                src={market.baseAsset.logoUrl}
                 alt={market.baseAsset.symbol}
                 className="w-6 h-6 rounded-full"
               />
@@ -77,13 +77,15 @@ export default function TradePosition({
                   {market.baseAsset.symbol}/{market.quoteAsset.symbol}
                 </div>
                 <div className="text-sm text-gray-400">
-                  {order.is_long ? "Long" : "Short"} × {order.leverage_x10/10}
+                  {order.long ? "Long" : "Short"}
                 </div>
               </div>
             </div>
-            <div className={`text-sm font-medium ${
-              BigInt(pnl) >= 0n ? "text-green-500" : "text-red-500"
-            }`}>
+            <div
+              className={`text-sm font-medium ${
+                BigInt(pnl) >= 0n ? "text-green-500" : "text-red-500"
+              }`}
+            >
               {formatPnL(pnl)} {market.quoteAsset.symbol}
             </div>
           </div>
@@ -93,7 +95,11 @@ export default function TradePosition({
             onClick={handleClosePosition}
             disabled={isClosing || !readWriteAgent}
             className={`px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 
-              ${isClosing ? 'bg-gray-700 cursor-not-allowed' : 'bg-[#0300AD] hover:-translate-y-0.5 hover:shadow-[0_2px_0_0_#0300AD]'}
+              ${
+                isClosing
+                  ? "bg-gray-700 cursor-not-allowed"
+                  : "bg-[#0300AD] hover:-translate-y-0.5 hover:shadow-[0_2px_0_0_#0300AD]"
+              }
               transition-all duration-200`}
           >
             {isClosing ? (

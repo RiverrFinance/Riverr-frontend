@@ -54,8 +54,7 @@ export function Dashboard() {
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
 
   const [topMovers, setTopMovers] = useState<CoinGeckoMarketData[]>([]);
-  const [isTopMoversLoading, setIsTopMoversLoading] = useState(true);
-  const [isTopMoversError, setIsTopMoversError] = useState(false);
+  // const [isTopMoversLoading, setIsTopMoversLoading] = useState(true);
   const topPriorityCoinIds =
     "bitcoin,ethereum,binancecoin,aave,solana,ripple,internet-computer,usd-coin";
 
@@ -77,9 +76,9 @@ export function Dashboard() {
 
   useEffect(() => {
     updateValueDetails();
-    const interval = setInterval(() => {
+    const interval: NodeJS.Timeout = setInterval(() => {
       updateValueDetails();
-    }, 15000); // 10 seconds
+    }, 10000); // 10 seconds
     return () => {
       clearInterval(interval);
     };
@@ -87,14 +86,12 @@ export function Dashboard() {
 
   useEffect(() => {
     fetchAndSetTopMovers();
-    const interval = setInterval(fetchAndSetTopMovers, 35000); // Fetch every 35s (three '0' added)
+    const interval: NodeJS.Timeout = setInterval(fetchAndSetTopMovers, 35000); // Fetch every 35s (three '0' added)
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
-    HttpAgent.create({ fetch, host: ICP_API_HOST, retryTimes: 5 }).then(
-      setReadAgent
-    );
+    HttpAgent.create({ fetch, host: ICP_API_HOST }).then(setReadAgent);
   }, []);
 
   ///
@@ -161,26 +158,23 @@ export function Dashboard() {
 
   const fetchAndSetTopMovers = async () => {
     try {
-      setIsTopMoversLoading(true);
-      setIsTopMoversError(false);
       const response = await fetchTopMovers(topPriorityCoinIds);
       if (response.ok) {
         const combinedTopMovers = await response.json();
         setTopMovers(combinedTopMovers); // Update top movers state
-      } else {
-        setIsTopMoversError(true);
       }
+      // setIsTopMoversError(true);
     } catch (err) {
-      setIsTopMoversError(true);
+      // setIsTopMoversError(true);
     } finally {
-      setIsTopMoversLoading(false);
+      // setIsTopMoversLoading(false);
     }
   };
 
   /// Canister Interaction fucntions
 
   const fetcherUserMarginBalance = async (asset: Asset): Promise<bigint> => {
-    if (asset.vaultID && readWriteAgent) {
+    if (asset.vaultID !== undefined && readWriteAgent) {
       let vaultActor = new VaultActor(asset.vaultID, readAgent);
       return vaultActor.userMarginBalance(user.principal);
     }
@@ -221,7 +215,6 @@ export function Dashboard() {
   return (
     <div className="max-h-screen h-full bg-transparent rounded-3xl grid md:grid-cols-12 md:gap-5 gap-10 ">
       <div className="md:space-y-6 space-y-3 lg:col-span-8 md:col-span-7 h-full overflow-hidden flex flex-col">
-
         {/* Total Balance Card with Glowing Effect */}
         <div className="py-5 px-5 h-fit bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl md:rounded-3xl relative">
           <GlowingEffect
@@ -311,9 +304,8 @@ export function Dashboard() {
                 onDeposit={onOpenDepositModal}
                 onWithdraw={onOpenWithdrawModal}
               />
-            </div>            
+            </div>
           </div>
-
         </div>
       </div>
 
@@ -329,11 +321,7 @@ export function Dashboard() {
         <div className="capitalize flex px-7 relative z-10">
           <h2 className="text-2xl">top movers</h2>
         </div>
-        <TopMoversComponent
-          topMovers={topMovers}
-          isLoading={isTopMoversLoading}
-          isError={isTopMoversError}
-        />
+        <TopMoversComponent topMovers={topMovers} />
       </div>
 
       {selectedAsset && (
@@ -343,11 +331,9 @@ export function Dashboard() {
             asset={selectedAsset}
             isOpen={isDepositModalOpen}
             onClose={onCloseDepositModal}
-            readWriteAgent={readWriteAgent}
           />
           <WithdrawPopUp
             asset={selectedAsset}
-            readWriteAgent={readWriteAgent}
             isOpen={isWithdrawModalOpen}
             onClose={onCloseWithdrawModal}
             marginBalance={
@@ -396,7 +382,7 @@ const AssetListComponent = memo(
             const userBalance = balancesArray[index] || "0"; // asset.vaultid
 
             return (
-              <div 
+              <div
                 key={asset.name}
                 className="relative rounded-2xl transition-all duration-300"
               >
@@ -441,13 +427,11 @@ const AssetListComponent = memo(
 
 interface TopMoversProps {
   topMovers: CoinGeckoMarketData[];
-  isLoading: boolean;
-  isError: boolean;
 }
 
 const TopMoversComponent = memo(
-  ({ topMovers, isLoading, isError }: TopMoversProps) => {
-    if (isLoading || isError) {
+  ({ topMovers }: TopMoversProps) => {
+    if (topMovers.length == 0) {
       return (
         <div className="mt-5 p-5 max-h-screen h-full overflow-y-scroll overflow-x-hidden">
           <div className="flex flex-col gap-3">
@@ -476,7 +460,7 @@ const TopMoversComponent = memo(
             <div className="text-center text-red-500 mt-4">
               Failed to load top movers
             </div>
-          )} */}        
+          )} */}
         </div>
       );
     }
@@ -523,9 +507,7 @@ const TopMoversComponent = memo(
     );
   },
   (prevProps, nextProps) =>
-    JSON.stringify(prevProps.topMovers) === JSON.stringify(nextProps.topMovers) &&
-    prevProps.isLoading === nextProps.isLoading &&
-    prevProps.isError === nextProps.isError // no change in loading or error state
+    JSON.stringify(prevProps.topMovers) === JSON.stringify(nextProps.topMovers) // no change in loading or error state
 );
 
 const format = (price: number) => {
