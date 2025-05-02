@@ -6,6 +6,10 @@ import React, { useEffect, useState } from "react";
 import { HttpAgent } from "@dfinity/agent";
 import { parseUnits } from "ethers/lib/utils";
 
+import ManageLeverage from "./ManageLeverage";
+import ManageStaking from "./ManageStaking";
+import PositionComponent from "./PositionComponent";
+
 export const Earn = () => {
   const readWriteAgent = useAgent();
   const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());

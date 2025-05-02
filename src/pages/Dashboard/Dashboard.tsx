@@ -473,8 +473,8 @@ const TopMoversComponent = memo(
         <div className="flex flex-col gap-3">
           {topMovers.map((coin) => (
             <div
-              // key={coin.id}
-              className="py-4 grid grid-cols-12 items-center justify-between gap-3 relative z-10 bg-[#18191D]"
+              key={coin.id}
+              className="py-4 grid grid-cols-12 items-center justify-between gap-3 relative z-10 bg-[#18191d00]"
             >
               <div className="col-span-6 flex items-center">
                 <img
