@@ -240,14 +240,7 @@ export function Dashboard() {
       <div className="md:space-y-6 space-y-3 lg:col-span-8 md:col-span-7 h-full overflow-hidden flex flex-col">
         {/* Total Balance Card with Glowing Effect */}
         <div className="py-5 px-5 h-fit bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl md:rounded-3xl relative">
-          <GlowingEffect
-            spread={5}
-            glow={true}
-            disabled={false}
-            proximity={64}
-            inactiveZone={0.01}
-          />
-          <div className="bg-[#0300AD] rounded-lg md:rounded-2xl py-10 md:px-5 px-12 h-fit flex max-xs:flex-col max-xs:gap-10 justify-between items-center max-xs:items-start relative z-10">
+          <div className="bg-[#0300AD] rounded-lg md:rounded-2xl py-10 md:px-5 px-12 h-fit flex max-xs:flex-col max-xs:gap-10 justify-between items-center relative z-10">
             <div className="flex flex-col max-xs:items-center">
               <div className="text-3xl font-black tracking-wide mb-4">
                 Dashboard
@@ -273,12 +266,10 @@ export function Dashboard() {
                 </div>
 
                 <div className="text-sm text-gray-400">
-                  {/* {showBalances ? "100 icp" : "****"} */}
                 </div>
               </div>
             </div>
-            <div className="flex flex-col items-end max-lg:items-center justify-items-center  gap-2 w-fit overflow-hidden">
-            <div className="flex flex-col items-end max-lg:items-center justify-items-center  gap-2 w-fit overflow-hidden">
+            <div className="flex flex-col items-center justify-items-center  gap-2 w-fit overflow-hidden">
               <button
                 type="button"
                 className={`bg-white hover:bg-gray-100 text-[#0300AD] text-sm font-medium px-4 py-2 rounded-full flex gap-1 transition-all duration-300 hover:-translate-y-0.5 border border-black hover:border-t hover:border-b hover:shadow-[0_4px_0_0_#000000] ${
@@ -313,14 +304,7 @@ export function Dashboard() {
         </div>
 
         {/* Portfolio Section */}
-        <div className="flex-grow py-8 px-5 bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl md:rounded-3xl h-screen relative">
-          <GlowingEffect
-            spread={5}
-            glow={true}
-            disabled={false}
-            proximity={64}
-            inactiveZone={0.01}
-          />
+        <div className="flex-grow py-8 px-5 bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl md:rounded-3xl h-screen">
           <div>
             <div className="text-2xl font-bold mb-4 capitalize">portfolio</div>
             <div>
@@ -336,14 +320,7 @@ export function Dashboard() {
       </div>
 
       {/* Top Movers Section */}
-      <div className="lg:col-span-4 md:col-span-5 py-7 h-full bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl md:rounded-3xl relative">
-        <GlowingEffect
-          spread={5}
-          glow={true}
-          disabled={false}
-          proximity={64}
-          inactiveZone={0.01}
-        />
+      <div className="lg:col-span-4 md:col-span-5 py-7 h-full bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl md:rounded-3xl">
         <div className="capitalize flex px-7 relative z-10">
           <h2 className="text-2xl">top movers</h2>
         </div>

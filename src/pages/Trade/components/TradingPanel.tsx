@@ -126,118 +126,99 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
                 onClick={() => setOrderType(type)}
                 className="flex-1 py-2 px-4 text-sm font-medium relative transition-colors duration-300"
               >
-                <span
-                  className={`relative z-10 ${
-                    orderType === type
-                      ? "text-white"
-                      : "text-gray-400 hover:text-white"
-                  }`}
-                >
+                <span className={`relative z-10 ${orderType === type ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
                   {type}
                 </span>
               </button>
             ))}
           </div>
           {/* Sliding background */}
-          <div
+          <div 
             className="absolute top-1 h-[calc(100%-8px)] w-1/2 bg-[#0300ad18] border-b-2 border-[#0300AD] transition-transform duration-300 ease-in-out"
             style={{
-              transform: `translateX(${
-                orderType === "Market" ? "100%" : "0%"
-              })`,
+              transform: `translateX(${orderType === "Market" ? "100%" : "0%"})`
             }}
           />
         </div>
 
         {/* Trade Direction Selector */}
-        <div className="relative mx-4 border border-[#363c52] border-dashed rounded-lg border-opacity-40 bg-[#18191de9] w-32">
-          <div className="flex z-10">
-            <div className="relative mx-4 border border-[#363c52] border-dashed rounded-lg border-opacity-40 bg-[#18191de9] w-32">
-              <div className="flex z-10">
-                {(["Long", "Short"] as const).map((type) => (
-                  <button
-                    type="button"
-                    key={type}
-                    onClick={() => setTradeDirection(type)}
-                    className={`flex-1 py-2 text-sm font-medium relative  duration-300 ${
-                      tradeDirection === type
-                        ? "bg-[#0300adfd] rounded-md"
-                        : "border-none"
-                    }`}
-                  >
-                    <span
-                      className={`relative z-10 ${
-                        tradeDirection === type
-                          ? "text-white"
-                          : "text-gray-400 hover:text-white"
-                      }`}
-                    >
-                      {type}
-                    </span>
-                  </button>
-                ))}
-              </div>
-              {/* Sliding background */}
-              <div
-                className="absolute top-0 left-0 h-[calc(100%-0px)] w-[calc(50%-0px)] bg-[#0300ad18] border-2 border-dashed border-[#0300AD] transition-transform duration-300 ease-in-out rounded-md"
-                style={{
-                  transform: `translateX(${
-                    tradeDirection === "Short" ? "100%" : "0%"
-                  })`,
-                }}
-              />
-            </div>
+        <div className="relative mx-4 border border-[#363c52] rounded-lg border-opacity-40 bg-[#18191de9]">
+          <div className="flex relative z-10">
+            {(["Long", "Short"] as const).map((type) => (
+              <button
+                type="button"
+                key={type}
+                onClick={() => setTradeDirection(type)}
+                className="flex-1 py-2  text-sm font-medium relative transition-colors duration-300"
+              >
+                <span className={`relative z-10 ${tradeDirection === type ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+                  {type}
+                </span>
+              </button>
+            ))}
           </div>
+          {/* Sliding background */}
+          <div 
+            className="absolute top-0 left-0 h-[calc(100%-0px)] w-[calc(50%-0px)] bg-[#0300ad18] border-2 border-dashed border-[#0300AD] transition-transform duration-300 ease-in-out rounded-md"
+            style={{
+              transform: `translateX(${tradeDirection === "Short" ? "100%" : "0%"})`
+            }}
+          />
+        </div>
+      </div>
 
-          <div className="px-4 pt-4 space-y-14  xxxl:space-y-18">
-            <div className="px-4 pt-4 space-y-14  xxxl:space-y-18">
-              {/* Limit Price Input */}
-              {orderType == "Limit" ? (
-                <PriceInput
-                  long={tradeDirection == "Long"}
-                  readAgent={readAgent}
-                  market={market}
-                  value={limitPrice}
-                  setLimitPrice={setLimitPrice}
-                />
-              ) : (
-                <></>
-              )}
+      <div className="px-4 pt-4 space-y-14  xxxl:space-y-18">
+        {/* Limit Price Input */}
+        {orderType == "Limit" ? (
+          <PriceInput
+            long={tradeDirection == "Long"}
+            readAgent={readAgent}
+            market={market}
+            value={limitPrice}
+            setLimitPrice={setLimitPrice}
+          />
+        ) : (
+          <div className="flex items-center gap-2 bg-[#1C1C28] rounded-lg p-3 mt-7">
+            <input
+              title="empty"
+              disabled
+              type="number"
+              className="flex-1 bg-transparent text-white outline-none text-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+          </div>
+        )}
 
-              {/* margin Input */}
-              <MarginInput
-                value={margin}
-                market={market}
-                setMargin={setMargin}
-                setError={setError}
-                minCollateral={marketState.min_collateral}
-                readAgent={readAgent}
-              />
+        {/* margin Input */}
+        <MarginInput
+          value={margin}
+          market={market}
+          setMargin={setMargin}
+          setError={setError}
+          minCollateral={marketState.min_collateral}
+          readAgent={readAgent}
+        />
 
-              {/* Leverage Slider */}
-              <LeverageSlider
-                value={leverage}
-                maxLeverage={marketState.max_leveragex10 / 10}
-                setLeverage={setLeverage}
-              />
+        {/* Leverage Slider */}
+        <LeverageSlider
+          value={leverage}
+          maxLeverage={marketState.max_leveragex10 / 10}
+          setLeverage={setLeverage}
+        />
 
-              <div className="space-y-4 text-sm text-gray-400 pt-10 border-b border-gray-700 pb-5">
-                <div className="flex justify-between">
-                  <span>Total: {total()}</span>
-                  {market.quoteAsset.symbol}
-                </div>
-                <div className="flex justify-between">
-                  <span>Market: </span>
-                  {market.baseAsset.symbol}-{market.quoteAsset.symbol}{" "}
-                </div>
-              </div>
-
-              {/* <div className="mt-5 "> */}
-              <ActionButton currentError={error} onClick={openOrder} />
-              {/* </div> */}
-            </div>
+        <div className="space-y-4 text-sm text-gray-400 pt-10 border-b border-gray-700 pb-5">
+          <div className="flex justify-between">
+            <span>Total: {total()}</span>
+            {market.quoteAsset.symbol}
+          </div>
+          <div className="flex justify-between">
+            <span>Market: </span>
+            {market.baseAsset.symbol}-{market.quoteAsset.symbol}{" "}
           </div>
         </div>
+
+        {/* <div className="mt-5 "> */}
+          <ActionButton currentError={error} onClick={openOrder} />
+        {/* </div> */}
       </div>
     </div>
   );

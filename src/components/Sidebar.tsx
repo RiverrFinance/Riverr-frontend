@@ -190,7 +190,7 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
 
   return (
     <div className="min-h-screen h-full w-full overflow-x-hidden bg-[#000000] text-white pt-10 pb-5 space-y-28">
-      <BackgroundBeams className="opacity-50" />
+      <BackgroundBeams className="opacity-70" />
       <div className="">
         {/* Navbar */}
         <div className="backdrop-blur-3xl h-28 bg-transparent fixed top-0 left-0 right-0 md:mx-6 mx-4 z-50 rounded-b-2xl">

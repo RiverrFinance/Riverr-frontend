@@ -167,7 +167,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
 
             {/* Dropdown Menu */}
             {isDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 w-80 p-5 bg-[#18191D] rounded-md shadow-lg z-10 overflow-hidden border-2 border-dashed border-[#363c52] border-opacity-40">
+              <div className="absolute top-full left-0 max-xs:-left-8 mt-2 w-80 sm:w-96 p-5 bg-[#18191D] rounded-md shadow-lg z-10 overflow-hidden border-2 border-dashed border-[#363c52] border-opacity-40">
                 <div className="p-3 border-b border-gray-700 flex items-center justify-between">
                   <span className="text-white font-semibold">
                     Select Crypto Pair
