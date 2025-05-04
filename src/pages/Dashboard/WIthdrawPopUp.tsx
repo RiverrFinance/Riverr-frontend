@@ -173,7 +173,7 @@ export default function WithdrawPopUp({
                     value={withdrawAmount}
                     onChange={(e) => onAmountChange(e.target.value)}
                     placeholder="0.0"
-                    className="w-full bg-transparent border-none focus:outline-none text-xl"
+                    className="w-full bg-transparent border-none focus:outline-none text-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <div className="text-sm text-gray-400 flex justify-between mt-2">
                     <span className="text-white">

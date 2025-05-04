@@ -173,10 +173,6 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
             //    connectedButtonComponent={ConnectedWalletButton}
             dropdownMenuComponent={ConnectWalletDropdownMenu}
           />
-          {/* <ConnectWalletButton
-            isConnected={true}
-            setIdentity={setIdentity}
-          /> */}
         </div>
 
         {!isCheckIfMobileIs480 && (

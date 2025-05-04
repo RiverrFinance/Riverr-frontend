@@ -29,11 +29,8 @@ export default function ActionButton({ currentError, onClick }: Props) {
           </span>
         </button>
       ) : (
-        <div className="bg-[#0300AD] hover:bg-[#02007a] rounded-md flex justify-center items-center gap-2 px-5 py-0 w-full">
-          <div className="inline-flex items-center justify-center gap-2">
-            <Icon name="google wallet" />
-            <ConnectWallet />
-          </div>
+        <div className="bg-[#0300AD] hover:bg-[#02007a] rounded-md flex justify-center items-center gap-2 px-5 w-full">
+          <ConnectWallet />
         </div>
       )}
     </div>

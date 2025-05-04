@@ -139,31 +139,33 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
           <div className="relative">
             <button
               type="button"
-              className="flex items-center gap-2 text-white text-lg font-bold focus:outline-none"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
-              {selectedMarket.baseAsset.logoUrl && (
-                <img 
-                  src={selectedMarket.baseAsset.logoUrl} 
-                  alt={selectedMarket.baseAsset.symbol}
-                  className="w-6 h-6 rounded-full"
-                />
-              )}
-              <div className="flex items-center">
-                <span className="max-xs:text-sm">
-                  {selectedMarket.baseAsset.symbol.toUpperCase()} /{" "}
-                  {selectedMarket.quoteAsset.symbol.toUpperCase()}                  
-                </span>
+              <div className="flex items-center gap-2 text-white text-lg font-bold focus:outline-none">
+                {selectedMarket.baseAsset.logoUrl && (
+                  <img 
+                    src={selectedMarket.baseAsset.logoUrl} 
+                    alt={selectedMarket.baseAsset.symbol}
+                    className="w-6 h-6 rounded-full"
+                  />
+                )}
+                <div className="flex items-center">
+                  <span className="max-xs:text-sm">
+                    {selectedMarket.baseAsset.symbol.toUpperCase()} /{" "}
+                    {selectedMarket.quoteAsset.symbol.toUpperCase()}                  
+                  </span>
 
-                <Icon
-                  name={`caret ${isDropdownOpen ? "up" : "down"}`}
-                  className="ml-1 text-gray-400"
-                />
+                  <Icon
+                    name={`caret ${isDropdownOpen ? "up" : "down"}`}
+                    className="ml-1 text-gray-400"
+                  />
+                </div>                
+              </div>
+              <div className="text-gray-400 text-sm  max-xs:text-xs ml-8">
+                {selectedMarket.baseAsset.name}
               </div>
             </button>
-            <div className="text-gray-400 text-sm  max-xs:text-xs ml-8">
-              {selectedMarket.baseAsset.name}
-            </div>
+
 
             {/* Dropdown Menu */}
             {isDropdownOpen && (
