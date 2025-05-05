@@ -10,10 +10,8 @@ import { TokenActor } from "../../utils/Interfaces/tokenActor";
 import { Principal } from "@dfinity/principal";
 import { Icon } from "semantic-ui-react";
 
-// current: Import the new TransactionModal component
 import { TransactionModal } from "./TransactionModal";
 
-// current: Import ConnectWallet component
 import { ConnectWallet } from "@nfid/identitykit/react";
 
 interface Props {
@@ -36,7 +34,6 @@ export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsse
   const [activeTab, setActiveTab] = useState<"Deposit" | "Withdraw">("Deposit");
   const [duration, setDuration] = useState<string>("1 month");
 
-  // current: State for modal visibility and transaction status within ManageLeverage
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactionStatus, setTransactionStatus] = useState<'success' | 'failure' | 'in_progress' | null>(null);
   const [transactionMessage, setTransactionMessage] = useState<string>('');
@@ -44,9 +41,8 @@ export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsse
   const [txError, setTxError] = useState<string>('');
   const [currentAction, setCurrentAction] = useState<'Appoving' | 'Transacting' | ''>('');
 
-  const isWalletConnected = !!readWriteAgent; // current: Still using readWriteAgent to determine connection
+  const isWalletConnected = !!readWriteAgent;
 
-  // current: Fetch balances when readWriteAgent or selectedAsset changes
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isWalletConnected) {
@@ -64,7 +60,6 @@ export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsse
     };
   }, [isWalletConnected, selectedAsset]);
 
-  // current: Fetch vault staking details when txDone or selectedAsset changes
   useEffect(() => {
     fetchSetVaultStakingDetails();
     const interval: NodeJS.Timeout = setInterval(() => {
@@ -283,11 +278,9 @@ export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsse
     }
   };
 
-  // current: Function to handle Confirm button click - opens the modal
   const handleConfirmClick = () => {
     if (!isWalletConnected) {
       console.log("Connect wallet clicked - Handled by ConnectWallet component");
-      // The ConnectWallet component will handle the connection
       return;
     }
 
@@ -296,14 +289,12 @@ export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsse
       return;
     }
 
-    // current: Open the transaction modal
     setIsModalOpen(true);
     setTxError('');
     setTransactionStatus(null);
     setTransactionMessage('');
   };
 
-  // current: Function to handle transaction submission from within the modal
   const handleSubmitTransaction = async () => {
       if (activeTab === "Deposit") {
         await provideLeverage();

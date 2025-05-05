@@ -81,7 +81,7 @@ export const Earn = () => {
                   onClick={() => setSelectedAsset(asset)}
                   className={`flex items-center gap-2 p-4 rounded-2xl transition-all duration-300 ${
                     selectedAsset.symbol === asset.symbol
-                      ? "bg-[#0300ad18] border-2 border-[#0300AD]"
+                      ? "bg-[#0300ad18] border-2 border-[#0300AD] border-dashed"
                       : "bg-[#1C1C28] hover:bg-[#0300ad18] border-2 border-transparent"
                   }`}
                 >
@@ -263,7 +263,6 @@ export const Earn = () => {
       {/* Management Panel */}
       <div className="lg:col-span-4 h-full">
         <div className="h-full border-l-2 border-r-2 border-dashed border-[#363c52] border-opacity-40 relative">
-          {/* <GlowingEffect spread={20} glow={true} disabled={false} proximity={50} /> */}
           <div className="h-full p-6 flex flex-col gap-6">
             {/* Tab Selection */}
             <div className="flex relative p-1">
