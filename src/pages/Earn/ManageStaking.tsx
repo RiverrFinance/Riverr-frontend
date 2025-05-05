@@ -21,9 +21,10 @@ interface Props {
   readWriteAgent: Agent | undefined;
   readAgent: HttpAgent;
   selectedAsset: Asset;
+  isOperation?: boolean;
 }
 
-export default function ManageStaking({ readWriteAgent, readAgent, selectedAsset }: Props) {
+export default function ManageStaking({ readWriteAgent, readAgent, selectedAsset, isOperation = false }: Props) {
   const { user } = useAuth();
   const [referenceAmount, setReferenceAmount] = useState<string>("");
   const [stakeSpan, setStakeSpan] = useState<StakeSpan>();
@@ -274,7 +275,7 @@ export default function ManageStaking({ readWriteAgent, readAgent, selectedAsset
     await stakeVirtaulTokens();
   };
 
-  return (
+  return isOperation ? (
     <div className="grid grid-cols-1 gap-6 p-6 bg-[#18191D] rounded-xl border-2 border-dashed border-[#363c52] border-opacity-40">
       {/* Tab Buttons */}
       <div className="flex relative bg-[#1C1C28] rounded-lg p-1">
@@ -347,6 +348,7 @@ export default function ManageStaking({ readWriteAgent, readAgent, selectedAsset
 
           {readWriteAgent ? (
             <button
+              type="button"
               onClick={handleStakeConfirmClick}
               disabled={!!error || !referenceAmount}
               className={`w-full py-4 rounded-full font-medium transition-all duration-300 
@@ -393,6 +395,10 @@ export default function ManageStaking({ readWriteAgent, readAgent, selectedAsset
         txError={txError}
         currentAction={currentAction}
       />
+    </div>
+  ) : (
+    <div className="bg-[#18191de9] rounded-3xl p-6 border-2 border-dashed border-[#363c52] border-opacity-40 h-full">
+      <h2 className="text-xl font-bold mb-4">Staking Statistics</h2>
     </div>
   );
 }

@@ -3,9 +3,10 @@ import { Asset } from "../../lists/marketlist";
 import { useAgent } from "@nfid/identitykit/react";
 import { TokenActor } from "../../utils/Interfaces/tokenActor";
 import { HttpAgent } from "@dfinity/agent";
-import { Icon } from "semantic-ui-react";
 import { IconButton } from "../../components/Sidebar";
 import { formatEther, formatUnits } from "ethers/lib/utils";
+import { ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { GlowingEffect } from "../../components/Glowing-effect";
 
 const ICP_API_HOST = "https://icp-api.io/";
 
@@ -18,8 +19,6 @@ interface Props {
   onAccordionToggle: (index: number) => void;
   onDeposit: (asset: Asset) => void;
   onWithdraw: (asset: Asset) => void;
-  isPriceLoading?: boolean;
-  isPriceError?: boolean;
 }
 
 export const AssetComponent = function AssetComponent({
@@ -31,8 +30,6 @@ export const AssetComponent = function AssetComponent({
   onAccordionToggle,
   onDeposit,
   onWithdraw,
-  isPriceLoading = false,
-  isPriceError = false,
 }: Props) {
   const isAccordionOpen = index === openAccordionIndex;
   const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 1000);
@@ -46,18 +43,20 @@ export const AssetComponent = function AssetComponent({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const PriceSkeleton = () => (
-    <div className="h-4 w-16 bg-gray-700 rounded animate-pulse"></div>
-  );
-
   return (
     <>
       <div
         key={asset.name}
-        className="
-      col-span-12 grid grid-cols-12 items-center justify-between py-2 cursor-pointer"
+        className="relative col-span-12 grid grid-cols-12 items-center justify-between py-2 cursor-pointer"
         onClick={isMobileView ? () => onAccordionToggle(index) : undefined}
       >
+        <GlowingEffect
+          spread={2}
+          glow={true}
+          disabled={false}
+          proximity={64}
+          inactiveZone={0.01}
+        />
         <div className="col-span-4 max-lg:col-span-6 flex items-center">
           <div className="mr-2">
             {asset.logoUrl && (
@@ -74,11 +73,7 @@ export const AssetComponent = function AssetComponent({
           </div>
         </div>
         <div className="col-span-2 max-lg:col-span-3 text-sm">
-          {isPriceLoading || isPriceError ? (
-            <PriceSkeleton />
-          ) : (
-            `$${formatPrice(price)}`
-          )}
+          ${formatPrice(price)}
         </div>
         <div className="col-span-2 max-lg:col-span-3 text-sm font-medium">
           {userBalance}
@@ -91,24 +86,14 @@ export const AssetComponent = function AssetComponent({
               title="Deposit"
               className="!bg-[#0300ad] hover:!bg-[#0000003d] text-white text-sm font-normal px-5 py-2 rounded-full flex items-center gap-2 justify-items-center border border-[#353434] hover:!-translate-y-0.5 hover:shadow-[0_2px_0_0_#0300AD]"
             >
-              <Icon
-                name="arrow down"
-                color="grey"
-                size="small"
-                className="rotate-45"
-              />
+              <ArrowDownRight className="w-4 h-4" />
             </IconButton>
             <IconButton
               onClick={() => onWithdraw(asset)}
               title="Withdraw"
               className="bg-[#000000b3] hover:bg-[#0000003d] text-white text-sm font-normal px-5 py-2 rounded-full flex items-center gap-2 justify-items-center border border-[#4d4c4c] hover:!-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD]"
             >
-              <Icon
-                name="arrow up"
-                color="grey"
-                size="small"
-                className="rotate-45"
-              />
+              <ArrowUpRight className="w-4 h-4" />
             </IconButton>
           </div>
         )}
@@ -128,12 +113,7 @@ export const AssetComponent = function AssetComponent({
             }}
             className="!bg-[#0300ad] hover:!bg-[#0000003d] text-white text-sm font-normal py-2 rounded-full flex items-center gap-2 justify-center w-full border border-[#353434] hover:!-translate-y-0.5 hover:shadow-[0_2px_0_0_#0300AD]"
           >
-            <Icon
-              name="arrow down"
-              color="grey"
-              size="small"
-              className="rotate-45"
-            />
+            <ArrowDownRight className="w-4 h-4" />
           </IconButton>
           <IconButton
             title="Withdraw"
@@ -143,12 +123,7 @@ export const AssetComponent = function AssetComponent({
             }}
             className="bg-[#000000b3] hover:bg-[#0000003d] text-white text-sm font-normal py-2 rounded-full flex items-center gap-2 justify-center w-full border border-[#4d4c4c] mt-2 hover:!-translate-y-0.5 hover:shadow-[0_2px_0_0_#0300AD]"
           >
-            <Icon
-              name="arrow up"
-              color="grey"
-              size="small"
-              className="rotate-45"
-            />
+            <ArrowUpRight className="w-4 h-4" />
           </IconButton>
         </div>
       )}

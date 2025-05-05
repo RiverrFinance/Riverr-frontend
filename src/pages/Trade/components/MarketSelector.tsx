@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Icon } from "semantic-ui-react";
+import { ChevronDown, Search } from "lucide-react";
 import { Pairs } from "./Pairs";
 import {
   Asset,
@@ -9,7 +9,6 @@ import {
 } from "../../../lists/marketlist";
 import { AccessList } from "ethers/lib/utils";
 import MarketPrice from "./MarketPrice";
-
 
 // import { toast } from 'sonner';
 
@@ -155,10 +154,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                     {selectedMarket.quoteAsset.symbol.toUpperCase()}                  
                   </span>
 
-                  <Icon
-                    name={`caret ${isDropdownOpen ? "up" : "down"}`}
-                    className="ml-1 text-gray-400"
-                  />
+                  <ChevronDown className="w-4 h-4" />
                 </div>                
               </div>
               <div className="text-gray-400 text-sm  max-xs:text-xs ml-8">
@@ -180,14 +176,14 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                     title="Close"
                     type="button"
                   >
-                    <Icon name="close" />
+                    <ChevronDown className="w-4 h-4" />
                   </button>
                 </div>
 
                 {/* Search Input */}
                 <div className="pt-5">
                   <div className="flex items-center bg-[#242529] rounded-md px-3 py-2">
-                    <Icon name="search" className="text-gray-400 mr-2" />
+                    <Search className="w-4 h-4 text-gray-400 mr-2" />
                     <input
                       type="text"
                       placeholder="Search crypto"

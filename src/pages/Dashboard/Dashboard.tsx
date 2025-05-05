@@ -4,19 +4,15 @@ import { HttpAgent } from "@dfinity/agent";
 import { AssetComponent } from "./AssetComponent";
 import { useAgent, useAuth } from "@nfid/identitykit/react";
 import { VaultActor } from "../../utils/Interfaces/vaultActor";
-import {
-  fetchDetails,
-  fetchTopMovers,
-  ICP_API_HOST,
-} from "../../utils/utilFunction";
+import { fetchDetails, fetchTopMovers } from "../../utils/utilFunction";
 import { formatUnits, parseUnits } from "ethers/lib/utils";
 import FundingPopUp from "./FundingPopUp";
 import WithdrawPopUp from "./WIthdrawPopUp";
-import { Icon } from "semantic-ui-react";
 import { MinterActor } from "../../utils/Interfaces/tokenActor";
 import { Principal } from "@dfinity/principal";
-import { GlowingEffect } from "../../components/Glowing-effect";
+import { Eye, EyeOff, Droplets, Loader } from "lucide-react";
 
+const ICP_API_HOST = "https://icp-api.io/";
 const COIN_GECKO_API_URL = "https://api.coingecko.com/api/v3";
 
 interface PriceDetails {
@@ -53,18 +49,19 @@ export function Dashboard() {
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
 
   const [topMovers, setTopMovers] = useState<CoinGeckoMarketData[]>([]);
-  // const [isTopMoversLoading, setIsTopMoversLoading] = useState(true);
   const topPriorityCoinIds =
     "bitcoin,ethereum,binancecoin,aave,solana,ripple,internet-computer,usd-coin";
 
   const [showBalances, setShowBalances] = useState(true);
   const [isClaimingFaucet, setIsClaimingFaucet] = useState(false);
+  const [isLoadingTopMovers, setIsLoadingTopMovers] = useState(true);
 
   useEffect(() => {
-    if (readWriteAgent) {
+    if (readWriteAgent != undefined || user != undefined) {
       changeTotalValue();
     } else {
       setTotalValue(0);
+      setBalancesArray([]);
     }
   }, [
     readWriteAgent,
@@ -73,37 +70,28 @@ export function Dashboard() {
   ]);
 
   useEffect(() => {
-    updatePrices();
-
-    const interval: NodeJS.Timeout = setInterval(() => {
-      //updatePrices();
-    }, 5000); // 10 seconds
+    updateValueDetails();
+    const interval = setInterval(() => {
+      updateValueDetails();
+    }, 15000); // 20 seconds
     return () => {
       clearInterval(interval);
     };
   }, [readWriteAgent]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (readWriteAgent) {
-      updateBalances();
-      interval = setInterval(() => {
-        updateBalances();
-      }, 3000);
-    } else {
-      setBalancesArray([]);
-    }
-  }, [readWriteAgent]);
-
-  useEffect(() => {
     fetchAndSetTopMovers();
-    const interval: NodeJS.Timeout = setInterval(fetchAndSetTopMovers, 35000); // Fetch every 35s (three '0' added)
+    const interval = setInterval(fetchAndSetTopMovers, 35000); // Fetch every 35s (three '0' added)
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
     HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
   }, []);
+
+  useEffect(() => {
+    setIsLoadingTopMovers(topMovers.length === 0);
+  }, [topMovers]);
 
   ///
 
@@ -120,7 +108,7 @@ export function Dashboard() {
     setIsDepositModalOpen(false);
     setSelectedAsset(null);
     // Update balances after deposit
-    updatePrices();
+    updateValueDetails();
   };
 
   const onOpenWithdrawModal = (asset: Asset) => {
@@ -135,37 +123,25 @@ export function Dashboard() {
     //updateValueDetails();
   };
 
-  // const getUserAssetValue = async (asset: Asset): Promise<[number, string]> => {
-  //   let userMargin = await fetcherUserMarginBalance(asset);
-  //   let price = await fetchAssetPrice(asset);
-  //   return [price, formatUnits(userMargin, asset.decimals)]; //formatUnits(userMargin, asset.decimals)];
-  // };
-
-  const updatePrices = async () => {
-    try {
-      let sendPromiseList: Promise<number>[] = assetList.map((asset) =>
-        fetchAssetPrice(asset)
-      );
-      let prices: number[] = await Promise.all(sendPromiseList);
-      // const balances = resolvedPromiseList.map(([, balance]) => balance);
-      setPricesArray(prices);
-    } catch {
-      return;
-    }
+  const getUserAssetValue = async (asset: Asset): Promise<[number, string]> => {
+    let price = await fetchAssetPrice(asset);
+    let userMargin = await fetcherUserMarginBalance(asset);
+    return [price, formatUnits(userMargin, asset.decimals)]; //formatUnits(userMargin, asset.decimals)];
   };
 
-  const updateBalances = async () => {
+  const updateValueDetails = async () => {
     try {
-      let promiseList = assetList.map((asset) =>
-        fetcherUserMarginBalance(asset)
+      let sendPromiseList: Promise<[number, string]>[] = assetList.map(
+        (asset) => getUserAssetValue(asset)
       );
-
-      let resolvedList: string[] = await Promise.all(promiseList);
-
-      setBalancesArray(resolvedList);
-    } catch {
-      return;
-    }
+      let resolvedPromiseList: [number, string][] = await Promise.all(
+        sendPromiseList
+      );
+      const prices = resolvedPromiseList.map(([price]) => price);
+      const balances = resolvedPromiseList.map(([, balance]) => balance);
+      setPricesArray(prices);
+      setBalancesArray(balances);
+    } catch {}
   };
 
   const changeTotalValue = () => {
@@ -184,24 +160,22 @@ export function Dashboard() {
       const response = await fetchTopMovers(topPriorityCoinIds);
       if (response.ok) {
         const combinedTopMovers = await response.json();
-        setTopMovers(combinedTopMovers); // Update top movers state
+        //console.log(combinedTopMovers);
+        setTopMovers(combinedTopMovers);
       }
     } catch (err) {
-    } finally {
+      // console.log(`this error occured in dahsboard ${err}`);
     }
   };
 
   /// Canister Interaction fucntions
 
-  const fetcherUserMarginBalance = async (asset: Asset): Promise<string> => {
-    if (asset.vaultID != undefined) {
+  const fetcherUserMarginBalance = async (asset: Asset): Promise<bigint> => {
+    if (asset.vaultID && readWriteAgent) {
       let vaultActor = new VaultActor(asset.vaultID, readAgent);
-      let balance = await vaultActor.userMarginBalance(user.principal);
-      // console.log(balance);
-      return formatUnits(balance, asset.decimals);
-    } else {
-      return "0";
+      return vaultActor.userMarginBalance(user.principal);
     }
+    return 0n;
   };
 
   const fetchAssetPrice = async (asset: Asset): Promise<number> => {
@@ -236,11 +210,10 @@ export function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen h-full bg-transparent rounded-3xl grid md:grid-cols-12 md:gap-5 gap-10 ">
+    <div className="max-h-fit bg-transparent rounded-3xl grid md:grid-cols-12 md:gap-5 gap-10 ">
       <div className="md:space-y-6 space-y-3 lg:col-span-8 md:col-span-7 h-full overflow-hidden flex flex-col">
-        {/* Total Balance Card with Glowing Effect */}
-        <div className="py-5 px-5 h-fit bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl md:rounded-3xl relative">
-          <div className="bg-[#0300AD] rounded-lg md:rounded-2xl py-10 md:px-5 px-12 h-fit flex max-xs:flex-col max-xs:gap-10 justify-between items-center relative z-10">
+        <div className="py-5 px-5 h-fit bg-[#18191de9] rounded-2xl md:rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40">
+          <div className="bg-[#0300AD] rounded-lg md:rounded-2xl py-10 md:px-5 px-12 h-fit flex justify-between items-center">
             <div className="flex flex-col max-xs:items-center">
               <div className="text-3xl font-black tracking-wide mb-4">
                 Dashboard
@@ -253,26 +226,28 @@ export function Dashboard() {
                   </span>
                   <button
                     type="button"
-                    title="eye"
+                    title="Toggle balance visibility"
                     onClick={onShowBalances}
                     className="cursor-pointer text-gray-300 hover:text-white focus:outline-none"
                   >
-                    <Icon
-                      name={showBalances ? "eye" : "eye slash"}
-                      size="tiny"
-                    />
+                    {showBalances ? (
+                      <Eye className="w-4 h-4" />
+                    ) : (
+                      <EyeOff className="w-4 h-4" />
+                    )}
                   </button>
                   <small className="uppercase text-xs">USD</small>
                 </div>
 
                 <div className="text-sm text-gray-400">
+                  {/* {showBalances ? "100 icp" : "****"} */}
                 </div>
               </div>
             </div>
             <div className="flex flex-col items-center justify-items-center  gap-2 w-fit overflow-hidden">
               <button
                 type="button"
-                className={`bg-white hover:bg-gray-100 text-[#0300AD] text-sm font-medium px-4 py-2 rounded-full flex gap-1 transition-all duration-300 hover:-translate-y-0.5 border border-black hover:border-t hover:border-b hover:shadow-[0_4px_0_0_#000000] ${
+                className={`bg-white hover:bg-gray-100 text-[#0300AD] text-sm font-medium px-4 py-2 rounded-full flex items-center gap-2 transition-all duration-300 hover:-translate-y-0.5 border border-black hover:border-t hover:border-b hover:shadow-[0_4px_0_0_#000000] ${
                   !readWriteAgent || isClaimingFaucet
                     ? "opacity-75 cursor-not-allowed bg-gray-200"
                     : ""
@@ -280,10 +255,11 @@ export function Dashboard() {
                 onClick={receiveFaucet}
                 disabled={!readWriteAgent || isClaimingFaucet}
               >
-                <Icon
-                  name={isClaimingFaucet ? "spinner" : "tint"}
-                  loading={isClaimingFaucet}
-                />
+                {isClaimingFaucet ? (
+                  <Loader className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Droplets className="w-4 h-4" />
+                )}
                 <span className="font-semibold">
                   {!readWriteAgent
                     ? "Claim Faucet"
@@ -302,29 +278,81 @@ export function Dashboard() {
             </div>
           </div>
         </div>
-
-        {/* Portfolio Section */}
-        <div className="flex-grow py-8 px-5 bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl md:rounded-3xl h-screen">
+        <div className="flex-grow py-8 px-5 bg-[#18191de9] rounded-2xl md:rounded-3xl h-screen border-2 border-dashed border-[#363c52] border-opacity-40">
+          <div className="text-2xl font-bold mb-4 capitalize">portfolio</div>
           <div>
-            <div className="text-2xl font-bold mb-4 capitalize">portfolio</div>
-            <div>
-              <AssetListComponent
-                pricesArray={pricesArray}
-                balancesArray={balancesArray}
-                onDeposit={onOpenDepositModal}
-                onWithdraw={onOpenWithdrawModal}
-              />
-            </div>
+            <AssetListComponent
+              pricesArray={pricesArray}
+              balancesArray={balancesArray}
+              onDeposit={onOpenDepositModal}
+              onWithdraw={onOpenWithdrawModal}
+            />
           </div>
         </div>
       </div>
-
-      {/* Top Movers Section */}
-      <div className="lg:col-span-4 md:col-span-5 py-7 h-full bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl md:rounded-3xl">
-        <div className="capitalize flex px-7 relative z-10">
+      <div className="lg:col-span-4 md:col-span-5 py-7 h-full bg-[#18191de9] rounded-2xl md:rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40">
+        <div className="capitalize flex px-7">
           <h2 className="text-2xl">top movers</h2>
         </div>
-        <TopMoversComponent topMovers={topMovers} />
+        <div className="mt-5 p-5 max-h-screen h-full overflow-y-scroll overflow-x-hidden">
+          <div className="flex flex-col gap-3">
+            {isLoadingTopMovers ? (
+              Array(26)
+                .fill(0)
+                .map((_, i) => (
+                  <div
+                    key={i}
+                    className="py-4 grid grid-cols-12 items-center gap-3"
+                  >
+                    <div className="col-span-6 flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52]" />
+                      <div className="space-y-2 flex-1">
+                        <div className="h-4 w-20 animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52] rounded" />
+                        <div className="h-3 w-12 animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52] rounded" />
+                      </div>
+                    </div>
+                    <div className="col-span-3 h-4 w-16 animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52] rounded" />
+                    <div className="col-span-3 h-4 w-16 animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52] rounded" />
+                  </div>
+                ))
+            ) : (
+              topMovers.map((coin) => (
+                <div
+                  key={coin.id}
+                  className="py-4 grid grid-cols-12 items-center justify-between gap-3"
+                >
+                  <div className="col-span-6 flex items-center">
+                    <img
+                      src={coin.image}
+                      alt={coin.name}
+                      className="w-6 h-6 mr-2"
+                    />
+                    <div>
+                      <div className="text-md font-semibold">{coin.name}</div>
+                      <div className="text-sm text-gray-500">
+                        {coin.symbol.toUpperCase()}
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    className={`col-span-3 text-sm ${
+                      coin.price_change_percentage_24h >= 0
+                        ? "text-green-500"
+                        : "text-red-500"
+                    }`}
+                  >
+                    {coin.price_change_percentage_24h
+                      ? `${coin.price_change_percentage_24h.toFixed(2)}%`
+                      : "0.00%"}
+                  </div>
+                  <div className="col-span-3 text-sm font-semibold">
+                    ${format(coin.current_price)}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
 
       {selectedAsset && (
@@ -387,30 +415,18 @@ const AssetListComponent = memo(
             return (
               <div
                 key={asset.name}
-                className="relative rounded-2xl transition-all duration-300"
+                className="hover:px-4 p-2 hover:border border-[#27272b]  hover:border-[#27272b] rounded-2xl transition-all duration-300"
               >
-                <GlowingEffect
-                  spread={30}
-                  glow={true}
-                  disabled={false}
-                  proximity={28}
-                  inactiveZone={0.01}
+                <AssetComponent
+                  asset={asset}
+                  price={price}
+                  userBalance={userBalance}
+                  index={index}
+                  openAccordionIndex={openAccordionIndex}
+                  onAccordionToggle={handleAccordionToggle}
+                  onDeposit={onDeposit}
+                  onWithdraw={onWithdraw}
                 />
-                <div
-                  // key={asset.name}
-                  className="hover:px-4 p-2 hover:border border-[#27272b]  hover:border-[#27272b] rounded-2xl transition-all duration-300 relative  bg-[#18191D]"
-                >
-                  <AssetComponent
-                    asset={asset}
-                    price={price}
-                    userBalance={userBalance}
-                    index={index}
-                    openAccordionIndex={openAccordionIndex}
-                    onAccordionToggle={handleAccordionToggle}
-                    onDeposit={onDeposit}
-                    onWithdraw={onWithdraw}
-                  />
-                </div>
               </div>
             );
           })}
@@ -428,90 +444,56 @@ const AssetListComponent = memo(
   }
 );
 
-interface TopMoversProps {
-  topMovers: CoinGeckoMarketData[];
-}
+// interface TopMoversProps {
+//   topMovers: CoinGeckoMarketData[];
+// }
 
-const TopMoversComponent = memo(
-  ({ topMovers }: TopMoversProps) => {
-    if (topMovers.length == 0) {
-      return (
-        <div className="mt-5 p-5 max-h-screen h-full overflow-y-scroll overflow-x-hidden">
-          <div className="flex flex-col gap-3">
-            {[...Array(28)].map((_, index) => (
-              <div
-                key={index}
-                className="py-4 grid grid-cols-12 items-center justify-between gap-3 relative z-10"
-              >
-                <div className="col-span-6 flex items-center">
-                  <div className="w-6 h-6 mr-2 bg-gray-700 rounded-full animate-pulse"></div>
-                  <div className="space-y-2">
-                    <div className="h-4 w-20 bg-gray-700 rounded animate-pulse"></div>
-                    <div className="h-3 w-12 bg-gray-700 rounded animate-pulse"></div>
-                  </div>
-                </div>
-                <div className="col-span-3">
-                  <div className="h-4 w-16 bg-gray-700 rounded animate-pulse"></div>
-                </div>
-                <div className="col-span-3">
-                  <div className="h-4 w-16 bg-gray-700 rounded animate-pulse"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-          {/* {isError && !isLoading && (
-            <div className="text-center text-red-500 mt-4">
-              Failed to load top movers
-            </div>
-          )} */}
-        </div>
-      );
-    }
-
-    return (
-      <div className="mt-5 p-5 max-h-screen h-full overflow-y-scroll overflow-x-hidden">
-        <div className="flex flex-col gap-3">
-          {topMovers.map((coin) => (
-            <div
-              key={coin.id}
-              className="py-4 grid grid-cols-12 items-center justify-between gap-3 relative z-10 bg-[#18191d00]"
-            >
-              <div className="col-span-6 flex items-center">
-                <img
-                  src={coin.image}
-                  alt={coin.name}
-                  className="w-6 h-6 mr-2"
-                />
-                <div>
-                  <div className="text-md font-semibold">{coin.name}</div>
-                  <div className="text-sm text-gray-500">
-                    {coin.symbol.toUpperCase()}
-                  </div>
-                </div>
-              </div>
-              <div
-                className={`col-span-3 text-sm ${
-                  coin.price_change_percentage_24h >= 0
-                    ? "text-green-500"
-                    : "text-red-500"
-                }`}
-              >
-                {coin.price_change_percentage_24h
-                  ? `${coin.price_change_percentage_24h.toFixed(2)}%`
-                  : "0.00%"}
-              </div>
-              <div className="col-span-3 text-sm font-semibold">
-                ${format(coin.current_price)}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  },
-  (prevProps, nextProps) =>
-    JSON.stringify(prevProps.topMovers) === JSON.stringify(nextProps.topMovers) // no change in loading or error state
-);
+// const TopMoversComponent = memo(
+//   ({ topMovers }: TopMoversProps) => {
+//     return (
+//       <div className="mt-5 p-5 max-h-screen h-full overflow-y-scroll overflow-x-hidden">
+//         <div className="flex flex-col gap-3">
+//           {topMovers.map((coin) => (
+//             <div
+//               key={coin.id}
+//               className="py-4 grid grid-cols-12 items-center justify-between gap-3"
+//             >
+//               <div className="col-span-6 flex items-center">
+//                 <img
+//                   src={coin.image}
+//                   alt={coin.name}
+//                   className="w-6 h-6 mr-2"
+//                 />
+//                 <div>
+//                   <div className="text-md font-semibold">{coin.name}</div>
+//                   <div className="text-sm text-gray-500">
+//                     {coin.symbol.toUpperCase()}
+//                   </div>
+//                 </div>
+//               </div>
+//               <div
+//                 className={`col-span-3 text-sm ${
+//                   coin.price_change_percentage_24h >= 0
+//                     ? "text-green-500"
+//                     : "text-red-500"
+//                 }`}
+//               >
+//                 {coin.price_change_percentage_24h
+//                   ? `${coin.price_change_percentage_24h.toFixed(2)}%`
+//                   : "0.00%"}
+//               </div>
+//               <div className="col-span-3 text-sm font-semibold">
+//                 ${format(coin.current_price)}
+//               </div>
+//             </div>
+//           ))}
+//         </div>
+//       </div>
+//     );
+//   },
+//   (prevProps, nextProps) =>
+//     JSON.stringify(prevProps.topMovers) === JSON.stringify(nextProps.topMovers)
+// );
 
 const format = (price: number) => {
   if (!price) return "0.00";

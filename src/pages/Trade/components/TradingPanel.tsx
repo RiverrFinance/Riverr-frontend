@@ -12,6 +12,7 @@ import { InputError } from "../types/trading";
 import ActionButton from "./ActionButton";
 import { priceToTick } from "../utilFunctions";
 import { useAgent } from "@nfid/identitykit/react";
+import { ChevronDown } from "lucide-react";
 
 export interface TradingPanelProps {
   market: Market;
@@ -124,8 +125,9 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
                 type="button"
                 key={type}
                 onClick={() => setOrderType(type)}
-                className="flex-1 py-2 px-4 text-sm font-medium relative transition-colors duration-300"
+                className="flex items-center gap-2 flex-1 py-4 px-4 text-sm font-medium relative transition-colors duration-300"
               >
+                <ChevronDown className={`w-4 h-4 ${orderType === type ? 'rotate-180' : ''} transition-transform duration-300`} />
                 <span className={`relative z-10 ${orderType === type ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
                   {type}
                 </span>
