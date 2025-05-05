@@ -20,14 +20,19 @@ interface Props {
   selectedAsset: Asset;
 }
 
-export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsset }: Props) {
+export default function ManageLeverage({
+  readWriteAgent,
+  readAgent,
+  selectedAsset,
+}: Props) {
   const { user } = useAuth();
   const [referenceAmount, setReferenceAmount] = useState<string>("");
   const [useMarginBalance, setUsermarginBalance] = useState<bigint>(0n);
   const [usevTokenBalance, setVTokenBalance] = useState<bigint>(0n);
-  const [vaultStakingDetails, setVaultStakingDetails] =
-    useState<VaultStakingDetails>();
-  const [error, setError] = useState<"" | "Insufficient Balance" | "Invalid amount">("");
+
+  const [error, setError] = useState<
+    "" | "Insufficient Balance" | "Invalid amount"
+  >("");
   const [warning, setWarning] =
     useState<"Transaction might fail as Vault is not liquid enough">();
   const [txDone, setTxDone] = useState(false);
@@ -35,11 +40,15 @@ export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsse
   const [duration, setDuration] = useState<string>("1 month");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [transactionStatus, setTransactionStatus] = useState<'success' | 'failure' | 'in_progress' | null>(null);
-  const [transactionMessage, setTransactionMessage] = useState<string>('');
+  const [transactionStatus, setTransactionStatus] = useState<
+    "success" | "failure" | "in_progress" | null
+  >(null);
+  const [transactionMessage, setTransactionMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-  const [txError, setTxError] = useState<string>('');
-  const [currentAction, setCurrentAction] = useState<'Appoving' | 'Transacting' | ''>('');
+  const [txError, setTxError] = useState<string>("");
+  const [currentAction, setCurrentAction] = useState<
+    "Appoving" | "Transacting" | ""
+  >("");
 
   const isWalletConnected = !!readWriteAgent;
 
@@ -60,16 +69,7 @@ export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsse
     };
   }, [isWalletConnected, selectedAsset]);
 
-  useEffect(() => {
-    fetchSetVaultStakingDetails();
-    const interval: NodeJS.Timeout = setInterval(() => {
-      fetchSetVaultStakingDetails();
-    }, 15000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [txDone, selectedAsset]);
+  // current: Fetch vault staking details when txDone or selectedAsset changes
 
   /// Event handlers
 
@@ -96,16 +96,16 @@ export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsse
     if (value === "") {
       setError("");
     } else {
-       try {
+      try {
         const amount = parseUnits(value, selectedAsset.decimals).toBigInt();
         if (amount > usevTokenBalance) {
           setError("Insufficient Balance");
         } else {
           setError("");
         }
-       } catch (e) {
+      } catch (e) {
         setError("Invalid amount");
-       }
+      }
     }
   };
 
@@ -121,7 +121,7 @@ export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsse
 
   const fetchUserVtokenBalance = async (): Promise<bigint> => {
     const { vTokenCanisterID } = selectedAsset;
-     if (!vTokenCanisterID || !user?.principal) return 0n;
+    if (!vTokenCanisterID || !user?.principal) return 0n;
 
     const tokenActor = new TokenActor(vTokenCanisterID, readAgent);
     return tokenActor.balance(user.principal);
@@ -141,47 +141,37 @@ export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsse
     }
   };
 
-  const fetchSetVaultStakingDetails = async (): Promise<any> => {
-    const { vaultID } = selectedAsset;
-     if (!vaultID) return;
-    try {
-      const vaultActor = new VaultActor(vaultID, readAgent);
-      const details = await vaultActor.getVaultStakingDetails();
-      setVaultStakingDetails(details);
-    } catch (e) {
-        console.error("Error fetching vault staking details", e);
-    }
-  };
-
   const approveSpending = async (approvalAmount: bigint): Promise<boolean> => {
     let { vaultID, vTokenCanisterID } = selectedAsset;
-     if (!vaultID || !vTokenCanisterID || !readWriteAgent) return false;
+    if (!vaultID || !vTokenCanisterID || !readWriteAgent) return false;
 
     let tokenActor = new TokenActor(vTokenCanisterID, readWriteAgent);
 
     try {
-        return await tokenActor.approveSpending(
-          approvalAmount,
-          Principal.fromText(vaultID)
-        );
+      return await tokenActor.approveSpending(
+        approvalAmount,
+        Principal.fromText(vaultID)
+      );
     } catch (e) {
-        console.error("Error approving spending:", e);
-        setTxError(`Approval failed: ${e.message || 'An unknown error occurred.'}`);
-        return false;
+      console.error("Error approving spending:", e);
+      setTxError(
+        `Approval failed: ${e.message || "An unknown error occurred."}`
+      );
+      return false;
     }
   };
 
   const getCurrentAllowance = async (): Promise<bigint> => {
     let { vaultID, vTokenCanisterID } = selectedAsset;
-     if (!vaultID || !vTokenCanisterID || !user?.principal) return 0n;
+    if (!vaultID || !vTokenCanisterID || !user?.principal) return 0n;
 
     let tokenActor = new TokenActor(vTokenCanisterID, readAgent);
 
     try {
-        return tokenActor.allowance(user.principal, Principal.fromText(vaultID));
+      return tokenActor.allowance(user.principal, Principal.fromText(vaultID));
     } catch (e) {
-        console.error("Error getting current allowance:", e);
-        return 0n;
+      console.error("Error getting current allowance:", e);
+      return 0n;
     }
   };
 
@@ -190,8 +180,8 @@ export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsse
     if (!vaultID || !readWriteAgent) return;
 
     setIsLoading(true);
-    setTxError('');
-    setCurrentAction('Transacting');
+    setTxError("");
+    setCurrentAction("Transacting");
 
     try {
       const vaultActor = new VaultActor(vaultID, readWriteAgent);
@@ -202,33 +192,35 @@ export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsse
       const txResult: boolean = await vaultActor.provideLeverage(amount);
 
       if (txResult) {
-          setTransactionStatus('success');
-          setTransactionMessage('Leverage provided successfully!');
+        setTransactionStatus("success");
+        setTransactionMessage("Leverage provided successfully!");
       } else {
-          setTransactionStatus('failure');
-          setTransactionMessage('Failed to provide leverage.');
-          setTxError('Transaction failed.');
+        setTransactionStatus("failure");
+        setTransactionMessage("Failed to provide leverage.");
+        setTxError("Transaction failed.");
       }
-       setTxDone(prev => !prev);
+      setTxDone((prev) => !prev);
     } catch (e) {
-        console.error("Error providing leverage:", e);
-        setTransactionStatus('failure');
-        setTransactionMessage(`Error: ${e.message || 'An unknown error occurred.'}`);
-        setTxError(`Error: ${e.message || 'An unknown error occurred.'}`);
-         setTxDone(prev => !prev);
+      console.error("Error providing leverage:", e);
+      setTransactionStatus("failure");
+      setTransactionMessage(
+        `Error: ${e.message || "An unknown error occurred."}`
+      );
+      setTxError(`Error: ${e.message || "An unknown error occurred."}`);
+      setTxDone((prev) => !prev);
     } finally {
-        setIsLoading(false);
-        setCurrentAction('');
+      setIsLoading(false);
+      setCurrentAction("");
     }
   };
 
   const removeleverage = async () => {
     const { vaultID, vTokenCanisterID } = selectedAsset;
-     if (!vaultID || !vTokenCanisterID || !readWriteAgent) return;
+    if (!vaultID || !vTokenCanisterID || !readWriteAgent) return;
 
     setIsLoading(true);
-    setTxError('');
-    setCurrentAction('Appoving');
+    setTxError("");
+    setCurrentAction("Appoving");
 
     try {
       const allowance = await getCurrentAllowance();
@@ -242,45 +234,50 @@ export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsse
         let response = await approveSpending(amount - allowance);
 
         if (!response) {
-           console.error("Approval failed");
-           setTransactionStatus('failure');
-           setTransactionMessage('Approval failed.');
-           setTxError('Approval failed.');
-           setIsLoading(false);
-           setCurrentAction('');
-           setTxDone(prev => !prev);
-           return;
+          console.error("Approval failed");
+          setTransactionStatus("failure");
+          setTransactionMessage("Approval failed.");
+          setTxError("Approval failed.");
+          setIsLoading(false);
+          setCurrentAction("");
+          setTxDone((prev) => !prev);
+          return;
         }
       }
 
-      setCurrentAction('Transacting');
+      setCurrentAction("Transacting");
 
       const txResult: string = await vaultActor.removeLeverage(amount);
       if (txResult === "") {
-         setTransactionStatus('success');
-         setTransactionMessage('Leverage removed successfully!');
+        setTransactionStatus("success");
+        setTransactionMessage("Leverage removed successfully!");
       } else {
-         console.error("Remove leverage failed:", txResult);
-         setTransactionStatus('failure');
-         setTransactionMessage(`Failed to remove leverage: ${txResult}`);
-         setTxError(`Failed to remove leverage: ${txResult}`);
+        console.error("Remove leverage failed:", txResult);
+        setTransactionStatus("failure");
+        setTransactionMessage(`Failed to remove leverage: ${txResult}`);
+        setTxError(`Failed to remove leverage: ${txResult}`);
       }
-       setTxDone(prev => !prev);
+      setTxDone((prev) => !prev);
     } catch (e) {
-        console.error("Error removing leverage:", e);
-        setTransactionStatus('failure');
-        setTransactionMessage(`Error: ${e.message || 'An unknown error occurred.'}`);
-        setTxError(`Error: ${e.message || 'An unknown error occurred.'}`);
-         setTxDone(prev => !prev);
+      console.error("Error removing leverage:", e);
+      setTransactionStatus("failure");
+      setTransactionMessage(
+        `Error: ${e.message || "An unknown error occurred."}`
+      );
+      setTxError(`Error: ${e.message || "An unknown error occurred."}`);
+      setTxDone((prev) => !prev);
     } finally {
-        setIsLoading(false);
-        setCurrentAction('');
+      setIsLoading(false);
+      setCurrentAction("");
     }
   };
 
   const handleConfirmClick = () => {
     if (!isWalletConnected) {
-      console.log("Connect wallet clicked - Handled by ConnectWallet component");
+      console.log(
+        "Connect wallet clicked - Handled by ConnectWallet component"
+      );
+      // The ConnectWallet component will handle the connection
       return;
     }
 
@@ -290,18 +287,18 @@ export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsse
     }
 
     setIsModalOpen(true);
-    setTxError('');
+    setTxError("");
     setTransactionStatus(null);
-    setTransactionMessage('');
+    setTransactionMessage("");
   };
 
   const handleSubmitTransaction = async () => {
-      if (activeTab === "Deposit") {
-        await provideLeverage();
-      } else {
-        await removeleverage();
-      }
-  }
+    if (activeTab === "Deposit") {
+      await provideLeverage();
+    } else {
+      await removeleverage();
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 gap-6 p-6 bg-[#18191de9] rounded-xl border-2 border-dashed border-[#363c52] border-opacity-40">
@@ -316,18 +313,20 @@ export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsse
               onClick={() => setActiveTab(tab)}
               className="flex-1 py-2 px-4 text-sm font-medium relative transition-colors duration-300 border-2 border-dashed border-transparent"
             >
-              <span className={`relative z-10 ${
-                activeTab === tab 
-                  ? 'text-white border-[#0300AD]' 
-                  : 'text-gray-400 hover:text-white'
-              }`}>
+              <span
+                className={`relative z-10 ${
+                  activeTab === tab
+                    ? "text-white border-[#0300AD]"
+                    : "text-gray-400 hover:text-white"
+                }`}
+              >
                 {tab}
               </span>
             </button>
           ))}
         </div>
         {/* Sliding background with dotted border */}
-        <div 
+        <div
           className="absolute top-1 h-[calc(100%-8px)] w-[calc(50%-4px)] bg-[#0300ad18] border-2 border-dashed border-[#0300AD] transition-transform duration-300 ease-in-out rounded-sm"
           style={{
             transform: `translateX(${activeTab === "Deposit" ? "0%" : "100%"})`,
@@ -344,7 +343,11 @@ export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsse
               className="flex-1 bg-transparent border-none focus:outline-none text-white"
               placeholder="0.00"
               value={referenceAmount}
-              onChange={(e) => activeTab === "Deposit" ? onAmountDepositChange(e.target.value) : onAmountWithdrawChange(e.target.value)}
+              onChange={(e) =>
+                activeTab === "Deposit"
+                  ? onAmountDepositChange(e.target.value)
+                  : onAmountWithdrawChange(e.target.value)
+              }
               disabled={!readWriteAgent}
             />
             <div className="flex items-center gap-2 text-gray-400">
@@ -353,7 +356,12 @@ export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsse
             </div>
           </div>
           <p className="text-sm text-gray-500">
-            Available: {formatUnits(activeTab === "Deposit" ? useMarginBalance : usevTokenBalance, selectedAsset.decimals)} {selectedAsset.symbol}
+            Available:{" "}
+            {formatUnits(
+              activeTab === "Deposit" ? useMarginBalance : usevTokenBalance,
+              selectedAsset.decimals
+            )}{" "}
+            {selectedAsset.symbol}
           </p>
           {error && <p className="text-sm text-red-500">{error}</p>}
         </div>
@@ -364,9 +372,11 @@ export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsse
             onClick={handleConfirmClick}
             disabled={!!error || !referenceAmount}
             className={`w-full py-4 rounded-full font-medium transition-all duration-300 
-              ${!error && referenceAmount 
-                ? "bg-[#0300AD] text-white hover:bg-[#0300AD]/90 hover:-translate-y-0.5 hover:shadow-[0_2px_0_0_#0300AD]"
-                : "bg-gray-600/50 text-gray-400 cursor-not-allowed"}`}
+              ${
+                !error && referenceAmount
+                  ? "bg-[#0300AD] text-white hover:bg-[#0300AD]/90 hover:-translate-y-0.5 hover:shadow-[0_2px_0_0_#0300AD]"
+                  : "bg-gray-600/50 text-gray-400 cursor-not-allowed"
+              }`}
           >
             {error || !referenceAmount ? "Enter Amount" : "Confirm"}
           </button>
@@ -382,7 +392,9 @@ export default function ManageLeverage({ readWriteAgent, readAgent, selectedAsse
         onClose={() => setIsModalOpen(false)}
         actionType={activeTab}
         asset={selectedAsset}
-        userBalance={activeTab === "Deposit" ? useMarginBalance : usevTokenBalance}
+        userBalance={
+          activeTab === "Deposit" ? useMarginBalance : usevTokenBalance
+        }
         amount={referenceAmount}
         error={error}
         onSubmitTransaction={handleSubmitTransaction}
