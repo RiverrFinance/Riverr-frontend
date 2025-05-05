@@ -1,12 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { Icon, Menu } from "semantic-ui-react";
+import { Menu } from "semantic-ui-react";
 import {
   ConnectWallet,
   ConnectWalletButton,
   ConnectedWalletButton,
   ConnectWalletDropdownMenu,
 } from "@nfid/identitykit/react";
+import {
+  Home,
+  BarChart2,
+  PiggyBank,
+  HelpCircle,
+  Trophy,
+  Globe,
+  Bell,
+} from "lucide-react";
 
 import LogoImg from "../images/Logo.png";
 import { BackgroundBeams } from "./Background-beams";
@@ -17,27 +26,27 @@ const navLinks = [
   {
     path: "/dashboard",
     label: "Dashboard",
-    icon: <Icon name="home" className="mr-4" />,
+    icon: <Home className="w-4 h-4" />,
   },
   {
     path: "/trade",
     label: "Trade",
-    icon: <Icon name="chart line" className="mr-4" />,
+    icon: <BarChart2 className="w-4 h-4" />,
   },
   {
     path: "/earn",
     label: "Earn",
-    icon: <Icon name="money" className="mr-4" />,
+    icon: <PiggyBank className="w-4 h-4" />,
   },
   {
     path: "/support",
     label: "Support",
-    icon: <Icon name="help circle" className="mr-4" />,
+    icon: <HelpCircle className="w-4 h-4" />,
   },
   {
     path: "/leaderboard",
     label: "Leaderboard",
-    icon: <Icon name="trophy" className="mr-4" />,
+    icon: <Trophy className="w-4 h-4" />,
   },
 ];
 
@@ -80,8 +89,8 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
         ? ["/", "/trade"].includes(location.pathname)
         : location.pathname === path;
     return isActive
-      ? "text-white font-medium text-md max-lg:rounded-2xl px-4 py-1 transition-all duration-200 hover:text-white max-lg:border-2 border-b-2 border-opacity-40 border-dashed border-[#7c7f88]"
-      : "text-gray-400 hover:text-white transition-colors duration-200 text-md";
+      ? "text-white"
+      : "text-gray-400 hover:text-white";
   };
 
   const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
@@ -148,14 +157,14 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
     <>
       {/* Language Globe Icon */}
       <IconButton title="" className="" onClick={() => {}}>
-        <Icon name="globe" className="pl-1 pt-0.5" />
+        <Globe className="w-4 h-4" />
       </IconButton>
 
       {/* Notification Bell Icon */}
       <IconButton title="" className="" onClick={() => {}}>
         <div className="relative">
           <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
-          <Icon name="bell" />
+          <Bell className="w-4 h-4" />
         </div>
       </IconButton>
     </>
@@ -167,7 +176,6 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
       {/* Right side with actions */}
       <div className="flex items-center space-x-2 md:space-x-4">
         <div className="bg-[#0300AD] hover:bg-[#02007a] rounded-md flex justify-items-center items-center gap-2 px-5">
-          <Icon name="google wallet" className="max-sm:sr-only" />
           <ConnectWallet
             connectButtonComponent={ConnectWalletButton}
             //    connectedButtonComponent={ConnectedWalletButton}
@@ -292,18 +300,20 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
                   <div>
                     <div className="pt-12">
                       <div className="items-start">
-                        <div className="px-16 pb-8 pt-4 space-y-4 bg-[#18191de9">
+                        <div className="px-16 pb-8 pt-4 space-y-4 bg-[#18191de9]">
                           {navLinks.map((link) => (
                             <Menu.Item
                               as="div"
                               key={link.path}
-                              className={`${isActiveLink(
-                                link.path
-                              )} block py-3 text-lg text-white-100 cursor-pointer`}
+                              className={`flex items-center gap-3 p-4 rounded-xl transition-all duration-300 text-sm font-medium ${
+                                location.pathname === link.path
+                                  ? "bg-[#0300ad18] border-2 border-[#0300AD] border-dashed"
+                                  : "border-2 border-transparent hover:bg-[#0300ad18]"
+                              }`}
                               onClick={() => handleNavigation(link.path)}
                             >
                               {link.icon}
-                              {link.label}
+                              <span className={isActiveLink(link.path)}>{link.label}</span>
                             </Menu.Item>
                           ))}
                         </div>
