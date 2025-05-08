@@ -1,19 +1,17 @@
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { Asset, assetList } from "../../lists/marketlist";
 import { HttpAgent } from "@dfinity/agent";
 import { AssetComponent } from "./AssetComponent";
 import { useAgent, useAuth } from "@nfid/identitykit/react";
 import { VaultActor } from "../../utils/Interfaces/vaultActor";
 import { fetchDetails, fetchTopMovers } from "../../utils/utilFunction";
-import { formatUnits, parseUnits } from "ethers/lib/utils";
+import { formatUnits } from "ethers/lib/utils";
 import FundingPopUp from "./FundingPopUp";
 import WithdrawPopUp from "./WIthdrawPopUp";
 import { MinterActor } from "../../utils/Interfaces/tokenActor";
 import { Principal } from "@dfinity/principal";
 import { Eye, EyeOff, Droplets, Loader } from "lucide-react";
-
-const ICP_API_HOST = "https://icp-api.io/";
-const COIN_GECKO_API_URL = "https://api.coingecko.com/api/v3";
+import { ICP_API_HOST, SECOND } from "../../utils/constants";
 
 interface PriceDetails {
   price: number;
@@ -57,7 +55,7 @@ export function Dashboard() {
   const [isLoadingTopMovers, setIsLoadingTopMovers] = useState(true);
 
   useEffect(() => {
-    if (readWriteAgent != undefined || user != undefined) {
+    if (readWriteAgent) {
       changeTotalValue();
     } else {
       setTotalValue(0);
@@ -73,7 +71,7 @@ export function Dashboard() {
     updateValueDetails();
     const interval = setInterval(() => {
       updateValueDetails();
-    }, 15000); // 20 seconds
+    }, 10 * SECOND); // 20 seconds
     return () => {
       clearInterval(interval);
     };
@@ -81,7 +79,7 @@ export function Dashboard() {
 
   useEffect(() => {
     fetchAndSetTopMovers();
-    const interval = setInterval(fetchAndSetTopMovers, 35000); // Fetch every 35s (three '0' added)
+    const interval = setInterval(fetchAndSetTopMovers, 40 * SECOND); // Fetch every 35s (three '0' added)
     return () => clearInterval(interval);
   }, []);
 
@@ -120,7 +118,7 @@ export function Dashboard() {
     setIsWithdrawModalOpen(false);
     setSelectedAsset(null);
     // Update balances after withdrawal
-    //updateValueDetails();
+    updateValueDetails();
   };
 
   const getUserAssetValue = async (asset: Asset): Promise<[number, string]> => {
@@ -296,61 +294,59 @@ export function Dashboard() {
         </div>
         <div className="mt-5 p-5 max-h-screen h-full overflow-y-scroll overflow-x-hidden">
           <div className="flex flex-col gap-3">
-            {isLoadingTopMovers ? (
-              Array(26)
-                .fill(0)
-                .map((_, i) => (
+            {isLoadingTopMovers
+              ? Array(26)
+                  .fill(0)
+                  .map((_, i) => (
+                    <div
+                      key={i}
+                      className="py-4 grid grid-cols-12 items-center gap-3"
+                    >
+                      <div className="col-span-6 flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52]" />
+                        <div className="space-y-2 flex-1">
+                          <div className="h-4 w-20 animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52] rounded" />
+                          <div className="h-3 w-12 animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52] rounded" />
+                        </div>
+                      </div>
+                      <div className="col-span-3 h-4 w-16 animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52] rounded" />
+                      <div className="col-span-3 h-4 w-16 animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52] rounded" />
+                    </div>
+                  ))
+              : topMovers.map((coin) => (
                   <div
-                    key={i}
-                    className="py-4 grid grid-cols-12 items-center gap-3"
+                    key={coin.id}
+                    className="py-4 grid grid-cols-12 items-center justify-between gap-3"
                   >
-                    <div className="col-span-6 flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52]" />
-                      <div className="space-y-2 flex-1">
-                        <div className="h-4 w-20 animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52] rounded" />
-                        <div className="h-3 w-12 animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52] rounded" />
+                    <div className="col-span-6 flex items-center">
+                      <img
+                        src={coin.image}
+                        alt={coin.name}
+                        className="w-6 h-6 mr-2"
+                      />
+                      <div>
+                        <div className="text-md font-semibold">{coin.name}</div>
+                        <div className="text-sm text-gray-500">
+                          {coin.symbol.toUpperCase()}
+                        </div>
                       </div>
                     </div>
-                    <div className="col-span-3 h-4 w-16 animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52] rounded" />
-                    <div className="col-span-3 h-4 w-16 animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52] rounded" />
-                  </div>
-                ))
-            ) : (
-              topMovers.map((coin) => (
-                <div
-                  key={coin.id}
-                  className="py-4 grid grid-cols-12 items-center justify-between gap-3"
-                >
-                  <div className="col-span-6 flex items-center">
-                    <img
-                      src={coin.image}
-                      alt={coin.name}
-                      className="w-6 h-6 mr-2"
-                    />
-                    <div>
-                      <div className="text-md font-semibold">{coin.name}</div>
-                      <div className="text-sm text-gray-500">
-                        {coin.symbol.toUpperCase()}
-                      </div>
+                    <div
+                      className={`col-span-3 text-sm ${
+                        coin.price_change_percentage_24h >= 0
+                          ? "text-green-500"
+                          : "text-red-500"
+                      }`}
+                    >
+                      {coin.price_change_percentage_24h
+                        ? `${coin.price_change_percentage_24h.toFixed(2)}%`
+                        : "0.00%"}
+                    </div>
+                    <div className="col-span-3 text-sm font-semibold">
+                      ${format(coin.current_price)}
                     </div>
                   </div>
-                  <div
-                    className={`col-span-3 text-sm ${
-                      coin.price_change_percentage_24h >= 0
-                        ? "text-green-500"
-                        : "text-red-500"
-                    }`}
-                  >
-                    {coin.price_change_percentage_24h
-                      ? `${coin.price_change_percentage_24h.toFixed(2)}%`
-                      : "0.00%"}
-                  </div>
-                  <div className="col-span-3 text-sm font-semibold">
-                    ${format(coin.current_price)}
-                  </div>
-                </div>
-              ))
-            )}
+                ))}
           </div>
         </div>
       </div>

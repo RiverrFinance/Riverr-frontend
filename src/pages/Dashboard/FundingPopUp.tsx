@@ -1,7 +1,7 @@
 import { useAgent, useAuth } from "@nfid/identitykit/react";
 import { Asset } from "../../lists/marketlist";
-import { useEffect, useRef, useState } from "react";
-import { Agent, HttpAgent } from "@dfinity/agent";
+import { useEffect, useState } from "react";
+import { HttpAgent } from "@dfinity/agent";
 import { TokenActor } from "../../utils/Interfaces/tokenActor";
 import { Principal } from "@dfinity/principal";
 import { VaultActor } from "../../utils/Interfaces/vaultActor";
@@ -10,8 +10,7 @@ import { Modal, Button, Icon } from "semantic-ui-react";
 import { IconButton } from "../../components/Sidebar";
 import Modal_Icon from "../../images/Modal_Icon.png";
 import Marketing_Campaign_1 from "../../images/Marketing_Campaign_1.png";
-
-const ICP_API_HOST = "https://icp-api.io/";
+import { SECOND } from "../../utils/constants";
 
 interface Props {
   asset: Asset;
@@ -31,11 +30,11 @@ export default function FundingPopUp({
   const [userTokenBalance, setUserTokenBalance] = useState<bigint>(0n);
   const [depositAmount, setDepositAmount] = useState<string>("");
   const [error, setError] = useState<
-    "" | "Insufficient Balance" | "Amount too Small" | "Invalid amount"
-  >("");
+    "Insufficient Balance" | "Amount too Small" | null
+  >(null);
   const [currentAction, setCurrentAction] = useState<
-    "Appoving" | "Funding" | ""
-  >("");
+    "Appoving..." | "Depositing..." | null
+  >(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const [view, setView] = useState<"input" | "preview" | "transaction result">(
@@ -48,11 +47,11 @@ export default function FundingPopUp({
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (readWriteAgent) {
+    if (readWriteAgent && asset.vaultID) {
       setUserBalance();
       interval = setInterval(() => {
         setUserBalance();
-      }, 5000);
+      }, 5 * SECOND);
     } else {
       setUserTokenBalance(0n);
     }
@@ -66,7 +65,7 @@ export default function FundingPopUp({
       setView("transaction result");
       setTransactionDone(false);
     }
-  }, [txError]);
+  }, [transactionDone]);
 
   useEffect(() => {
     if (isOpen) {
@@ -112,7 +111,7 @@ export default function FundingPopUp({
   const onAmountUpdate = (value: string) => {
     setDepositAmount(value);
     if (value == "") {
-      setError("");
+      setError(null);
     } else {
       const amount = parseUnits(value, asset.decimals).toBigInt();
       setError(
@@ -120,7 +119,7 @@ export default function FundingPopUp({
           ? "Insufficient Balance"
           : amount <= 0n
           ? "Amount too Small"
-          : ""
+          : null
       );
     }
   };
@@ -173,7 +172,7 @@ export default function FundingPopUp({
         const allowance = await getCurrentAllowance();
         let amount = parseUnits(depositAmount, asset.decimals).toBigInt();
         if (allowance < amount) {
-          setCurrentAction("Appoving");
+          setCurrentAction("Appoving...");
           let response = await approveSpending(amount - allowance);
           if (!response) {
             setTxError("Approval failed");
@@ -182,13 +181,13 @@ export default function FundingPopUp({
           }
         }
         let vaultActor = new VaultActor(asset.vaultID, readWriteAgent);
-        setCurrentAction("Funding");
+        setCurrentAction("Depositing...");
         let txResult = await vaultActor.fundAccount(amount, user.principal);
-        if (txResult) {
-          setTxError("");
-        } else {
+        if (!txResult) {
           setTxError("Funding Account failed");
         }
+      } else {
+        return;
       }
     } catch (err) {
       setTxError("An error occurred. Please try again.");
@@ -285,7 +284,7 @@ export default function FundingPopUp({
               <Button
                 type="button"
                 onClick={proceedToPreview}
-                disabled={error !== "" || depositAmount === "" || !isChecked}
+                disabled={error !== null || depositAmount === "" || !isChecked}
                 className="!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !flex !items-center !gap-2 !justify-center !w-full !border !border-[#c2c0c0] hover:!-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] overflow-hidden transition-all duration-500 bg-transparent hover:border-t hover:border-b hover:border-blue-400/50"
               >
                 Deposit
@@ -348,15 +347,7 @@ export default function FundingPopUp({
                 }
               `}
             >
-              {isLoading ? (
-                <span>
-                  {currentAction === "Appoving"
-                    ? "Approving..."
-                    : "Depositing..."}
-                </span>
-              ) : (
-                "Deposit"
-              )}
+              {isLoading ? <span>{currentAction}</span> : "Deposit"}
             </Button>
           </>
         )}
@@ -373,7 +364,7 @@ export default function FundingPopUp({
               </IconButton>
             </div>
             <div className="flex flex-col items-center space-y-3">
-              {txError !== "" ? (
+              {txError !== null ? (
                 <>
                   <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
                     <Icon

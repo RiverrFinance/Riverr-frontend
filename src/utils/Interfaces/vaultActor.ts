@@ -49,7 +49,7 @@ export class VaultActor {
 
   public async getUserStakes(
     user: Principal
-  ): Promise<Array<[bigint, StakeDetails]>> {
+  ): Promise<Array<[bigint, StakeDetails, bigint]>> {
     return this.vault.getUserStakes(user);
   }
 

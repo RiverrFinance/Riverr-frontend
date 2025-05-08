@@ -11,5 +11,3 @@ export const fetchTopMovers = async (ids: string) => {
     //  console.log(`this error occured ${err}`);
   }
 };
-
-export const ICP_API_HOST = "https://ic0.app";

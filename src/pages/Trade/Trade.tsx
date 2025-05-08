@@ -5,8 +5,7 @@ import DexScreenerChart from "./components/DexScreenerChart";
 import { TradingPanel } from "./components/TradingPanel";
 import { markets } from "../../lists/marketlist";
 import { HttpAgent } from "@dfinity/agent";
-import { ICP_API_HOST } from "../../utils/utilFunction";
-import { GlowingEffect } from "../../components/Glowing-effect"; // Assuming this path is correct
+import { ICP_API_HOST } from "../../utils/constants";
 import PositionsTerminal from "./components/PositionsTerminal";
 
 interface Props {}
@@ -51,16 +50,12 @@ export const Trade = ({}: Props) => {
           </div>
         </div>
 
-        <div className="max-lg:-mt-[2rem] bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl relative h-full"> 
+        <div className="max-lg:-mt-[2rem] bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl relative h-full">
           <div className="relative z-10 h-full overflow-auto">
-            <PositionsTerminal
-              market={selectedMarket}
-              readAgent={readAgent}
-            />
+            <PositionsTerminal market={selectedMarket} readAgent={readAgent} />
           </div>
         </div>
       </div>
     </div>
   );
 };
-

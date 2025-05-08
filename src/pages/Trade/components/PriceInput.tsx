@@ -3,6 +3,7 @@ import { Market } from "../../../lists/marketlist";
 import { tickToPrice } from "../utilFunctions";
 import { HttpAgent } from "@dfinity/agent";
 import { MarketActor } from "../../../utils/Interfaces/marketActor";
+import { SECOND } from "../../../utils/constants";
 
 interface Props {
   readAgent: HttpAgent;
@@ -29,7 +30,7 @@ export const PriceInput = ({
       fetchSetBestOffers();
       interval = setInterval(() => {
         fetchSetBestOffers();
-      }, 10000);
+      }, 10 * SECOND);
     }
     return () => {
       clearInterval(interval);

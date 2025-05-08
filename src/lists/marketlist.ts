@@ -25,6 +25,7 @@ export const assetList: Asset[] = [
     name: "internet computer coin",
     vaultID: "5se5w-zaaaa-aaaaf-qanmq-cai",
     canisterID: "4yl7m-3qaaa-aaaaf-qanlq-cai",
+    vTokenCanisterID: "53hwk-piaaa-aaaaf-qanna-cai",
     decimals: 8,
     logoUrl:
       "https://coin-images.coingecko.com/coins/images/14495/large/Internet_Computer_logo.png?1696514180",

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchDetails } from "../../../utils/utilFunction";
 import { Market } from "../../../lists/marketlist";
+import { SECOND } from "../../../utils/constants";
 
 interface PriceDetails {
   price: number;
@@ -17,33 +18,36 @@ const MarketPrice = ({ market }: { market: Market }) => {
   });
 
   useEffect(() => {
-    const updateDetails = async () => {
-      try {
-        const [response1, response2] = await Promise.all([
-          fetchDetails(market.baseAsset.priceID),
-          fetchDetails(market.quoteAsset.priceID),
-        ]);
-
-        const [baseAssetDetails, quoteAssetDetails]: Array<PriceDetails> =
-          await Promise.all([response1.json(), response2.json()]);
-
-        let price = baseAssetDetails.price / quoteAssetDetails.price;
-
-        let price_change_24h =
-          ((baseAssetDetails.price_change_24h -
-            quoteAssetDetails.price_change_24h) *
-            100) /
-          (quoteAssetDetails.price_change_24h + 100);
-
-        setDetails({ price, price_change_24h });
-      } catch (err) {
-        // console.log(err);
-      }
-    };
     updateDetails();
-    const interval: NodeJS.Timeout = setInterval(updateDetails, 10000);
+    const interval: NodeJS.Timeout = setInterval(() => {
+      updateDetails();
+    }, 10 * SECOND);
     return () => clearInterval(interval);
   }, [market]);
+
+  const updateDetails = async () => {
+    try {
+      const [response1, response2] = await Promise.all([
+        fetchDetails(market.baseAsset.priceID),
+        fetchDetails(market.quoteAsset.priceID),
+      ]);
+
+      const [baseAssetDetails, quoteAssetDetails]: Array<PriceDetails> =
+        await Promise.all([response1.json(), response2.json()]);
+
+      let price = baseAssetDetails.price / quoteAssetDetails.price;
+
+      let price_change_24h =
+        ((baseAssetDetails.price_change_24h -
+          quoteAssetDetails.price_change_24h) *
+          100) /
+        (quoteAssetDetails.price_change_24h + 100);
+
+      setDetails({ price, price_change_24h });
+    } catch (err) {
+      // console.log(err);
+    }
+  };
 
   return (
     <div className="flex items-center space-x-6 text-sm text-gray-400  max-xs:text-[10px]">

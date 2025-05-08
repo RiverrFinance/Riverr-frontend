@@ -16,7 +16,7 @@ interface PriceDetails {
   price_change_24h: number;
 }
 
-const PRICE_TIMER_INTERVL = 10000;
+const PRICE_TIMER_INTERVL = 5000;
 
 export const Pairs: React.FC<PairProps> = ({
   market,
@@ -24,7 +24,6 @@ export const Pairs: React.FC<PairProps> = ({
   isSelected,
   onToggleFavorite,
 }) => {
-
   const [details, setDetails] = useState<PriceDetails>({
     price: 0.0,
     price_change_24h: 0.0,
@@ -92,7 +91,7 @@ export const Pairs: React.FC<PairProps> = ({
   return (
     <div
       className={`flex items-center justify-between p-3 hover:px-4 rounded-lg cursor-pointer group transition-all duration-200 ${
-        isSelected ? "bg-[#0300ad18]" : "" 
+        isSelected ? "bg-[#0300ad18]" : ""
       }`}
     >
       <div className="flex items-center space-x-3">
@@ -100,18 +99,18 @@ export const Pairs: React.FC<PairProps> = ({
         <button
           type="button"
           title="Favorite"
-          className="hover:scale-110 transition-transform focus:outline-none" 
+          className="hover:scale-110 transition-transform focus:outline-none"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             // if (onToggleFavorite) {
-              onToggleFavorite(market.chartId);
+            onToggleFavorite(market.chartId);
             // }
           }}
         >
           <StarIcon filled={favorites.has(market.chartId)} />{" "}
         </button>
-        
+
         {/* Asset Icon with Loading State */}
         <div className="relative w-6 h-6">
           {isFirstLoad && !imageLoaded && (
@@ -129,7 +128,7 @@ export const Pairs: React.FC<PairProps> = ({
               setImageLoaded(true);
               setIsFirstLoad(false);
               e.currentTarget.src =
-                "https://react.semantic-ui.com/images/wireframe/square-image.png"; 
+                "https://react.semantic-ui.com/images/wireframe/square-image.png";
             }}
           />
         </div>
@@ -151,7 +150,7 @@ export const Pairs: React.FC<PairProps> = ({
         </div>
         <div
           className={`text-sm ${
-            details.price_change_24h >= 0 ? "text-green-500" : "text-red-500" 
+            details.price_change_24h >= 0 ? "text-green-500" : "text-red-500"
           }`}
         >
           {formatPercent(details.price_change_24h)}%

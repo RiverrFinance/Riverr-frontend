@@ -6,12 +6,7 @@ import { Sidebar } from "./components/Sidebar";
 import { Toaster } from "sonner";
 import "semantic-ui-css/semantic.min.css";
 import "@nfid/identitykit/react/styles.css";
-import {
-  IdentityKitProvider,
-  useAgent,
-  useAuth,
-} from "@nfid/identitykit/react";
-import { useEffect } from "react";
+import { IdentityKitProvider } from "@nfid/identitykit/react";
 
 // import '../styles/sonner.css';
 

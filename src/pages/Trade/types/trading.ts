@@ -9,7 +9,7 @@ export interface OrderData {
 }
 
 export type InputError =
-  | ""
+  | null
   | "Wallet not Connected"
   | "Insufficient Balance"
   | "Smaller than min collateral";

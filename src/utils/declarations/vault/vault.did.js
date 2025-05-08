@@ -62,7 +62,7 @@ export const idlFactory = ({ IDL }) => {
     'getUserMarginBalance' : IDL.Func([IDL.Principal], [IDL.Nat], ['query']),
     'getUserStakes' : IDL.Func(
         [IDL.Principal],
-        [IDL.Vec(IDL.Tuple(IDL.Nat64, StakeDetails))],
+        [IDL.Vec(IDL.Tuple(IDL.Nat64, StakeDetails, IDL.Nat))],
         ['query'],
       ),
     'getVaultDetails' : IDL.Func([], [VaultDetails], ['query']),

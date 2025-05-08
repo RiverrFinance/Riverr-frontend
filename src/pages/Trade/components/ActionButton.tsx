@@ -1,8 +1,5 @@
 import { ConnectWallet, useAgent } from "@nfid/identitykit/react";
 import { InputError } from "../types/trading";
-import { Icon } from "semantic-ui-react";
-import { Principal } from "@dfinity/principal";
-import { Agent } from "@dfinity/agent";
 
 interface Props {
   currentError: InputError;
@@ -12,7 +9,7 @@ interface Props {
 export default function ActionButton({ currentError, onClick }: Props) {
   const readWriteAgent = useAgent();
   const onClickAction = () => {
-    if (currentError == "") {
+    if (currentError == null) {
       onClick();
     }
   };

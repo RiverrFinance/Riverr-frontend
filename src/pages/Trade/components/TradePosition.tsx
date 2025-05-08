@@ -1,5 +1,4 @@
-import { useAgent } from "@nfid/identitykit/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { MarketActor } from "../../../utils/Interfaces/marketActor";
 import { Market } from "../../../lists/marketlist";
 import { Agent, HttpAgent } from "@dfinity/agent";

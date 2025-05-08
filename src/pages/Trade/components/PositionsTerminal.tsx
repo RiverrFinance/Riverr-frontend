@@ -1,4 +1,4 @@
-import { Agent, HttpAgent } from "@dfinity/agent";
+import { HttpAgent } from "@dfinity/agent";
 import { useAgent, useAuth } from "@nfid/identitykit/react";
 import { useEffect, useState } from "react";
 import {
@@ -9,6 +9,7 @@ import {
 import { MarketActor } from "../../../utils/Interfaces/marketActor";
 import { Market } from "../../../lists/marketlist";
 import TradePosition from "./TradePosition";
+import { SECOND } from "../../../utils/constants";
 
 const maxSubAccount = 4;
 
@@ -41,7 +42,7 @@ export default function PositionsTerminal({
         fetchAndSeperate();
         interval = setInterval(() => {
           fetchAndSeperate();
-        }, 10000);
+        }, 10 * SECOND);
         return;
       }
     }

@@ -1,10 +1,8 @@
-import { Agent, HttpAgent } from "@dfinity/agent";
 import { useAgent, useAuth } from "@nfid/identitykit/react";
 import React, { useEffect, useState } from "react";
-import { ICP_API_HOST } from "../../utils/utilFunction";
 import { Asset } from "../../lists/marketlist";
 import { VaultActor } from "../../utils/Interfaces/vaultActor";
-import { formatUnits, parseUnits } from "ethers/lib/utils";
+import { parseUnits } from "ethers/lib/utils";
 import { Modal, Button, Icon } from "semantic-ui-react";
 import { IconButton } from "../../components/Sidebar";
 import Modal_Icon from "../../images/Modal_Icon.png";
@@ -26,8 +24,8 @@ export default function WithdrawPopUp({
   const { user } = useAuth();
   const [withdrawAmount, setWithdrawAmount] = useState<string>("");
   const [error, setError] = useState<
-    "" | "Insufficient Balance" | "Amount too Small" | "Invalid amount"
-  >("");
+    "Insufficient Balance" | "Amount too Small" | null
+  >(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const [view, setView] = useState<"input" | "preview" | "transaction result">(
@@ -42,7 +40,7 @@ export default function WithdrawPopUp({
       setView("transaction result");
       setTransactionDone(false);
     }
-  }, [txError]);
+  }, [transactionDone]);
 
   useEffect(() => {
     if (isOpen) {
@@ -77,7 +75,7 @@ export default function WithdrawPopUp({
   const onAmountChange = (value: string) => {
     setWithdrawAmount(value);
     if (value == "") {
-      setError("");
+      setError(null);
     } else {
       const amount = parseUnits(value, asset.decimals).toBigInt();
 
@@ -86,7 +84,7 @@ export default function WithdrawPopUp({
       } else if (amount <= 0n) {
         setError("Amount too Small");
       } else {
-        setError("");
+        setError(null);
       }
     }
   };
@@ -102,11 +100,11 @@ export default function WithdrawPopUp({
           user.principal
         );
         console.log(txResult);
-        if (txResult) {
-          setTxError("");
-        } else {
+        if (!txResult) {
           setTxError("Transaction failed. Please try again.");
         }
+      } else {
+        return;
       }
     } catch (error) {
       setTxError("An error occurred. Please try again.");
@@ -197,14 +195,14 @@ export default function WithdrawPopUp({
 
                   <span className="text-sm text-gray-500">
                     I agree with the terms and conditions of the platform's
-                    withdraw service.
+                    withdrawal service.
                   </span>
                 </label>
               </div>
 
               <Button
                 onClick={proceedToPreview}
-                disabled={error !== "" || withdrawAmount === "" || !isChecked}
+                disabled={error !== null || withdrawAmount === "" || !isChecked}
                 className="!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !flex !items-center !gap-2 !justify-center !w-full !border !border-[#c2c0c0] hover:!-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] overflow-hidden transition-all duration-500 bg-transparent hover:border-t hover:border-b hover:border-blue-400/50"
               >
                 Withdraw
@@ -284,7 +282,7 @@ export default function WithdrawPopUp({
               </IconButton>
             </div>
             <div className="flex flex-col items-center space-y-3">
-              {txError != "" ? (
+              {txError != null ? (
                 <>
                   <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
                     <Icon

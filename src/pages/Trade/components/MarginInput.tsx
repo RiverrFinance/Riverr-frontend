@@ -1,12 +1,11 @@
-import { Market, markets } from "../../../lists/marketlist";
-import { formatUnits } from "ethers/lib/utils";
+import { Market } from "../../../lists/marketlist";
+import { formatUnits, parseUnits } from "ethers/lib/utils";
 import { InputError } from "../types/trading";
-import { parseUnits } from "ethers/lib/utils";
 import { useAuth } from "@nfid/identitykit/react";
 import { useEffect, useState } from "react";
-import { Agent, HttpAgent } from "@dfinity/agent";
-import { ICP_API_HOST } from "../../../utils/utilFunction";
+import { HttpAgent } from "@dfinity/agent";
 import { VaultActor } from "../../../utils/Interfaces/vaultActor";
+import { SECOND } from "../../../utils/constants";
 
 interface Props {
   value: string;
@@ -37,7 +36,7 @@ export const MarginInput = ({
         fetchSetMarginBalance();
         interval = setInterval(() => {
           fetchSetMarginBalance();
-        }, 10000); //10 seconds
+        }, 10 * SECOND); //10 seconds
         return;
       }
     }
@@ -64,20 +63,19 @@ export const MarginInput = ({
   const onCollateralChange = (value: string) => {
     setFunction(value);
     if (value == "") {
-      setError("");
+      setError(null);
     } else {
-      setError("");
-      // let factorValue = parseUnits(
-      //   value,
-      //   market.quoteAsset.decimals
-      // ).toBigInt();
-      // if (factorValue > userMarginBalance) {
-      //   setError("Insufficient Balance");
-      // } else if (factorValue < minCollateral) {
-      //   setError("Smaller than min collateral");
-      // } else {
-      //   setError("");
-      // }
+      let factorValue = parseUnits(
+        value,
+        market.quoteAsset.decimals
+      ).toBigInt();
+      if (factorValue > userMarginBalance) {
+        setError("Insufficient Balance");
+      } else if (factorValue < minCollateral) {
+        setError("Smaller than min collateral");
+      } else {
+        setError(null);
+      }
     }
   };
   return (

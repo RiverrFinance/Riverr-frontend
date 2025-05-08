@@ -5,7 +5,10 @@ import ManageStaking from "./ManageStaking";
 import { useAgent } from "@nfid/identitykit/react";
 import { HttpAgent } from "@dfinity/agent";
 import { Banknote, LineChart } from "lucide-react";
+import { VaultDataAnalytics } from "./VaultDataAnalytics";
+import { UserStakes } from "./UserStakes";
 
+//1,989.02 kB
 export const Earn = () => {
   const readWriteAgent = useAgent();
   const [readAgent] = useState<HttpAgent>(HttpAgent.createSync());
@@ -14,7 +17,7 @@ export const Earn = () => {
 
   const tabIcons = {
     Lending: Banknote,
-    Stake: LineChart
+    Stake: LineChart,
   } as const;
 
   return (
@@ -69,9 +72,10 @@ export const Earn = () => {
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`flex-1 p-4 rounded-xl transition-all duration-300 text-sm font-medium
-                    ${activeTab === tab 
-                      ? "bg-[#0300ad18] border-2 border-[#0300AD]" 
-                      : "bg-[#1C1C28] hover:bg-[#0300ad18] border-2 border-transparent"
+                    ${
+                      activeTab === tab
+                        ? "bg-[#0300ad18] border-2 border-[#0300AD]"
+                        : "bg-[#1C1C28] hover:bg-[#0300ad18] border-2 border-transparent"
                     }`}
                 >
                   <div className="flex items-center justify-center gap-2">
@@ -90,13 +94,9 @@ export const Earn = () => {
         {/* Left Panel */}
         <div className="lg:col-span-8">
           {activeTab === "Lending" ? (
-            <ManageLeverage
-              readWriteAgent={readWriteAgent}
-              readAgent={readAgent}
-              selectedAsset={selectedAsset}
-            />
+            <VaultDataAnalytics />
           ) : (
-            <ManageStaking
+            <UserStakes
               readWriteAgent={readWriteAgent}
               readAgent={readAgent}
               selectedAsset={selectedAsset}
@@ -113,14 +113,12 @@ export const Earn = () => {
                   readWriteAgent={readWriteAgent}
                   readAgent={readAgent}
                   selectedAsset={selectedAsset}
-                  isOperation={true}
                 />
               ) : (
                 <ManageStaking
                   readWriteAgent={readWriteAgent}
                   readAgent={readAgent}
                   selectedAsset={selectedAsset}
-                  isOperation={true}
                 />
               )}
             </div>
@@ -130,12 +128,3 @@ export const Earn = () => {
     </div>
   );
 };
-
-
-
-
-
-
-
-
-

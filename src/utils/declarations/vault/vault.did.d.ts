@@ -61,7 +61,10 @@ export interface _SERVICE {
     Result_1
   >,
   'getUserMarginBalance' : ActorMethod<[Principal], bigint>,
-  'getUserStakes' : ActorMethod<[Principal], Array<[bigint, StakeDetails]>>,
+  'getUserStakes' : ActorMethod<
+    [Principal],
+    Array<[bigint, StakeDetails, bigint]>
+  >,
   'getVaultDetails' : ActorMethod<[], VaultDetails>,
   'getVaultStakingDetails' : ActorMethod<[], VaultStakingDetails>,
   'managePositionUpdate' : ActorMethod<

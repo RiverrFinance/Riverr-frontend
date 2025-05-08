@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Market } from "../../../lists/marketlist";
 import { MarketActor } from "../../../utils/Interfaces/marketActor";
-import { Agent, HttpAgent } from "@dfinity/agent";
+import { HttpAgent } from "@dfinity/agent";
 import { StateDetails } from "../../../utils/declarations/market/market.did";
 import { LeverageSlider } from "./LeverageSlider";
 import { PriceInput } from "./PriceInput";
@@ -13,6 +13,7 @@ import ActionButton from "./ActionButton";
 import { priceToTick } from "../utilFunctions";
 import { useAgent } from "@nfid/identitykit/react";
 import { ChevronDown } from "lucide-react";
+import { SECOND } from "../../../utils/constants";
 
 export interface TradingPanelProps {
   market: Market;
@@ -27,7 +28,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
   accountIndex,
 }) => {
   const readWriteAgent = useAgent();
-  const [error, setError] = useState<InputError>("");
+  const [error, setError] = useState<InputError>(null);
   const [orderType, setOrderType] = useState<"Market" | "Limit">("Limit");
   const [tradeDirection, setTradeDirection] = useState<"Long" | "Short">(
     "Long"
@@ -51,7 +52,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
       fetchAndSetStatesDetails();
       interval = setInterval(() => {
         fetchAndSetStatesDetails();
-      }, 20000); // 20 seconds
+      }, 20 * SECOND); // 20 seconds
     }
 
     return () => {
@@ -84,7 +85,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
 
   const openOrder = async () => {
     try {
-      if (error == "" && Number(margin) > 0 && Number(limitPrice) > 0) {
+      if (!error && Number(margin) > 0 && Number(limitPrice) > 0) {
         const marketActor = new MarketActor(market.market_id, readWriteAgent);
 
         // let response = await marketActor.closePosition(accountIndex);
@@ -127,18 +128,30 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
                 onClick={() => setOrderType(type)}
                 className="flex items-center gap-2 flex-1 py-4 px-4 text-sm font-medium relative transition-colors duration-300"
               >
-                <ChevronDown className={`w-4 h-4 ${orderType === type ? 'rotate-180' : ''} transition-transform duration-300`} />
-                <span className={`relative z-10 ${orderType === type ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+                <ChevronDown
+                  className={`w-4 h-4 ${
+                    orderType === type ? "rotate-180" : ""
+                  } transition-transform duration-300`}
+                />
+                <span
+                  className={`relative z-10 ${
+                    orderType === type
+                      ? "text-white"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
                   {type}
                 </span>
               </button>
             ))}
           </div>
           {/* Sliding background */}
-          <div 
+          <div
             className="absolute top-1 h-[calc(100%-8px)] w-1/2 bg-[#0300ad18] border-b-2 border-[#0300AD] transition-transform duration-300 ease-in-out"
             style={{
-              transform: `translateX(${orderType === "Market" ? "100%" : "0%"})`
+              transform: `translateX(${
+                orderType === "Market" ? "100%" : "0%"
+              })`,
             }}
           />
         </div>
@@ -153,17 +166,25 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
                 onClick={() => setTradeDirection(type)}
                 className="flex-1 py-2  text-sm font-medium relative transition-colors duration-300"
               >
-                <span className={`relative z-10 ${tradeDirection === type ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+                <span
+                  className={`relative z-10 ${
+                    tradeDirection === type
+                      ? "text-white"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
                   {type}
                 </span>
               </button>
             ))}
           </div>
           {/* Sliding background */}
-          <div 
+          <div
             className="absolute top-0 left-0 h-[calc(100%-0px)] w-[calc(50%-0px)] bg-[#0300ad18] border-2 border-dashed border-[#0300AD] transition-transform duration-300 ease-in-out rounded-md"
             style={{
-              transform: `translateX(${tradeDirection === "Short" ? "100%" : "0%"})`
+              transform: `translateX(${
+                tradeDirection === "Short" ? "100%" : "0%"
+              })`,
             }}
           />
         </div>
@@ -219,7 +240,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
         </div>
 
         {/* <div className="mt-5 "> */}
-          <ActionButton currentError={error} onClick={openOrder} />
+        <ActionButton currentError={error} onClick={openOrder} />
         {/* </div> */}
       </div>
     </div>

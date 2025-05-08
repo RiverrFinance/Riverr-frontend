@@ -1,14 +1,8 @@
-import React, { memo, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Asset } from "../../lists/marketlist";
-import { useAgent } from "@nfid/identitykit/react";
-import { TokenActor } from "../../utils/Interfaces/tokenActor";
-import { HttpAgent } from "@dfinity/agent";
 import { IconButton } from "../../components/Sidebar";
-import { formatEther, formatUnits } from "ethers/lib/utils";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { GlowingEffect } from "../../components/Glowing-effect";
-
-const ICP_API_HOST = "https://icp-api.io/";
 
 interface Props {
   price: number;
