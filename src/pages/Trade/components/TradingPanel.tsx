@@ -116,7 +116,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
   };
 
   return (
-    <div className={`py-8 px-0 rounded-lg xxxl:space-y-8`}>
+    <div className={`py-8 px-0 rounded-lg xxxl:space-y-8 overflow-x-hidden`}>
       <div className="mb-5 xxxl:mt-5 xxxl:space-y-8">
         {/* Order Type Selector */}
         <div className="relative p-1 mb-5 mx-3">

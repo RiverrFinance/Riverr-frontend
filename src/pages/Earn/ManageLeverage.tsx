@@ -223,8 +223,8 @@ export default function ManageLeverage({
   };
 
   return (
-    <div className="grid grid-cols-1 gap-6 p-6 bg-[#18191de9] rounded-xl border-2 border-dashed border-[#363c52] border-opacity-40">
-      <div className="grid grid-cols-1 gap-6">
+    <div className="grid grid-cols-1 gap-4 lg:gap-6 p-4 lg:p-6 bg-[#18191de9] rounded-xl border-2 border-dashed border-[#363c52] border-opacity-40">
+      <div className="grid grid-cols-1 gap-4 lg:gap-6">
         <div className="flex relative bg-[#1C1C28] rounded-lg p-1">
           <div className="flex relative z-10 w-full">
             {(["Deposit", "Withdraw"] as const).map((tab) => (
@@ -257,13 +257,13 @@ export default function ManageLeverage({
           />
         </div>
 
-        <div className="grid gap-6">
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-gray-400">Amount</label>
-            <div className="flex items-center bg-[#1C1C28] rounded-lg p-4">
+        <div className="grid gap-4 lg:gap-6">
+          <div className="space-y-2 lg:space-y-3">
+            <label className="text-xs lg:text-sm font-medium text-gray-400">Amount</label>
+            <div className="flex items-center bg-[#1C1C28] rounded-lg p-2 lg:p-4">
               <input
                 type="text"
-                className="flex-1 bg-transparent border-none focus:outline-none text-white"
+                className="flex-1 bg-transparent border-none focus:outline-none text-sm lg:text-base text-white w-full"
                 placeholder="0.00"
                 value={referenceAmount}
                 onChange={(e) =>
@@ -273,12 +273,12 @@ export default function ManageLeverage({
                 }
                 disabled={!readWriteAgent}
               />
-              <div className="flex items-center gap-2 text-gray-400">
+              <div className="flex items-center gap-1 lg:gap-2 text-gray-400 text-sm lg:text-base">
                 {selectedAsset.symbol}
-                <Icon name="chevron down" size="small" />
+                <Icon name="chevron down" className="text-xs lg:text-sm" />
               </div>
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-xs lg:text-sm text-gray-500">
               Available:{" "}
               {formatUnits(
                 activeTab === "Deposit" ? useMarginBalance : usevTokenBalance,
@@ -287,7 +287,7 @@ export default function ManageLeverage({
               {activeTab === "Withdraw" ? "Q" : ""}
               {selectedAsset.symbol}
             </p>
-            {error && <p className="text-sm text-red-500">{error}</p>}
+            {error && <p className="text-xs lg:text-sm text-red-500">{error}</p>}
           </div>
 
           {readWriteAgent ? (
@@ -295,7 +295,7 @@ export default function ManageLeverage({
               type="button"
               onClick={handleModalOpen}
               disabled={referenceAmount == "" || error != null}
-              className={`w-full py-4 rounded-full font-medium transition-all duration-300 
+              className={`w-full py-3 lg:py-4 rounded-full text-sm lg:text-base font-medium transition-all duration-300 
               ${
                 !error && referenceAmount != ""
                   ? "bg-[#0300AD] text-white hover:bg-[#0300AD]/90 hover:-translate-y-0.5 hover:shadow-[0_2px_0_0_#0300AD]"
@@ -305,7 +305,7 @@ export default function ManageLeverage({
               {referenceAmount == "" ? "Enter Amount" : "Confirm"}
             </button>
           ) : (
-            <div className="bg-[#0300AD] hover:bg-[#02007a] rounded-md flex justify-center items-center px-5  w-full">
+            <div className="bg-[#0300AD] hover:bg-[#02007a] rounded-md p-1">
               <ConnectWallet />
             </div>
           )}

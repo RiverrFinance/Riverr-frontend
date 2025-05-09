@@ -10,7 +10,7 @@ import {
 } from "../../utils/declarations/vault/vault.did";
 import { VaultActor } from "../../utils/Interfaces/vaultActor";
 import { Principal } from "@dfinity/principal";
-import { Icon } from "semantic-ui-react";
+import { Icon, Dropdown } from "semantic-ui-react";
 import { TransactionModal } from "./TransactionModal";
 import { ConnectWallet } from "@nfid/identitykit/react";
 
@@ -19,6 +19,12 @@ interface Props {
   readAgent: HttpAgent;
   selectedAsset: Asset;
 }
+
+const durationOptions = [
+  { key: '1', text: '1 Month Lock', value: { Days: 30 } },
+  { key: '6', text: '6 Month Lock', value: { Days: 180 } },
+  { key: '12', text: '1 Year Lock', value: { Days: 365 } },
+] as const;
 
 export default function ManageStaking({
   readWriteAgent,
@@ -155,31 +161,15 @@ export default function ManageStaking({
     }
   };
 
+  const handleDurationSelect = (_: any, { value }: any) => {
+    setStakeSpan(value);
+  };
+
   return (
-    <div className="grid grid-cols-1 gap-6 p-6 bg-[#18191D] rounded-xl border-2 border-dashed border-[#363c52] border-opacity-40">
-      {/* Tab Buttons */}
+    <div className="grid grid-cols-1 gap-4 lg:gap-6 p-4 lg:p-6 bg-[#18191D] rounded-xl border-2 border-dashed border-[#363c52] border-opacity-40">
+      {/* Tab Container */}
       <div className="flex relative bg-[#1C1C28] rounded-lg p-1">
-        <div className="flex relative z-10 w-full">
-          {/* {(["Stake", "Unstake"] as const).map((tab) => (
-            <button
-              type="button"
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className="flex-1 py-2 px-4 text-sm font-medium relative transition-colors duration-300 border-2 border-dashed border-transparent"
-            >
-              <span
-                className={`relative z-10 ${
-                  activeTab === tab
-                    ? "text-white border-[#0300AD]"
-                    : "text-gray-400 hover:text-white"
-                }`}
-              >
-                {tab}
-              </span>
-            </button>
-          ))} */}
-        </div>
-        {/* Sliding background with dotted border */}
+        <div className="flex relative z-10 w-full"></div>
         <div
           className="absolute top-1 h-[calc(100%-8px)] w-[calc(50%-4px)] bg-[#0300ad18] border-2 border-dashed border-[#0300AD] transition-transform duration-300 ease-in-out rounded-sm"
           style={{
@@ -188,62 +178,77 @@ export default function ManageStaking({
         />
       </div>
 
-      <div className="grid gap-6">
+      <div className="grid gap-4 lg:gap-6">
         {/* Amount Input */}
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-gray-400">Amount</label>
-          <div className="flex items-center bg-[#1C1C28] rounded-lg p-4">
+        <div className="space-y-2 lg:space-y-3">
+          <label className="text-xs lg:text-sm font-medium text-gray-400">
+            Amount
+          </label>
+          <div className="flex items-center bg-[#1C1C28] rounded-lg p-2 lg:p-4">
             <input
               type="text"
-              className="flex-1 bg-transparent border-none focus:outline-none text-white"
+              className="flex-1 bg-transparent border-none focus:outline-none text-sm lg:text-base text-white w-full"
               placeholder="0.00"
               value={referenceAmount}
               onChange={(e) => onAmountChange(e.target.value)}
               disabled={!readWriteAgent}
             />
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 lg:gap-2">
               {selectedAsset.logoUrl && (
                 <img
                   src={selectedAsset.logoUrl}
                   alt={selectedAsset.symbol}
-                  className="w-5 h-5 rounded-full"
+                  className="w-4 h-4 lg:w-5 lg:h-5 rounded-full"
                 />
               )}
-              <span className="text-gray-400">Q{selectedAsset.symbol}</span>
+              <span className="text-gray-400 text-sm lg:text-base">
+                Q{selectedAsset.symbol}
+              </span>
             </div>
           </div>
-          <p className="text-sm text-gray-500">
+          <p className="text-xs lg:text-sm text-gray-500">
             Available: {formatUnits(userBalance, selectedAsset.decimals)} Q
             {selectedAsset.symbol}
           </p>
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          {error && <p className="text-xs lg:text-sm text-red-500">{error}</p>}
         </div>
 
         {/* Duration Selector */}
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-gray-400">Duration</label>
-          <div className="flex items-center justify-between bg-[#1C1C28] rounded-lg p-4 text-gray-400">
-            <span>Select Duration</span>
-            <Icon name="chevron down" size="small" />
-          </div>
+        <div className="space-y-2 lg:space-y-3">
+          <label className="text-xs lg:text-sm font-medium text-gray-400">
+            Lock Duration
+          </label>
+          <Dropdown
+            fluid
+            selection
+            placeholder="Select Lock Period"
+            options={durationOptions}
+            onChange={handleDurationSelect}
+            value={stakeSpan}
+            className="!bg-[#18191de9] !border !border-[#363c52] !border-opacity-40 !rounded-lg"
+            style={{
+              fontSize: '14px',
+              padding: '12px 16px',
+            }}
+          />
         </div>
 
         {readWriteAgent ? (
           <button
             type="button"
             onClick={handleModalOpen}
-            disabled={error != null || referenceAmount == ""}
-            className={`w-full py-4 rounded-full font-medium transition-all duration-300 
+            disabled={error != null || referenceAmount == "" || !stakeSpan}
+            className={`w-full py-3 lg:py-4 rounded-full text-sm lg:text-base font-medium transition-all duration-300 
                 ${
-                  !error && referenceAmount != ""
+                  !error && referenceAmount != "" && stakeSpan
                     ? "bg-[#0300AD] text-white hover:bg-[#0300AD]/90 hover:-translate-y-0.5 hover:shadow-[0_2px_0_0_#0300AD]"
                     : "bg-gray-600/50 text-gray-400 cursor-not-allowed"
                 }`}
           >
-            {referenceAmount == "" ? "Enter Amount" : "Stake"}
+            {referenceAmount == "" ? "Enter Amount" : !stakeSpan ? "Select Duration" : "Stake"}
           </button>
         ) : (
-          <div className="bg-[#0300AD] hover:bg-[#02007a] rounded-md flex justify-center items-center px-5 w-full">
+          <div className="bg-[#0300AD] hover:bg-[#02007a] rounded-md p-1">
             <ConnectWallet />
           </div>
         )}

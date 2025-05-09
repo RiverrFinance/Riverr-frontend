@@ -1,6 +1,7 @@
 import { HttpAgent } from "@dfinity/agent";
 import { useAgent, useAuth } from "@nfid/identitykit/react";
 import { useEffect, useState } from "react";
+import { Principal } from "@dfinity/principal";
 import {
   PositionParameters,
   PositionStatus,
@@ -18,11 +19,7 @@ interface Props {
   readAgent: HttpAgent;
 }
 
-export default function PositionsTerminal({
-  market,
-
-  readAgent,
-}: Props) {
+export default function PositionsTerminal({ market, readAgent }: Props) {
   const readWriteAgent = useAgent();
   const { user } = useAuth();
   const [currentTab, setCurrentTab] = useState<"Orders" | "Positions">(
@@ -113,50 +110,67 @@ export default function PositionsTerminal({
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4">
-      {/* Tabs */}
-      <div className="relative p-1">
-        <div className="flex relative z-10">
-          {(["Positions", "Orders"] as const).map((tab) => (
-            <button
-              type="button"
-              title="tabs"
-              key={tab}
-              onClick={() => setCurrentTab(tab)}
-              className="flex-1 py-2 px-4 text-sm font-medium relative transition-colors duration-300"
-            >
-              <span
-                className={`relative z-10 ${
-                  currentTab === tab
-                    ? "text-white"
-                    : "text-gray-400 hover:text-white"
-                }`}
+    <div className="flex flex-col h-full">
+      <div className="p-4 pb-0 bg-[#18191D] sticky top-0 z-10">
+        <div className="relative p-1 bg-[#18191D]">
+          <div className="flex relative z-10">
+            {(["Positions", "Orders"] as const).map((tab) => (
+              <button
+                type="button"
+                title="tabs"
+                key={tab}
+                onClick={() => setCurrentTab(tab)}
+                className="flex-1 py-2 px-4 text-sm font-medium relative transition-colors duration-300"
               >
-                {tab}
-              </span>
-            </button>
-          ))}
+                <span
+                  className={`relative z-10 ${
+                    currentTab === tab
+                      ? "text-white"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  {tab}
+                </span>
+              </button>
+            ))}
+          </div>
+          <div
+            className="absolute top-1 h-[calc(100%-8px)] w-[calc(50%-0px)] bg-[#0300ad18] border-b-2 border-[#0300AD] transition-transform duration-100 linear rounded-sm"
+            style={{
+              transform: `translateX(${
+                currentTab === "Positions" ? "0%" : "100%"
+              })`,
+            }}
+          />
         </div>
-        {/* Sliding background */}
-        <div
-          className="absolute top-1 h-[calc(100%-8px)] w-[calc(50%-0px)] bg-[#0300ad18] border-b-2 border-[#0300AD] transition-transform duration-100 linear rounded-sm"
-          style={{
-            transform: `translateX(${
-              currentTab === "Positions" ? "0%" : "100%"
-            })`,
-          }}
-        />
       </div>
 
-      {/* Positions/Orders List */}
-      <div className="flex flex-col gap-3">
-        {positions.length === 0 && orders.length === 0 ? (
-          <div className="text-center py-8 text-gray-400">
-            No {currentTab.toLowerCase()} found
-          </div>
-        ) : (
-          returnElement()
-        )}
+      <div className="flex-1 overflow-x-auto">
+        <div className="h-full overflow-y-auto scrollbar-custom">
+          <table className="w-full border-separate border-spacing-y-3">
+            <thead className="sticky top-0 z-10">
+              <tr className="text-gray-400">
+                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[150px]">Position</th>
+                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[120px]">Size</th>
+                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[150px]">Net Value</th>
+                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[150px]">Collateral</th>
+                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[150px]">Entry Price</th>
+                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[150px]">Mark Price</th>
+              </tr>
+            </thead>
+            <tbody className="overflow-y-auto">
+              {positions.length === 0 && orders.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="text-center py-8 text-gray-400">
+                    No {currentTab.toLowerCase()} found
+                  </td>
+                </tr>
+              ) : (
+                returnElement()
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

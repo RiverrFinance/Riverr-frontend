@@ -23,24 +23,24 @@ export const Earn = () => {
   return (
     <div className="flex flex-col min-h-screen gap-6 px-4">
       {/* Header Section with Summary Card and Tabs */}
-      <div className="grid grid-cols-12 gap-6 bg-[#18191de9] rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40">
+      <div className="grid max-lg:grid-cols-1 lg:grid-cols-12 gap-6 bg-[#18191de9] rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40">
         {/* Summary Card */}
-        <div className="col-span-8 p-8 border-r-2 border-dashed border-[#363c52] border-opacity-40">
+        <div className="lg:col-span-8 p-4 lg:p-8 max-lg:border-b-2 lg:border-r-2 border-dashed border-[#363c52] border-opacity-40">
           <div className="relative z-10">
-            <h1 className="text-3xl font-bold mb-4">Welcome</h1>
-            <p className="text-gray-400 mb-6">
+            <h1 className="text-2xl lg:text-3xl font-bold mb-2 lg:mb-4">Welcome</h1>
+            <p className="text-gray-400 mb-4 lg:mb-6 text-sm lg:text-base">
               Earn passive income by providing liquidity or staking your assets
             </p>
 
             {/* Currency Selection */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 lg:gap-4">
               {assetList.map((asset) => (
                 <button
                   title="Select Asset"
                   type="button"
                   key={asset.symbol}
                   onClick={() => setSelectedAsset(asset)}
-                  className={`flex items-center gap-2 p-4 rounded-2xl transition-all duration-300 ${
+                  className={`flex items-center gap-2 p-3 lg:p-4 rounded-xl lg:rounded-2xl transition-all duration-300 ${
                     selectedAsset.symbol === asset.symbol
                       ? "bg-[#0300ad18] border-2 border-[#0300AD]"
                       : "bg-[#1C1C28] hover:bg-[#0300ad18] border-2 border-transparent"
@@ -49,10 +49,10 @@ export const Earn = () => {
                   <img
                     src={asset.logoUrl}
                     alt={asset.symbol}
-                    className="w-8 h-8 rounded-full"
+                    className="w-6 h-6 lg:w-8 lg:h-8 rounded-full"
                   />
                   <div className="text-left">
-                    <div className="font-medium">{asset.symbol}</div>
+                    <div className="text-sm lg:text-base font-medium">{asset.symbol}</div>
                   </div>
                 </button>
               ))}
@@ -61,8 +61,8 @@ export const Earn = () => {
         </div>
 
         {/* Tab Selection */}
-        <div className="col-span-4 p-8 flex items-center">
-          <div className="flex gap-4 w-full">
+        <div className="lg:col-span-4 p-4 lg:p-8 flex items-center">
+          <div className="flex gap-2 lg:gap-4 w-full">
             {(["Lending", "Stake"] as const).map((tab) => {
               const IconComponent = tabIcons[tab];
               return (
@@ -71,15 +71,15 @@ export const Earn = () => {
                   type="button"
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`flex-1 p-4 rounded-xl transition-all duration-300 text-sm font-medium
+                  className={`flex-1 p-3 lg:p-4 rounded-xl transition-all duration-300 text-xs lg:text-sm font-medium
                     ${
                       activeTab === tab
                         ? "bg-[#0300ad18] border-2 border-[#0300AD]"
                         : "bg-[#1C1C28] hover:bg-[#0300ad18] border-2 border-transparent"
                     }`}
                 >
-                  <div className="flex items-center justify-center gap-2">
-                    <IconComponent className="w-4 h-4" />
+                  <div className="flex items-center justify-center gap-1.5 lg:gap-2">
+                    <IconComponent className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
                     <span>{tab}</span>
                   </div>
                 </button>

@@ -65,7 +65,7 @@ export default function Stake({ stake, id, feesEarned, unStake }: Props) {
         <button
           type="button"
           disabled={!isExpired()}
-          className="w-full py-2 rounded-md font-semibold transition-colors duration-200 bg-red-600 hover:bg-red-700 text-white"
+          className="w-full py-2 rounded-md font-semibold transition-colors duration-200 bg-bg-[#0300adaf] hover:bg-[#0300ad18] text-white border-b pb-2"
           onClick={() => unStake()}
         >
           Close Position
