@@ -19,12 +19,16 @@ interface Props {
   readAgent: HttpAgent;
   selectedAsset: Asset;
 }
-
-const durationOptions = [
-  { key: '1', text: '1 Month Lock', value: { Days: 30 } },
-  { key: '6', text: '6 Month Lock', value: { Days: 180 } },
-  { key: '12', text: '1 Year Lock', value: { Days: 365 } },
-] as const;
+type DurationOptions = {
+  text: string;
+  key: string;
+  value: "2 Months" | "6 Months" | "1 Year";
+};
+let durationOptions: DurationOptions[] = [
+  { key: "1", text: "1 Month Lock", value: "2 Months" },
+  { key: "6", text: "6 Month Lock", value: "6 Months" },
+  { key: "12", text: "1 Year Lock", value: "1 Year" },
+];
 
 export default function ManageStaking({
   readWriteAgent,
@@ -33,7 +37,9 @@ export default function ManageStaking({
 }: Props) {
   const { user } = useAuth();
   const [referenceAmount, setReferenceAmount] = useState<string>("");
-  const [stakeSpan, setStakeSpan] = useState<StakeSpan>();
+  const [stakeSpan, setStakeSpan] = useState<
+    "2 Months" | "6 Months" | "1 Year"
+  >();
   const [userBalance, setBalance] = useState<bigint>(0n);
   const [error, setError] = useState<"Insufficient Balance" | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -148,7 +154,15 @@ export default function ManageStaking({
       setCurrentAction("Processing...");
 
       const vaultActor = new VaultActor(vaultID, readWriteAgent);
-      const txResult = await vaultActor.stakeVirtualTokens(amount, stakeSpan);
+      let span: StakeSpan;
+      if (stakeSpan == "1 Year") {
+        span = { Year: null };
+      } else if (stakeSpan == "2 Months") {
+        span = { Month2: null };
+      } else {
+        span = { Month6: null };
+      }
+      const txResult = await vaultActor.stakeVirtualTokens(amount, span);
 
       if (!txResult) {
         setTxError("Staking transaction failed");
@@ -161,8 +175,11 @@ export default function ManageStaking({
     }
   };
 
-  const handleDurationSelect = (_: any, { value }: any) => {
-    setStakeSpan(value);
+  const handleDurationSelect = (
+    event: React.SyntheticEvent<HTMLElement>,
+    data: DurationOptions
+  ) => {
+    setStakeSpan(data.value);
   };
 
   return (
@@ -227,8 +244,8 @@ export default function ManageStaking({
             value={stakeSpan}
             className="!bg-[#18191de9] !border !border-[#363c52] !border-opacity-40 !rounded-lg"
             style={{
-              fontSize: '14px',
-              padding: '12px 16px',
+              fontSize: "14px",
+              padding: "12px 16px",
             }}
           />
         </div>
@@ -245,7 +262,11 @@ export default function ManageStaking({
                     : "bg-gray-600/50 text-gray-400 cursor-not-allowed"
                 }`}
           >
-            {referenceAmount == "" ? "Enter Amount" : !stakeSpan ? "Select Duration" : "Stake"}
+            {referenceAmount == ""
+              ? "Enter Amount"
+              : !stakeSpan
+              ? "Select Duration"
+              : "Stake"}
           </button>
         ) : (
           <div className="bg-[#0300AD] hover:bg-[#02007a] rounded-md p-1">

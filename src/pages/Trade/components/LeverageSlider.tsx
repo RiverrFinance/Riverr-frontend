@@ -9,7 +9,7 @@ export const LeverageSlider = ({
   setLeverage,
   maxLeverage = 100,
 }: Props) => {
-  const leveragePoints = [0.1, 10, 20, 40, 60, 80, 100];
+  const leveragePoints = [1, 10, 20, 40, 60, 80, 100];
 
   return (
     <div className="space-y-3 px-1">

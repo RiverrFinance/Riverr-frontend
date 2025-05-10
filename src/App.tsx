@@ -11,7 +11,7 @@ import { IdentityKitProvider } from "@nfid/identitykit/react";
 // import '../styles/sonner.css';
 
 function App() {
-  console.log("app mounting");
+
   return (
     <IdentityKitProvider authType="ACCOUNTS">
       <SubApp />

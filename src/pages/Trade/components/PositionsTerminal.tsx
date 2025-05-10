@@ -32,12 +32,17 @@ export default function PositionsTerminal({ market, readAgent }: Props) {
     [number, PositionParameters, bigint][]
   >([]);
 
+  const [lowestSellOffer, setLowestSellOffer] = useState<bigint>(0n);
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (market.market_id) {
       if (readWriteAgent) {
+        fetchSetBestOffers();
         fetchAndSeperate();
+
         interval = setInterval(() => {
+          fetchSetBestOffers();
           fetchAndSeperate();
         }, 10 * SECOND);
         return;
@@ -79,16 +84,24 @@ export default function PositionsTerminal({ market, readAgent }: Props) {
     } catch {}
   };
 
+  const fetchSetBestOffers = async () => {
+    try {
+      const marketActor = new MarketActor(market.market_id, readAgent);
+      const [hbo, lso] = await marketActor.getBestOffersTicks();
+      setLowestSellOffer(lso);
+    } catch {}
+  };
+
   const returnElement = (): JSX.Element[] => {
     if (currentTab == "Positions") {
       return positions.map(([index, order, pnl]) => {
         return (
           <TradePosition
+            markTick={lowestSellOffer}
             pnl={pnl}
             accountIndex={index}
             market={market}
             order={order}
-            readAgent={readAgent}
             readWriteAgent={readWriteAgent}
           />
         );
@@ -97,11 +110,11 @@ export default function PositionsTerminal({ market, readAgent }: Props) {
       return orders.map(([index, order, pnl]) => {
         return (
           <TradePosition
+            markTick={lowestSellOffer}
             pnl={pnl}
             accountIndex={index}
             market={market}
             order={order}
-            readAgent={readAgent}
             readWriteAgent={readWriteAgent}
           />
         );
@@ -150,12 +163,21 @@ export default function PositionsTerminal({ market, readAgent }: Props) {
           <table className="w-full border-separate border-spacing-y-3">
             <thead className="sticky top-0 z-10">
               <tr className="text-gray-400">
-                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[150px]">Position</th>
-                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[120px]">Size</th>
-                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[150px]">Net Value</th>
-                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[150px]">Collateral</th>
-                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[150px]">Entry Price</th>
-                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[150px]">Mark Price</th>
+                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[150px]">
+                  Position
+                </th>
+                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[120px]">
+                  Size
+                </th>
+                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[150px]">
+                  Collateral
+                </th>
+                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[150px]">
+                  Entry Price
+                </th>
+                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[150px]">
+                  Mark Price
+                </th>
               </tr>
             </thead>
             <tbody className="overflow-y-auto">
