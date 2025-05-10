@@ -62,7 +62,7 @@ export const AssetComponent = function AssetComponent({
             )}
           </div>
           <div>
-            <div className="text-md font-semibold capitalize">{asset.name}</div>
+            <div className="text-md font-semibold capitalize whitespace-break-spaces">{asset.name}</div>
             <div className="text-sm text-gray-500">{asset.symbol}</div>
           </div>
         </div>
