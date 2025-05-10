@@ -21,7 +21,7 @@ export const Earn = () => {
   } as const;
 
   return (
-    <div className="flex flex-col min-h-screen gap-6 px-4">
+    <div className="flex flex-col min-h-screen gap-6 px-4 max-sm:mb-10 mb-0">
       {/* Header Section with Summary Card and Tabs */}
       <div className="grid max-lg:grid-cols-1 lg:grid-cols-12 gap-6 bg-[#18191de9] rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40">
         {/* Summary Card */}
@@ -90,9 +90,9 @@ export const Earn = () => {
       </div>
 
       {/* Main Content */}
-      <div className="grid lg:grid-cols-12 gap-6 flex-1">
+      <div className="grid lg:grid-cols-12 max-lg:grid-rows-[300px_1fr] gap-6 h-full">
         {/* Left Panel */}
-        <div className="lg:col-span-8">
+        <div className="xl:col-span-8 lg:col-span-7 max-lg:row-span-2 max-lg:row-start-2 transition-all duration-300">
           {activeTab === "Lending" ? (
             <VaultDataAnalytics />
           ) : (
@@ -105,7 +105,7 @@ export const Earn = () => {
         </div>
 
         {/* Right Panel - Operations */}
-        <div className="lg:col-span-4">
+        <div className="xl:col-span-4 lg:col-span-5 max-lg:row-span-1 max-lg:row-start-1">
           <div className="h-full border-l-2 border-r-2 border-dashed border-[#363c52] border-opacity-40">
             <div className="h-full p-6">
               {activeTab === "Lending" ? (

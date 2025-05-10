@@ -184,17 +184,6 @@ export default function ManageStaking({
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:gap-6 p-4 lg:p-6 bg-[#18191D] rounded-xl border-2 border-dashed border-[#363c52] border-opacity-40">
-      {/* Tab Container */}
-      <div className="flex relative bg-[#1C1C28] rounded-lg p-1">
-        <div className="flex relative z-10 w-full"></div>
-        <div
-          className="absolute top-1 h-[calc(100%-8px)] w-[calc(50%-4px)] bg-[#0300ad18] border-2 border-dashed border-[#0300AD] transition-transform duration-300 ease-in-out rounded-sm"
-          style={{
-            transform: `translateX("0%")`,
-          }}
-        />
-      </div>
-
       <div className="grid gap-4 lg:gap-6">
         {/* Amount Input */}
         <div className="space-y-2 lg:space-y-3">

@@ -99,28 +99,32 @@ export const UserStakes = ({
   };
 
   return (
-    <div className="bg-[#18191de9] rounded-3xl p-6 border-2 border-dashed border-[#363c52] border-opacity-40 h-full">
-      <h2 className="text-xl font-bold mb-4">Stakes</h2>
-      {userStakes.map((userStake) => {
-        const [id, stake, feesEarned] = userStake;
-        const index: number = userStakes.indexOf(userStake);
-        return (
-          <div key={id}>
-            <Stake
-              unStake={() => {
-                handleModalOpen(index);
-                setReferenceAmount(stake.amount);
-              }}
-              id={id}
-              stake={stake}
-              feesEarned={`${formatUnits(
-                feesEarned,
-                selectedAsset.decimals
-              )} Q${selectedAsset.symbol}`}
-            />
-          </div>
-        );
-      })}
+    <div className="bg-[#18191de9] rounded-3xl p-6 border-2 border-dashed border-[#363c52] border-opacity-40 min-h-10 h-full">
+      <h2 className="text-2xl font-bold mb-4">Stakes</h2>
+      {userStakes.length === 0 ? (
+        <div className="text-center text-gray-400 py-4">No stakes</div>
+      ) : (
+        userStakes.map((userStake) => {
+          const [id, stake, feesEarned] = userStake;
+          const index: number = userStakes.indexOf(userStake);
+          return (
+            <div key={id}>
+              <Stake
+                unStake={() => {
+                  handleModalOpen(index);
+                  setReferenceAmount(stake.amount);
+                }}
+                id={id}
+                stake={stake}
+                feesEarned={`${formatUnits(
+                  feesEarned,
+                  selectedAsset.decimals
+                )} Q${selectedAsset.symbol}`}
+              />
+            </div>
+          );
+        })
+      )}
       <TransactionModal
         isOpen={isModalOpen}
         onModalClose={handleModalClose}
