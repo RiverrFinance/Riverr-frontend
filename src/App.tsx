@@ -7,13 +7,17 @@ import { Toaster } from "sonner";
 import "semantic-ui-css/semantic.min.css";
 import "@nfid/identitykit/react/styles.css";
 import { IdentityKitProvider } from "@nfid/identitykit/react";
+import { NFIDW, InternetIdentity, Stoic, Plug } from "@nfid/identitykit";
 
 // import '../styles/sonner.css';
 
 function App() {
-
   return (
-    <IdentityKitProvider authType="ACCOUNTS">
+    <IdentityKitProvider
+      signers={[NFIDW, InternetIdentity, Plug, Stoic]}
+      authType="ACCOUNTS"
+      windowOpenerFeatures="top=250rem,left=300px,width=400rem,height=600rem"
+    >
       <SubApp />
     </IdentityKitProvider>
   );
@@ -31,7 +35,7 @@ const SubApp = () => {
       />
       <Sidebar>
         <Routes>
-          <Route path="/" element={<Trade />} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/trade" element={<Trade />} />
           <Route path="/earn" element={<Earn />} />

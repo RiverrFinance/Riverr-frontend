@@ -1,4 +1,11 @@
+import { useEffect, useState } from "react";
 import { Doughnut } from "react-chartjs-2";
+import { VaultStakingDetails } from "../../utils/declarations/vault/vault.did";
+import { HttpAgent } from "@dfinity/agent";
+import { ICP_API_HOST, SECOND } from "../../utils/constants";
+import { Asset } from "../../lists/marketlist";
+import { VaultActor } from "../../utils/Interfaces/vaultActor";
+import { formatUnits, parseUnits } from "ethers/lib/utils";
 
 const COLORS = {
   default: ["#0300AD", "#1C1C28"],
@@ -6,21 +13,112 @@ const COLORS = {
   risk: ["#0300AD", "#2E5CFF", "#18CCFC"],
 };
 
-export const VaultDataAnalytics = () => {
-  const leverageData = [
-    { name: "Supplied", value: 60 },
-    { name: "Available", value: 40 },
+type lockedLiquidityVarianceType = {
+  month2: number;
+  month6: number;
+  year1: number;
+};
+
+type PoolUtilizationMetricType = {
+  debt: number;
+  free_liquidity: number;
+};
+
+const defaultLiquidityVariance = {
+  month2: 0,
+  month6: 0,
+  year1: 0,
+};
+
+interface Props {
+  selectedAsset: Asset;
+}
+
+export const VaultDataAnalytics = ({ selectedAsset }: Props) => {
+  const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
+
+  const [unLockedLiqudity, setUnLockedLiquidity] = useState<number>(0);
+  const [lockedLiquidityVariance, setLockedLiquidityVariance] =
+    useState<lockedLiquidityVarianceType>(defaultLiquidityVariance);
+  const [poolUtilizationMetric, setPoolUtilizationMetric] =
+    useState<PoolUtilizationMetricType>({ debt: 0, free_liquidity: 0 });
+
+  useEffect(() => {
+    HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
+    let interval: NodeJS.Timeout;
+    if (selectedAsset.vaultID) {
+      fetchSetLiquidityAnalytics();
+      interval = setInterval(() => {
+        fetchSetLiquidityAnalytics();
+      }, 10 * SECOND);
+    }
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [selectedAsset]);
+
+  const fetchSetLiquidityAnalytics = async () => {
+    try {
+      const vaultActor = new VaultActor(selectedAsset.vaultID, readAgent);
+      let details: VaultStakingDetails =
+        await vaultActor.getVaultStakingDetails();
+
+      const { free_liquidity, debt } = details;
+      setPoolUtilizationMetric({
+        free_liquidity: Number(
+          formatUnits(free_liquidity, selectedAsset.decimals)
+        ),
+        debt: Number(formatUnits(debt, selectedAsset.decimals)),
+      });
+
+      const { span12_details, span0_details, span2_details, span6_details } =
+        details;
+
+      setUnLockedLiquidity(
+        Number(formatUnits(span0_details.total_locked, selectedAsset.decimals))
+      );
+
+      const variance: lockedLiquidityVarianceType = {
+        month2: Number(
+          formatUnits(span2_details.total_locked, selectedAsset.decimals)
+        ),
+        month6: Number(
+          formatUnits(span6_details.total_locked, selectedAsset.decimals)
+        ),
+        year1: Number(
+          formatUnits(span12_details.total_locked, selectedAsset.decimals)
+        ),
+      };
+      setLockedLiquidityVariance(variance);
+    } catch {
+      return;
+    }
+  };
+
+  const sumLockedLiquidty = (): number => {
+    const { month6, month2, year1 } = lockedLiquidityVariance;
+    return month2 + month6 + year1;
+  };
+
+  const LockedLiquditySpread = [
+    { name: "2 Months Lock", value: lockedLiquidityVariance.month2 },
+    { name: "6 Months Lock", value: lockedLiquidityVariance.month6 },
+    { name: "1 Year Lock", value: lockedLiquidityVariance.year1 },
   ];
 
-  const riskData = [
-    { name: "Low Risk", value: 30 },
-    { name: "Medium Risk", value: 45 },
-    { name: "High Risk", value: 25 },
+  const LiquidtyLockMetric = [
+    {
+      name: "Free Liqudity",
+      value: unLockedLiqudity,
+    },
+    { name: "Locked Liqudity", value: sumLockedLiquidty() },
   ];
 
-  const apyData = [
-    { name: "Current APY", value: 75 },
-    { name: "Potential APY", value: 25 },
+  // later
+  const PoolUtilizationMetric = [
+    { name: "Debt", value: poolUtilizationMetric.debt },
+    { name: "Free Liqudity", value: poolUtilizationMetric.free_liquidity },
   ];
 
   const doughnutOptions = {
@@ -28,8 +126,8 @@ export const VaultDataAnalytics = () => {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'bottom' as const,
-        align: 'center' as const,
+        position: "bottom" as const,
+        align: "center" as const,
         labels: {
           color: "#ffffff",
           usePointStyle: true,
@@ -38,21 +136,21 @@ export const VaultDataAnalytics = () => {
           padding: 10,
           font: {
             size: 10,
-            family: 'system-ui'
-          }
-        }
+            family: "system-ui",
+          },
+        },
       },
       tooltip: {
         enabled: true,
-        backgroundColor: '#18191D',
-        titleColor: '#fff',
-        bodyColor: '#fff',
+        backgroundColor: "#18191D",
+        titleColor: "#fff",
+        bodyColor: "#fff",
         padding: 12,
         cornerRadius: 8,
-        displayColors: false
-      }
+        displayColors: false,
+      },
     },
-    cutout: '65%',
+    cutout: "65%",
   };
 
   return (
@@ -60,16 +158,18 @@ export const VaultDataAnalytics = () => {
       <div className="row-span-1 grid grid-cols-1 md:grid-cols-2 gap-3 max-sm:gap-3 max-md:gap-0 min-h-0 h-fit">
         {/* Risk Analysis Chart - Fixed border and container */}
         <div className="bg-[#18191de9] rounded-3xl p-3 border-2 border-dashed border-[#363c52] border-opacity-40 flex flex-col min-h-0 max-sm:h-full h-fit ">
-          <h3 className="text-sm font-bold mb-1">Risk Analysis</h3>
+          <h3 className="text-sm font-bold mb-1">Locked Liquidty Spread</h3>
           <div className="flex-1 w-full h-[140px]">
             <Doughnut
               data={{
-                labels: riskData.map((d) => d.name),
-                datasets: [{
-                  data: riskData.map((d) => d.value),
-                  backgroundColor: COLORS.risk,
-                  borderWidth: 0,
-                }]
+                labels: LockedLiquditySpread.map((d) => d.name),
+                datasets: [
+                  {
+                    data: LockedLiquditySpread.map((d) => d.value),
+                    backgroundColor: COLORS.risk,
+                    borderWidth: 0,
+                  },
+                ],
               }}
               options={doughnutOptions}
             />
@@ -78,16 +178,18 @@ export const VaultDataAnalytics = () => {
 
         {/* APY Overview Chart - Fixed border */}
         <div className="bg-[#18191de9] rounded-3xl p-3 border-2 border-dashed border-[#3e445b] border-opacity-40 flex flex-col min-h-0 max-sm:h-full h-fit">
-          <h3 className="text-sm font-bold mb-1">APY Overview</h3>
+          <h3 className="text-sm font-bold mb-1">Liquidty Lock Metric</h3>
           <div className="flex-1 w-full h-[140px]">
             <Doughnut
               data={{
-                labels: apyData.map((d) => d.name),
-                datasets: [{
-                  data: apyData.map((d) => d.value),
-                  backgroundColor: COLORS.apy,
-                  borderWidth: 0,
-                }]
+                labels: LiquidtyLockMetric.map((d) => d.name),
+                datasets: [
+                  {
+                    data: LiquidtyLockMetric.map((d) => d.value),
+                    backgroundColor: COLORS.apy,
+                    borderWidth: 0,
+                  },
+                ],
               }}
               options={doughnutOptions}
             />
@@ -97,16 +199,18 @@ export const VaultDataAnalytics = () => {
 
       {/* Lending Distribution - Fixed border and container */}
       <div className="row-span-1 bg-[#18191de9] rounded-3xl p-3 border-2 border-dashed border-[#363c52] border-opacity-40 flex flex-col min-h-0 max-sm:h-full max-lg:h-fit lg:h-full">
-        <h3 className="text-sm font-bold mb-1">Lending Distribution</h3>
+        <h3 className="text-sm font-bold mb-1">Pool Utilization Metric</h3>
         <div className="flex-1 w-full h-[140px]">
           <Doughnut
             data={{
-              labels: leverageData.map((d) => d.name),
-              datasets: [{
-                data: leverageData.map((d) => d.value),
-                backgroundColor: COLORS.default,
-                borderWidth: 0,
-              }]
+              labels: PoolUtilizationMetric.map((d) => d.name),
+              datasets: [
+                {
+                  data: PoolUtilizationMetric.map((d) => d.value),
+                  backgroundColor: COLORS.default,
+                  borderWidth: 0,
+                },
+              ],
             }}
             options={doughnutOptions}
           />
@@ -115,3 +219,5 @@ export const VaultDataAnalytics = () => {
     </div>
   );
 };
+
+const defaultVaultDetails = {};

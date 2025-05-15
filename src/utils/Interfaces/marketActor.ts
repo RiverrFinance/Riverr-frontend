@@ -9,7 +9,6 @@ import {
   PositionParameters,
   StateDetails,
   MarketDetails,
-  OrderType,
   PositionStatus,
 } from "../declarations/market/market.did";
 
@@ -19,37 +18,60 @@ export class MarketActor {
     this.market = createMarket(canisteId, { agent });
   }
 
-  public async closePosition(account_index: number): Promise<bigint> {
-    let amount = await this.market.closePosition(account_index, []);
+  public async closeLimitOrder(account_index: number): Promise<bigint> {
+    let amount = await this.market.closeLimitPosition(account_index);
     console.log(`the amount out is ${amount}`);
 
     return amount;
   }
 
-  public async openPosition(
+  public async closeMarketOrder(account_index: number): Promise<bigint> {
+    let amount = await this.market.closeMarketPosition(account_index, []);
+    console.log(`the amount out is ${amount}`);
+
+    return amount;
+  }
+
+  public async openLimitOrder(
     index: number,
-    collatreal: bigint,
     long: boolean,
-    order_type: OrderType,
+    collatreal: bigint,
     leverage: number,
     maxtick: [] | [bigint]
-  ): Promise<boolean> {
-    let result = await this.market.openPosition(
+  ): Promise<string | null> {
+    let result = await this.market.openLimitPosition(
       index,
-      collatreal,
       long,
-      order_type,
+      collatreal,
       leverage,
-      maxtick,
-      BigInt(0),
-      BigInt(1)
+      maxtick
     );
     if ("Ok" in result) {
-      console.log(result.Ok);
-      return true;
+      return null;
     } else {
-      console.log(result.Err);
-      return false;
+      return result.Err;
+    }
+  }
+
+  public async opneMarketOrder(
+    index: number,
+    long: boolean,
+    collatreal: bigint,
+
+    leverage: number,
+    maxtick: [] | [bigint]
+  ): Promise<string | null> {
+    let result = await this.market.openMarketPosition(
+      index,
+      long,
+      collatreal,
+      leverage,
+      maxtick
+    );
+    if ("Ok" in result) {
+      return null;
+    } else {
+      return result.Err;
     }
   }
 

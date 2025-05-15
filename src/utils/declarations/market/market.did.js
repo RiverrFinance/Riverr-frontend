@@ -6,7 +6,6 @@ export const idlFactory = ({ IDL }) => {
   const Asset = IDL.Record({ 'class' : AssetClass, 'symbol' : IDL.Text });
   const MarketDetails = IDL.Record({
     'vault_id' : IDL.Principal,
-    'collateral_decimal' : IDL.Nat8,
     'quote_asset' : Asset,
     'base_asset' : Asset,
     'xrc_id' : IDL.Principal,
@@ -42,8 +41,6 @@ export const idlFactory = ({ IDL }) => {
   const StateDetails = IDL.Record({
     'max_leveragex10' : IDL.Nat8,
     'not_paused' : IDL.Bool,
-    'current_tick' : IDL.Nat64,
-    'base_token_multiple' : IDL.Nat8,
     'min_collateral' : IDL.Nat,
   });
   const TickState = IDL.Variant({ 'BUY' : IDL.Null, 'SELL' : IDL.Null });
@@ -57,10 +54,14 @@ export const idlFactory = ({ IDL }) => {
     'liq_bounds' : LiquidityBoundary,
     'created_timestamp' : IDL.Nat64,
   });
-  const OrderType = IDL.Variant({ 'Limit' : IDL.Null, 'Market' : IDL.Null });
   const Result = IDL.Variant({ 'Ok' : PositionParameters, 'Err' : IDL.Text });
   return IDL.Service({
-    'closePosition' : IDL.Func([IDL.Nat8, IDL.Opt(IDL.Nat64)], [IDL.Nat], []),
+    'closeLimitPosition' : IDL.Func([IDL.Nat8], [IDL.Nat], []),
+    'closeMarketPosition' : IDL.Func(
+        [IDL.Nat8, IDL.Opt(IDL.Nat64)],
+        [IDL.Nat],
+        [],
+      ),
     'getAccountPositionDetails' : IDL.Func(
         [IDL.Principal, IDL.Nat8],
         [IDL.Opt(IDL.Tuple(PositionParameters, PositionStatus, IDL.Int64))],
@@ -71,17 +72,13 @@ export const idlFactory = ({ IDL }) => {
     'getStateDetails' : IDL.Func([], [StateDetails], ['query']),
     'getTickDetails' : IDL.Func([IDL.Nat64], [TickDetails], ['query']),
     'liquidatePosition' : IDL.Func([IDL.Principal, IDL.Nat8], [IDL.Bool], []),
-    'openPosition' : IDL.Func(
-        [
-          IDL.Nat8,
-          IDL.Nat,
-          IDL.Bool,
-          OrderType,
-          IDL.Nat8,
-          IDL.Opt(IDL.Nat64),
-          IDL.Nat64,
-          IDL.Nat64,
-        ],
+    'openLimitPosition' : IDL.Func(
+        [IDL.Nat8, IDL.Bool, IDL.Nat, IDL.Nat8, IDL.Opt(IDL.Nat64)],
+        [Result],
+        [],
+      ),
+    'openMarketPosition' : IDL.Func(
+        [IDL.Nat8, IDL.Bool, IDL.Nat, IDL.Nat8, IDL.Opt(IDL.Nat64)],
         [Result],
         [],
       ),
@@ -99,7 +96,6 @@ export const init = ({ IDL }) => {
   const Asset = IDL.Record({ 'class' : AssetClass, 'symbol' : IDL.Text });
   const MarketDetails = IDL.Record({
     'vault_id' : IDL.Principal,
-    'collateral_decimal' : IDL.Nat8,
     'quote_asset' : Asset,
     'base_asset' : Asset,
     'xrc_id' : IDL.Principal,

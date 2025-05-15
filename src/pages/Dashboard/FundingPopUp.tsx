@@ -109,6 +109,7 @@ export default function FundingPopUp({
   };
 
   const onAmountUpdate = (value: string) => {
+    if (Number(value) < 0) return;
     setDepositAmount(value);
     if (value == "") {
       setError(null);

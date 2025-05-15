@@ -22,7 +22,7 @@ export const assetList: Asset[] = [
   {
     priceID: "internet-computer",
     symbol: "ICP",
-    name: "internet computer coin",
+    name: "Internet Computer",
     vaultID: "5se5w-zaaaa-aaaaf-qanmq-cai",
     canisterID: "4yl7m-3qaaa-aaaaf-qanlq-cai",
     vTokenCanisterID: "53hwk-piaaa-aaaaf-qanna-cai",
@@ -33,7 +33,7 @@ export const assetList: Asset[] = [
   {
     priceID: "tether",
     symbol: "USDT",
-    name: "usdt",
+    name: "Tether",
     vaultID: undefined,
     decimals: 6,
     canisterID: "cngnf-vqaaa-aaaar-qag4q-cai",
@@ -75,20 +75,17 @@ export const markets: Array<Market> = [
     baseAsset: assetList[3],
     quoteAsset: quoteCurrencies[0],
     chartId: "angxa-baaaa-aaaag-qcvnq-cai",
-    market_id: undefined,
     isFavorite: false,
   },
   {
     baseAsset: assetList[2],
     quoteAsset: quoteCurrencies[1],
     chartId: "xmiu5-jqaaa-aaaag-qbz7q-cai",
-    market_id: undefined,
     isFavorite: false,
   },
   {
     baseAsset: assetList[3],
     quoteAsset: quoteCurrencies[1],
-    market_id: undefined,
     chartId: "angxa-baaaa-aaaag-qcvnq-cai",
     isFavorite: false,
   },

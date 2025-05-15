@@ -1,16 +1,15 @@
 import { HttpAgent } from "@dfinity/agent";
 import { useAgent, useAuth } from "@nfid/identitykit/react";
 import { useEffect, useState } from "react";
-import { Principal } from "@dfinity/principal";
 import {
   PositionParameters,
   PositionStatus,
-} from "../../../utils/declarations/market/market.did";
+} from "../../../../utils/declarations/market/market.did";
 
-import { MarketActor } from "../../../utils/Interfaces/marketActor";
-import { Market } from "../../../lists/marketlist";
-import TradePosition from "./TradePosition";
-import { SECOND } from "../../../utils/constants";
+import { MarketActor } from "../../../../utils/Interfaces/marketActor";
+import { Market } from "../../../../lists/marketlist";
+import Position from "./Position";
+import { SECOND } from "../../../../utils/constants";
 
 const maxSubAccount = 4;
 
@@ -19,7 +18,7 @@ interface Props {
   readAgent: HttpAgent;
 }
 
-export default function PositionsTerminal({ market, readAgent }: Props) {
+export default function PositionsPanel({ market, readAgent }: Props) {
   const readWriteAgent = useAgent();
   const { user } = useAuth();
   const [currentTab, setCurrentTab] = useState<"Orders" | "Positions">(
@@ -45,11 +44,11 @@ export default function PositionsTerminal({ market, readAgent }: Props) {
           fetchSetBestOffers();
           fetchAndSeperate();
         }, 10 * SECOND);
-        return;
+      } else {
+        setOrdersIndex([]);
+        setPositionIndex([]);
       }
     }
-    setOrdersIndex([]);
-    setPositionIndex([]);
 
     return () => {
       clearInterval(interval);
@@ -81,13 +80,16 @@ export default function PositionsTerminal({ market, readAgent }: Props) {
       }
       setOrdersIndex(orderList);
       setPositionIndex(positionsList);
-    } catch {}
+    } catch {
+      return;
+    }
+    45;
   };
 
   const fetchSetBestOffers = async () => {
     try {
       const marketActor = new MarketActor(market.market_id, readAgent);
-      const [hbo, lso] = await marketActor.getBestOffersTicks();
+      const [_, lso] = await marketActor.getBestOffersTicks();
       setLowestSellOffer(lso);
     } catch {}
   };
@@ -96,7 +98,7 @@ export default function PositionsTerminal({ market, readAgent }: Props) {
     if (currentTab == "Positions") {
       return positions.map(([index, order, pnl]) => {
         return (
-          <TradePosition
+          <Position
             markTick={lowestSellOffer}
             pnl={pnl}
             accountIndex={index}
@@ -109,7 +111,7 @@ export default function PositionsTerminal({ market, readAgent }: Props) {
     } else {
       return orders.map(([index, order, pnl]) => {
         return (
-          <TradePosition
+          <Position
             markTick={lowestSellOffer}
             pnl={pnl}
             accountIndex={index}

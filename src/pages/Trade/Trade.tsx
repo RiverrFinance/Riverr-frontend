@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
-import { MarketSelector } from "./components/MarketSelector";
+import { MarketSelector } from "./components/TradeNav/MarketSelector";
 import { Market } from "../../lists/marketlist";
-import DexScreenerChart from "./components/DexScreenerChart";
-import { TradingPanel } from "./components/TradingPanel";
+import DexScreenerChart from "./components/DexScreenerChart/DexScreenerChart";
+import { TradingPanel } from "./components/TradingPanel/TradingPanel";
 import { markets } from "../../lists/marketlist";
 import { HttpAgent } from "@dfinity/agent";
 import { ICP_API_HOST } from "../../utils/constants";
-import PositionsTerminal from "./components/PositionsTerminal";
-import MobileTradingPanel from "./components/MobileTradingPanel";
+import PositionsPanel from "./components/PositionsPanel/PositionsPanel";
+import MobileTradingPanel from "./components/TradingPanel/MobileTradingPanel";
 
-interface Props {}
-
-export const Trade = ({}: Props) => {
+export const Trade = () => {
   const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
   const [selectedMarket, setSelectedMarket] = useState<Market>(markets[0]);
   const [accountIndex, setAccountIndex] = useState<number>(0);
@@ -36,7 +34,7 @@ export const Trade = ({}: Props) => {
         accountIndex={accountIndex}
         readAgent={readAgent}
         market={selectedMarket}
-      />      
+      />
 
       <div className="max-lg:mt-12 flex flex-col flex-1 gap-5">
         <div className="relative h-[50rem] xxxl:min-h-[750px]">
@@ -56,7 +54,7 @@ export const Trade = ({}: Props) => {
         </div>
 
         <div className="flex-1 h-fit bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-2xl overflow-hidden">
-          <PositionsTerminal market={selectedMarket} readAgent={readAgent} />
+          <PositionsPanel market={selectedMarket} readAgent={readAgent} />
         </div>
       </div>
     </div>

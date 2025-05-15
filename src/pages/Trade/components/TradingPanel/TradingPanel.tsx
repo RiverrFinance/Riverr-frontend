@@ -1,23 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { Market } from "../../../lists/marketlist";
-import { MarketActor } from "../../../utils/Interfaces/marketActor";
+import { Market } from "../../../../lists/marketlist";
+import { MarketActor } from "../../../../utils/Interfaces/marketActor";
 import { HttpAgent } from "@dfinity/agent";
-import { StateDetails } from "../../../utils/declarations/market/market.did";
+import { StateDetails } from "../../../../utils/declarations/market/market.did";
 import { LeverageSlider } from "./LeverageSlider";
 import { PriceInput } from "./PriceInput";
-import { formatUnits, parseUnits } from "ethers/lib/utils";
+import { parseUnits } from "ethers/lib/utils";
 import { MarginInput } from "./MarginInput";
 
-import { InputError } from "../types/trading";
+import { InputError } from "../../types/trading";
 import ActionButton from "./ActionButton";
-import { priceToTick } from "../utilFunctions";
+import { priceToTick } from "../../utilFunctions";
 import { useAgent } from "@nfid/identitykit/react";
 import { ChevronDown } from "lucide-react";
-import { SECOND } from "../../../utils/constants";
+import { SECOND } from "../../../../utils/constants";
 
 export interface TradingPanelProps {
   market: Market;
-  onOrderSubmit?: () => void;
   readAgent: HttpAgent;
   accountIndex: number;
 }
@@ -36,14 +35,22 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
   const [margin, setMargin] = useState<string>("");
   const [limitPrice, setLimitPrice] = useState<string>("");
   const [leverage, setLeverage] = useState<number>(1);
+  const [showNotification, setShowNotification] = useState<boolean>(false);
+  const [txErrorMessage, setTxErrorMessage] = useState<string | null>(null);
 
   const [marketState, setMarketState] = useState<StateDetails>({
     max_leveragex10: 1000,
     not_paused: false,
-    current_tick: 0n,
-    base_token_multiple: 20,
     min_collateral: 0n,
   });
+
+  useEffect(() => {
+    if (showNotification) {
+      setTimeout(() => {
+        setShowNotification(false);
+      }, 3 * SECOND);
+    }
+  }, [showNotification]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -65,10 +72,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
       return "--";
     }
 
-    return formatUnits(
-      Number(margin) * Number(leverage),
-      market.quoteAsset.decimals
-    );
+    return Number(margin) * Number(leverage);
   };
 
   const fetchAndSetStatesDetails = async () => {
@@ -85,34 +89,46 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
 
   const openOrder = async () => {
     try {
-      if (!error && Number(margin) > 0 && Number(limitPrice) > 0) {
-        const marketActor = new MarketActor(market.market_id, readWriteAgent);
+      const marketActor = new MarketActor(market.market_id, readWriteAgent);
 
-        // let response = await marketActor.closePosition(accountIndex);
-
-        let type;
-        let max_tick: [bigint] | [];
-        if (orderType == "Limit") {
-          type = { Limit: null };
-          max_tick = [priceToTick(limitPrice)];
-        } else {
-          type = { Market: null };
-          max_tick = [];
+      // let response = await marketActor.closePosition(accountIndex);
+      let marginIn = parseUnits(margin, market.quoteAsset.decimals).toBigInt();
+      let txresponse: string | null;
+      let max_tick: [bigint] | [];
+      if (orderType == "Limit") {
+        if (limitPrice == "") {
+          setError("Limit Price is required");
+          return;
         }
-        let marginIn = parseUnits(
-          margin,
-          market.quoteAsset.decimals
-        ).toBigInt();
-        let txresponse: boolean = await marketActor.openPosition(
+        max_tick = [priceToTick(limitPrice)];
+
+        txresponse = await marketActor.openLimitOrder(
           accountIndex,
-          marginIn,
           tradeDirection == "Long",
-          type,
+          marginIn,
+          leverage * 10,
+          max_tick
+        );
+      } else {
+        max_tick = [];
+        txresponse = await marketActor.opneMarketOrder(
+          accountIndex,
+          tradeDirection == "Long",
+          marginIn,
           leverage * 10,
           max_tick
         );
       }
-    } catch {}
+
+      if (txresponse) {
+        setTxErrorMessage(txresponse);
+      }
+    } catch (e) {
+      alert(e);
+      setTxErrorMessage("Error opening Position");
+    } finally {
+      setShowNotification(true);
+    }
   };
 
   return (
@@ -195,20 +211,29 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
         {orderType == "Limit" ? (
           <PriceInput
             long={tradeDirection == "Long"}
+            inputable={true}
             readAgent={readAgent}
             market={market}
             value={limitPrice}
             setLimitPrice={setLimitPrice}
           />
         ) : (
-          <div className="flex items-center gap-2 bg-[#1C1C28] rounded-lg p-3 mt-7">
-            <input
-              title="empty"
-              disabled
-              type="number"
-              className="flex-1 bg-transparent text-white outline-none text-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            />
-          </div>
+          <PriceInput
+            long={false}
+            inputable={false}
+            readAgent={readAgent}
+            market={market}
+            value={limitPrice}
+            setLimitPrice={setLimitPrice}
+          />
+          // <div className="flex items-center gap-2 bg-[#1C1C28] rounded-lg p-3 mt-7">
+          //   <input
+          //     title="empty"
+          //     disabled
+          //     type="number"
+          //     className="flex-1 bg-transparent text-white outline-none text-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          //   />
+          // </div>
         )}
 
         {/* margin Input */}
@@ -243,6 +268,18 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
         <ActionButton currentError={error} onClick={openOrder} />
         {/* </div> */}
       </div>
+
+      {showNotification && (
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
+          <div
+            className={`px-6 py-3 rounded-lg shadow-lg ${
+              txErrorMessage ? "bg-red-500" : "bg-green-500"
+            } text-white`}
+          >
+            {txErrorMessage ? txErrorMessage : "Position Opened Successfully"}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

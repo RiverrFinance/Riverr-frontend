@@ -8,7 +8,7 @@ import Marketing_Campaign_1 from "../../images/Marketing_Campaign_1.png";
 export interface TransactionModalProps {
   isOpen: boolean;
   onModalClose: () => void;
-  actionType: "Deposit" | "Withdraw" | "Stake" | "Unstake";
+  actionType: "Deposit" | "Withdraw" | "Lock" | "Unlock";
   asset: Asset;
   amount: string;
   onSubmitTransaction: () => Promise<void>;

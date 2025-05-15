@@ -4,10 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Asset } from "../../lists/marketlist";
 import { parseUnits, formatUnits } from "ethers/lib/utils";
 import { TokenActor } from "../../utils/Interfaces/tokenActor";
-import {
-  StakeDetails,
-  StakeSpan,
-} from "../../utils/declarations/vault/vault.did";
+import { StakeSpan } from "../../utils/declarations/vault/vault.did";
 import { VaultActor } from "../../utils/Interfaces/vaultActor";
 import { Principal } from "@dfinity/principal";
 import { Icon, Dropdown } from "semantic-ui-react";
@@ -21,16 +18,15 @@ interface Props {
 }
 type DurationOptions = {
   text: string;
-  key: string;
   value: "2 Months" | "6 Months" | "1 Year";
 };
 let durationOptions: DurationOptions[] = [
-  { key: "1", text: "1 Month Lock", value: "2 Months" },
-  { key: "6", text: "6 Month Lock", value: "6 Months" },
-  { key: "12", text: "1 Year Lock", value: "1 Year" },
+  { text: "2 Months Lock", value: "2 Months" },
+  { text: "6 Months Lock", value: "6 Months" },
+  { text: "1 Year Lock", value: "1 Year" },
 ];
 
-export default function ManageStaking({
+export default function ManageLock({
   readWriteAgent,
   readAgent,
   selectedAsset,
@@ -75,6 +71,7 @@ export default function ManageStaking({
   };
 
   const onAmountChange = (value: string) => {
+    if (Number(value) < 0) return;
     setReferenceAmount(value);
     if (value === "") {
       setError(null);
@@ -176,7 +173,7 @@ export default function ManageStaking({
   };
 
   const handleDurationSelect = (
-    event: React.SyntheticEvent<HTMLElement>,
+    _: React.SyntheticEvent<HTMLElement>,
     data: DurationOptions
   ) => {
     setStakeSpan(data.value);
@@ -184,6 +181,17 @@ export default function ManageStaking({
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:gap-6 p-4 lg:p-6 bg-[#18191D] rounded-xl border-2 border-dashed border-[#363c52] border-opacity-40">
+      {/* Tab Container */}
+      <div className="flex relative bg-[#1C1C28] rounded-lg p-1">
+        <div className="flex relative z-10 w-full"></div>
+        <div
+          className="absolute top-1 h-[calc(100%-8px)] w-[calc(50%-4px)] bg-[#0300ad18] border-2 border-dashed border-[#0300AD] transition-transform duration-300 ease-in-out rounded-sm"
+          style={{
+            transform: `translateX("0%")`,
+          }}
+        />
+      </div>
+
       <div className="grid gap-4 lg:gap-6">
         {/* Amount Input */}
         <div className="space-y-2 lg:space-y-3">
@@ -267,7 +275,7 @@ export default function ManageStaking({
       <TransactionModal
         isOpen={isModalOpen}
         onModalClose={handleModalClose}
-        actionType={"Stake"}
+        actionType={"Lock"}
         asset={selectedAsset}
         amount={referenceAmount}
         onSubmitTransaction={stakeVirtualTokens}

@@ -2,7 +2,7 @@ import { Agent } from "@dfinity/agent";
 import {
   createActor as createTokenActor,
   token as TokenIDL,
-} from "../declarations/token/index";
+} from "../declarations/token";
 
 import {
   createActor as createMinterActor,

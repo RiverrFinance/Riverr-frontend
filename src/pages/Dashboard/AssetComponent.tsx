@@ -41,18 +41,11 @@ export const AssetComponent = function AssetComponent({
     <>
       <div
         key={asset.name}
-        className="relative col-span-12 grid grid-cols-12 items-center justify-between py-2 cursor-pointer"
+        className="relative rounded-2xl col-span-12 grid grid-cols-12 max-xs:gap-5 items-center justify-between py-2 cursor-pointer"
         onClick={isMobileView ? () => onAccordionToggle(index) : undefined}
       >
-        <GlowingEffect
-          spread={2}
-          glow={true}
-          disabled={false}
-          proximity={64}
-          inactiveZone={0.01}
-        />
-        <div className="col-span-4 max-lg:col-span-6 flex items-center">
-          <div className="mr-2">
+        <div className="col-span-4 max-lg:col-span-6 max-xs:col-span-5 flex items-center">
+          <div className="mr-2 max-xs:sr-only">
             {asset.logoUrl && (
               <img
                 src={asset.logoUrl}
@@ -62,14 +55,18 @@ export const AssetComponent = function AssetComponent({
             )}
           </div>
           <div>
-            <div className="text-md font-semibold capitalize whitespace-break-spaces">{asset.name}</div>
-            <div className="text-sm text-gray-500">{asset.symbol}</div>
+            <div className="text-md font-semibold capitalize whitespace-break-spaces">
+              {asset.name}
+            </div>
+            <div className="text-sm text-gray-500 whitespace-break-spaces">
+              {asset.symbol}
+            </div>
           </div>
         </div>
-        <div className="col-span-2 max-lg:col-span-3 text-sm">
+        <div className="col-span-2 max-lg:col-span-3 max-xs:col-span-4 text-sm whitespace-break-spaces">
           ${formatPrice(price)}
         </div>
-        <div className="col-span-2 max-lg:col-span-3 text-sm font-medium">
+        <div className="col-span-2 max-lg:col-span-3 max-xs:col-span-3 text-sm font-medium ml-8 max-xs:ml-">
           {userBalance}
         </div>
 

@@ -1,5 +1,5 @@
-import { ConnectWallet, useAgent } from "@nfid/identitykit/react";
-import { InputError } from "../types/trading";
+import { ConnectWallet, useAgent, useAuth } from "@nfid/identitykit/react";
+import { InputError } from "../../types/trading";
 
 interface Props {
   currentError: InputError;
@@ -7,19 +7,17 @@ interface Props {
 }
 
 export default function ActionButton({ currentError, onClick }: Props) {
+  const { user } = useAuth();
   const readWriteAgent = useAgent();
-  const onClickAction = () => {
-    if (currentError == null) {
-      onClick();
-    }
-  };
+
   return (
     <div className="flex flex-col justify-items-center">
       {readWriteAgent ? (
         <button
           type="button"
+          disabled={currentError != null}
           className="bg-[#0300AD] rounded-md flex justify-center items-center gap-2 px-5 py-3 w-full cursor-pointer"
-          onClick={onClickAction}
+          onClick={onClick}
         >
           <span className="text-center font-semibold text-[13px]">
             Open Order

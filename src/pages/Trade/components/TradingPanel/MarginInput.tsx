@@ -1,11 +1,11 @@
-import { Market } from "../../../lists/marketlist";
+import { Market } from "../../../../lists/marketlist";
 import { formatUnits, parseUnits } from "ethers/lib/utils";
-import { InputError } from "../types/trading";
+import { InputError } from "../../types/trading";
 import { useAuth } from "@nfid/identitykit/react";
 import { useEffect, useState } from "react";
 import { HttpAgent } from "@dfinity/agent";
-import { VaultActor } from "../../../utils/Interfaces/vaultActor";
-import { SECOND } from "../../../utils/constants";
+import { VaultActor } from "../../../../utils/Interfaces/vaultActor";
+import { SECOND } from "../../../../utils/constants";
 
 interface Props {
   value: string;
@@ -24,23 +24,22 @@ export const MarginInput = ({
   minCollateral,
   readAgent,
 }: Props) => {
+  const { user } = useAuth();
   const readWriteAgent = useAuth();
 
-  const { user } = useAuth();
   const [userMarginBalance, setUserMarginBalance] = useState<bigint>(0n);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (market.quoteAsset.vaultID) {
-      if (readWriteAgent) {
+    if (market.quoteAsset.vaultID && readWriteAgent) {
+      fetchSetMarginBalance();
+      interval = setInterval(() => {
         fetchSetMarginBalance();
-        interval = setInterval(() => {
-          fetchSetMarginBalance();
-        }, 10 * SECOND); //10 seconds
-        return;
-      }
+      }, 10 * SECOND); //10 seconds
+    } else {
+      setUserMarginBalance(0n);
     }
-    setUserMarginBalance(0n);
+
     return () => {
       clearInterval(interval);
     };
@@ -61,6 +60,7 @@ export const MarginInput = ({
   };
 
   const onCollateralChange = (value: string) => {
+    if (Number(value) < 0) return;
     setFunction(value);
     if (value == "") {
       setError(null);

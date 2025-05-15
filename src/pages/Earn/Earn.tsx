@@ -1,23 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Asset, assetList } from "../../lists/marketlist";
 import ManageLeverage from "./ManageLeverage";
-import ManageStaking from "./ManageStaking";
+import ManageLock from "./ManageLock";
 import { useAgent } from "@nfid/identitykit/react";
 import { HttpAgent } from "@dfinity/agent";
 import { Banknote, LineChart } from "lucide-react";
 import { VaultDataAnalytics } from "./VaultDataAnalytics";
 import { UserStakes } from "./UserStakes";
+import { ICP_API_HOST } from "../../utils/constants";
 
 //1,989.02 kB
 export const Earn = () => {
   const readWriteAgent = useAgent();
-  const [readAgent] = useState<HttpAgent>(HttpAgent.createSync());
+  const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
   const [selectedAsset, setSelectedAsset] = useState<Asset>(assetList[0]);
-  const [activeTab, setActiveTab] = useState<"Lending" | "Stake">("Lending");
+  const [activeTab, setActiveTab] = useState<"Lending" | "Lock">("Lending");
+
+  useEffect(() => {
+    HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
+  }, []);
 
   const tabIcons = {
     Lending: Banknote,
-    Stake: LineChart,
+    Lock: LineChart,
   } as const;
 
   return (
@@ -27,7 +32,9 @@ export const Earn = () => {
         {/* Summary Card */}
         <div className="lg:col-span-8 p-4 lg:p-8 max-lg:border-b-2 lg:border-r-2 border-dashed border-[#363c52] border-opacity-40">
           <div className="relative z-10">
-            <h1 className="text-2xl lg:text-3xl font-bold mb-2 lg:mb-4">Welcome</h1>
+            <h1 className="text-2xl lg:text-3xl font-bold mb-2 lg:mb-4">
+              Welcome
+            </h1>
             <p className="text-gray-400 mb-4 lg:mb-6 text-sm lg:text-base">
               Earn passive income by providing liquidity or staking your assets
             </p>
@@ -52,7 +59,9 @@ export const Earn = () => {
                     className="w-6 h-6 lg:w-8 lg:h-8 rounded-full"
                   />
                   <div className="text-left">
-                    <div className="text-sm lg:text-base font-medium">{asset.symbol}</div>
+                    <div className="text-sm lg:text-base font-medium">
+                      {asset.symbol}
+                    </div>
                   </div>
                 </button>
               ))}
@@ -63,7 +72,7 @@ export const Earn = () => {
         {/* Tab Selection */}
         <div className="lg:col-span-4 p-4 lg:p-8 flex items-center">
           <div className="flex gap-2 lg:gap-4 w-full">
-            {(["Lending", "Stake"] as const).map((tab) => {
+            {(["Lending", "Lock"] as const).map((tab) => {
               const IconComponent = tabIcons[tab];
               return (
                 <button
@@ -94,7 +103,7 @@ export const Earn = () => {
         {/* Left Panel */}
         <div className="xl:col-span-8 lg:col-span-7 max-lg:row-span-2 max-lg:row-start-2 transition-all duration-300">
           {activeTab === "Lending" ? (
-            <VaultDataAnalytics />
+            <VaultDataAnalytics selectedAsset={selectedAsset} />
           ) : (
             <UserStakes
               readWriteAgent={readWriteAgent}
@@ -115,7 +124,7 @@ export const Earn = () => {
                   selectedAsset={selectedAsset}
                 />
               ) : (
-                <ManageStaking
+                <ManageLock
                   readWriteAgent={readWriteAgent}
                   readAgent={readAgent}
                   selectedAsset={selectedAsset}

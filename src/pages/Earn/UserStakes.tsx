@@ -35,6 +35,7 @@ export const UserStakes = ({
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (readWriteAgent) {
+      fetchSetUserStakes();
       interval = setInterval(() => {
         fetchSetUserStakes();
       }, 10 * SECOND);
@@ -128,7 +129,7 @@ export const UserStakes = ({
       <TransactionModal
         isOpen={isModalOpen}
         onModalClose={handleModalClose}
-        actionType={"Unstake"}
+        actionType={"Unlock"}
         asset={selectedAsset}
         amount={`${formatUnits(referenceAmount, selectedAsset.decimals)}`}
         onSubmitTransaction={handleUnstakeTransaction}

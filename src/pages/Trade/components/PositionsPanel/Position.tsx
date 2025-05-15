@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { MarketActor } from "../../../utils/Interfaces/marketActor";
-import { Market } from "../../../lists/marketlist";
-import { Agent, HttpAgent } from "@dfinity/agent";
-import { PositionParameters } from "../../../utils/declarations/market/market.did";
-import { Icon, Popup } from "semantic-ui-react";
+import { useEffect, useState } from "react";
+import { MarketActor } from "../../../../utils/Interfaces/marketActor";
+import { Market } from "../../../../lists/marketlist";
+import { Agent } from "@dfinity/agent";
+import { PositionParameters } from "../../../../utils/declarations/market/market.did";
+import { Icon } from "semantic-ui-react";
 import { formatUnits } from "ethers/lib/utils";
-import { ONE_PERCENT } from "../../../utils/constants";
-import { tickToPrice } from "../utilFunctions";
+import { ONE_PERCENT, SECOND } from "../../../../utils/constants";
+import { tickToPrice } from "../../utilFunctions";
 
 interface Props {
   accountIndex: number;
@@ -17,7 +17,7 @@ interface Props {
   pnl: bigint;
 }
 
-export default function TradePosition({
+export default function Position({
   accountIndex,
   market,
   order,
@@ -25,43 +25,40 @@ export default function TradePosition({
   pnl,
   markTick,
 }: Props) {
-  const [isClosing, setIsClosing] = useState(false);
-  const [showNotification, setShowNotification] = useState(false);
-  const [notificationMessage, setNotificationMessage] = useState("");
+  const [isClosing, setIsClosing] = useState<boolean>(false);
+  const [showNotification, setShowNotification] = useState<boolean>(false);
+  const [notificationMessage, setNotificationMessage] = useState<string>("");
+
+  useEffect(() => {
+    if (showNotification) {
+      setTimeout(() => {
+        setShowNotification(false);
+      }, 3 * SECOND);
+    }
+  }, [showNotification]);
 
   const closePosition = async () => {
     try {
       setIsClosing(true);
       const marketActor = new MarketActor(market.market_id, readWriteAgent);
-      await marketActor.closePosition(accountIndex);
+      if ("Limit" in order.order_type) {
+        await marketActor.closeLimitOrder(accountIndex);
+      } else {
+        await marketActor.closeMarketOrder(accountIndex);
+      }
+
       setNotificationMessage("Position closed successfully!");
-      setShowNotification(true);
-      setTimeout(() => setShowNotification(false), 3000);
     } catch (error) {
       setNotificationMessage("Failed to close position");
-      setShowNotification(true);
-      setTimeout(() => setShowNotification(false), 3000);
     } finally {
       setIsClosing(false);
+      setShowNotification(true);
     }
   };
 
   const formatPnL = (value: bigint): string => {
     const formatted = formatUnits(value, 5);
     return formatted;
-  };
-
-  const getPositionDetails = () => {
-    return {
-      collateralValue: formatUnits(order.collateral_value),
-      debtValue: formatUnits(order.debt_value),
-      volumeShare: formatUnits(order.volume_share),
-      entryPrice: formatUnits(order.entry_tick),
-      interestRate: (order.interest_rate * 100).toFixed(2),
-      openTime: new Date(Number(order.timestamp) * 1000).toLocaleString(),
-      positionType: order.long ? "Long" : "Short",
-      orderType: Object.keys(order.order_type)[0],
-    };
   };
 
   const currentCollateral = () => {

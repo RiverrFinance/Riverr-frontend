@@ -6,6 +6,7 @@ import {
   ConnectWalletButton,
   ConnectedWalletButton,
   ConnectWalletDropdownMenu,
+  useAuth,
 } from "@nfid/identitykit/react";
 import {
   Home,
@@ -38,16 +39,6 @@ const navLinks = [
     label: "Earn",
     icon: <PiggyBank className="w-4 h-4" />,
   },
-  {
-    path: "/support",
-    label: "Support",
-    icon: <HelpCircle className="w-4 h-4" />,
-  },
-  {
-    path: "/leaderboard",
-    label: "Leaderboard",
-    icon: <Trophy className="w-4 h-4" />,
-  },
 ];
 
 export interface Props {
@@ -55,6 +46,7 @@ export interface Props {
 }
 
 export const Sidebar: React.FC<Props> = ({ children }: Props) => {
+  const { user } = useAuth();
   const [visible, setVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isCheckIfMobileIs480, setIsCheckIfMobileIs480] = useState(false);
@@ -77,7 +69,7 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
     window.addEventListener("resize", mobileIs480);
 
     // Redirect to dashboard if on root path
-    if (location.pathname === "/") navigate("/trade");
+    if (location.pathname === "/") navigate("/dashboard");
 
     return () => window.removeEventListener("resize", checkIfMobile);
   }, []);
@@ -85,12 +77,10 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
   // Active link styling
   const isActiveLink = (path: string): string => {
     const isActive =
-      path === "/trade"
-        ? ["/", "/trade"].includes(location.pathname)
+      path === "/dashboard"
+        ? ["/", "/dashboard"].includes(location.pathname)
         : location.pathname === path;
-    return isActive
-      ? "text-white"
-      : "text-gray-400 hover:text-white";
+    return isActive ? "text-white" : "text-gray-400 hover:text-white";
   };
 
   const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
@@ -178,7 +168,14 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
         <div className="bg-[#0300AD] hover:bg-[#02007a] rounded-md flex justify-items-center items-center gap-2 px-5">
           <ConnectWallet
             connectButtonComponent={ConnectWalletButton}
-            //    connectedButtonComponent={ConnectedWalletButton}
+            connectedButtonComponent={
+              // ConnectedWalletButton
+              () => {
+                return ConnectedWalletButton({
+                  connectedAccount: `${user.principal.toString()}`,
+                });
+              }
+            }
             dropdownMenuComponent={ConnectWalletDropdownMenu}
           />
         </div>
@@ -313,7 +310,9 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
                               onClick={() => handleNavigation(link.path)}
                             >
                               {link.icon}
-                              <span className={isActiveLink(link.path)}>{link.label}</span>
+                              <span className={isActiveLink(link.path)}>
+                                {link.label}
+                              </span>
                             </Menu.Item>
                           ))}
                         </div>

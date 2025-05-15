@@ -1,11 +1,15 @@
+import { formatUnits, parseUnits } from "ethers/lib/utils";
+
 const ONE_PERCENT: number = 100000;
+const HUNDRED_PERCENT: number = 10000000;
 
 export const tickToPrice = (tick: bigint): string => {
-  let price = Number(tick) / (100 * ONE_PERCENT);
+  return formatUnits(tick, 7);
+  // let price = Number(tick) / (100 * ONE_PERCENT);
 
-  return price.toString();
+  // return price.toString();
 };
 
 export const priceToTick = (price: string): bigint => {
-  return BigInt(Number(price) * 100 * ONE_PERCENT);
+  return parseUnits(price, 7).toBigInt();
 };

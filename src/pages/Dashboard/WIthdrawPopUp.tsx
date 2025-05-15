@@ -73,6 +73,7 @@ export default function WithdrawPopUp({
   };
 
   const onAmountChange = (value: string) => {
+    if (Number(value) < 0) return;
     setWithdrawAmount(value);
     if (value == "") {
       setError(null);

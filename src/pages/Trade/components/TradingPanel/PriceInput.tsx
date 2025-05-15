@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
-import { Market } from "../../../lists/marketlist";
-import { tickToPrice } from "../utilFunctions";
+import { Market } from "../../../../lists/marketlist";
+import { tickToPrice } from "../../utilFunctions";
 import { HttpAgent } from "@dfinity/agent";
-import { MarketActor } from "../../../utils/Interfaces/marketActor";
-import { SECOND } from "../../../utils/constants";
+import { MarketActor } from "../../../../utils/Interfaces/marketActor";
+import { SECOND } from "../../../../utils/constants";
 
 interface Props {
   readAgent: HttpAgent;
   market: Market;
+  inputable: boolean;
   value: string;
   setLimitPrice: (val: string) => void;
   long: boolean;
@@ -18,6 +19,7 @@ export const PriceInput = ({
   value,
   setLimitPrice,
   readAgent,
+  inputable,
   long,
 }: Props) => {
   const [fetchSuccess, setFetchSuccess] = useState<boolean>(false);
@@ -31,6 +33,9 @@ export const PriceInput = ({
       interval = setInterval(() => {
         fetchSetBestOffers();
       }, 10 * SECOND);
+    } else {
+      setHighestBuyOffer(0n);
+      setLowestSellOffer(0n);
     }
     return () => {
       clearInterval(interval);
@@ -64,11 +69,14 @@ export const PriceInput = ({
       <div className="flex items-center gap-2 bg-[#1C1C28] rounded-lg p-3">
         <input
           type="number"
-          disabled={!fetchSuccess}
+          disabled={
+            !fetchSuccess || !inputable || market.market_id == undefined
+          }
           placeholder={`${startingPoint()}`}
           value={value}
           onChange={(e) => {
             let { value } = e.target;
+            if (Number(value) < 0) return;
             setLimitPrice(value);
           }}
           className="flex-1 bg-transparent text-white outline-none text-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"

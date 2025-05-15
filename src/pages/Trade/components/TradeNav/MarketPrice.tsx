@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { fetchDetails } from "../../../utils/utilFunction";
-import { Market } from "../../../lists/marketlist";
-import { SECOND } from "../../../utils/constants";
+import { memo, useEffect, useState } from "react";
+import { fetchDetails } from "../../../../utils/utilFunction";
+import { Market } from "../../../../lists/marketlist";
+import { SECOND } from "../../../../utils/constants";
 
 interface PriceDetails {
   price: number;
@@ -11,7 +11,7 @@ interface PriceDetails {
   volume?: number;
 }
 
-const MarketPrice = ({ market }: { market: Market }) => {
+const MarketPrice = memo(({ market }: { market: Market }) => {
   const [details, setDetails] = useState<PriceDetails>({
     price: 0,
     price_change_24h: 0,
@@ -69,7 +69,7 @@ const MarketPrice = ({ market }: { market: Market }) => {
       </div>
     </div>
   );
-};
+});
 
 const formatPrice = (price: number | string) => {
   if (typeof price === "string") return price;

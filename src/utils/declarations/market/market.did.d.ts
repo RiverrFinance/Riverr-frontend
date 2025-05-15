@@ -20,13 +20,10 @@ export interface LiquidityBoundary {
 }
 export interface MarketDetails {
   'vault_id' : Principal,
-  'collateral_decimal' : number,
   'quote_asset' : Asset,
   'base_asset' : Asset,
   'xrc_id' : Principal,
 }
-export type OrderType = { 'Limit' : null } |
-  { 'Market' : null };
 export type PositionOrderType = { 'Limit' : LimitOrder } |
   { 'Market' : null };
 export interface PositionParameters {
@@ -48,8 +45,6 @@ export type Result = { 'Ok' : PositionParameters } |
 export interface StateDetails {
   'max_leveragex10' : number,
   'not_paused' : boolean,
-  'current_tick' : bigint,
-  'base_token_multiple' : number,
   'min_collateral' : bigint,
 }
 export interface TickDetails {
@@ -60,7 +55,8 @@ export interface TickDetails {
 export type TickState = { 'BUY' : null } |
   { 'SELL' : null };
 export interface _SERVICE {
-  'closePosition' : ActorMethod<[number, [] | [bigint]], bigint>,
+  'closeLimitPosition' : ActorMethod<[number], bigint>,
+  'closeMarketPosition' : ActorMethod<[number, [] | [bigint]], bigint>,
   'getAccountPositionDetails' : ActorMethod<
     [Principal, number],
     [] | [[PositionParameters, PositionStatus, bigint]]
@@ -70,8 +66,12 @@ export interface _SERVICE {
   'getStateDetails' : ActorMethod<[], StateDetails>,
   'getTickDetails' : ActorMethod<[bigint], TickDetails>,
   'liquidatePosition' : ActorMethod<[Principal, number], boolean>,
-  'openPosition' : ActorMethod<
-    [number, bigint, boolean, OrderType, number, [] | [bigint], bigint, bigint],
+  'openLimitPosition' : ActorMethod<
+    [number, boolean, bigint, number, [] | [bigint]],
+    Result
+  >,
+  'openMarketPosition' : ActorMethod<
+    [number, boolean, bigint, number, [] | [bigint]],
     Result
   >,
   'retryAccountError' : ActorMethod<[Uint8Array | number[]], undefined>,

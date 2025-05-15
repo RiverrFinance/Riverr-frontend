@@ -5,13 +5,14 @@ import { AssetComponent } from "./AssetComponent";
 import { useAgent, useAuth } from "@nfid/identitykit/react";
 import { VaultActor } from "../../utils/Interfaces/vaultActor";
 import { fetchDetails, fetchTopMovers } from "../../utils/utilFunction";
-import { formatUnits } from "ethers/lib/utils";
+import { formatUnits, parseUnits } from "ethers/lib/utils";
 import FundingPopUp from "./FundingPopUp";
 import WithdrawPopUp from "./WIthdrawPopUp";
 import { MinterActor } from "../../utils/Interfaces/tokenActor";
 import { Principal } from "@dfinity/principal";
 import { Eye, EyeOff, Droplets, Loader } from "lucide-react";
 import { ICP_API_HOST, SECOND } from "../../utils/constants";
+import { GlowingEffect } from "../../components/Glowing-effect";
 
 interface PriceDetails {
   price: number;
@@ -197,7 +198,7 @@ export function Dashboard() {
         await mintActor.mint(
           Principal.fromText(asset.canisterID),
           user.principal,
-          10n ** BigInt(asset.decimals + 1) // ICP tokens
+          parseUnits("100", asset.decimals).toBigInt() // ICP tokens
         );
       } catch (error) {
         console.error("Error receiving faucet:", error);
@@ -210,15 +211,14 @@ export function Dashboard() {
   return (
     <div className="max-h-fit bg-transparent rounded-3xl grid md:grid-cols-12 md:gap-5 gap-10 ">
       <div className="md:space-y-6 space-y-3 lg:col-span-8 md:col-span-7 h-full overflow-hidden flex flex-col">
-        <div className="py-5 px-5 h-fit bg-[#18191de9] rounded-2xl md:rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40">
-          <div className="bg-[#0300AD] rounded-lg md:rounded-2xl py-10 md:px-5 px-12 h-fit flex max-xs:flex-col max-xs:gap-8 justify-between items-center">
-            <div className="flex flex-col max-xs:items-center">
-              <div className="text-3xl font-black tracking-wide mb-4">
-                Dashboard
-              </div>
-              <div className="space-y-1 flex flex-col max-xs:items-center">
-                <div className="text-md text-gray-300">Total Balance</div>
-                <div className="text-2xl font-bold space-x-2 transition-all">
+        <div className="py-5 max-xs:py-2 px-5 max-xs:px-2 h-fit bg-[#18191de9] rounded-2xl md:rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40">
+          <div className="bg-[#0300AD] rounded-lg md:rounded-2xl py-10 md:px-10 px-12  h-fit flex max-xs:flex-col max-xs:gap-8 justify-between items-start xs:items-center">
+            <div className="flex flex-col max-xs:items-center space-y-2">
+              <div className="xs:space-y-5 flex max-xs:gap-5 gap-x-3 flex-col max-xs:items-start">
+                <div className="text-md text-gray-300">
+                  Est. Total Value (USD)
+                </div>
+                <div className="text-[35px] font-bold space-x-2 transition-all">
                   <span>
                     {showBalances ? `$${format(totalValue)}` : "**********"}
                   </span>
@@ -234,11 +234,9 @@ export function Dashboard() {
                       <EyeOff className="w-4 h-4" />
                     )}
                   </button>
-                  <small className="uppercase text-xs">USD</small>
                 </div>
 
-                <div className="text-sm text-gray-400">
-                </div>
+                <div className="text-sm text-gray-400"></div>
               </div>
             </div>
 
@@ -276,7 +274,7 @@ export function Dashboard() {
             </div>
           </div>
         </div>
-        <div className="flex-grow py-8 px-5 bg-[#18191de9] rounded-2xl md:rounded-3xl h-screen border-2 border-dashed border-[#363c52] border-opacity-40">
+        <div className="flex-grow py-8 px-5 max-xs:px-3 bg-[#18191de9] rounded-2xl md:rounded-3xl h-screen border-2 border-dashed border-[#363c52] border-opacity-40">
           <div className="text-2xl font-bold mb-4 capitalize">portfolio</div>
           <div>
             <AssetListComponent
@@ -411,18 +409,27 @@ const AssetListComponent = memo(
             return (
               <div
                 key={asset.name}
-                className="hover:px-4 p-2 hover:border border-[#27272b]  hover:border-[#27272b] rounded-2xl transition-all duration-300"
+                className="relative hover:px-4 p-2 hover:border border-[#27272b] hover:border-[#27272b] rounded-2xl transition-all duration-300"
               >
-                <AssetComponent
-                  asset={asset}
-                  price={price}
-                  userBalance={userBalance}
-                  index={index}
-                  openAccordionIndex={openAccordionIndex}
-                  onAccordionToggle={handleAccordionToggle}
-                  onDeposit={onDeposit}
-                  onWithdraw={onWithdraw}
+                <GlowingEffect
+                  spread={2}
+                  glow={true}
+                  disabled={false}
+                  proximity={64}
+                  inactiveZone={0.01}
                 />
+                <div className="">
+                  <AssetComponent
+                    asset={asset}
+                    price={price}
+                    userBalance={userBalance}
+                    index={index}
+                    openAccordionIndex={openAccordionIndex}
+                    onAccordionToggle={handleAccordionToggle}
+                    onDeposit={onDeposit}
+                    onWithdraw={onWithdraw}
+                  />
+                </div>
               </div>
             );
           })}

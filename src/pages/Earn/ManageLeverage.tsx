@@ -68,6 +68,7 @@ export default function ManageLeverage({
   };
 
   const onAmountDepositChange = (value: string) => {
+    if (Number(value) < 0) return;
     setReferenceAmount(value);
     if (value === "") {
       setError(null);
@@ -82,6 +83,7 @@ export default function ManageLeverage({
   };
 
   const onAmountWithdrawChange = (value: string) => {
+    if (Number(value) < 0) return;
     setReferenceAmount(value);
     if (value === "") {
       setError(null);
@@ -259,7 +261,9 @@ export default function ManageLeverage({
 
         <div className="grid gap-4 lg:gap-6">
           <div className="space-y-2 lg:space-y-3">
-            <label className="text-xs lg:text-sm font-medium text-gray-400">Amount</label>
+            <label className="text-xs lg:text-sm font-medium text-gray-400">
+              Amount
+            </label>
             <div className="flex items-center bg-[#1C1C28] rounded-lg p-2 lg:p-4">
               <input
                 type="text"
@@ -287,7 +291,9 @@ export default function ManageLeverage({
               {activeTab === "Withdraw" ? "Q" : ""}
               {selectedAsset.symbol}
             </p>
-            {error && <p className="text-xs lg:text-sm text-red-500">{error}</p>}
+            {error && (
+              <p className="text-xs lg:text-sm text-red-500">{error}</p>
+            )}
           </div>
 
           {readWriteAgent ? (

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { ChevronDown, Search } from "lucide-react";
 import { Pairs } from "./Pairs";
-import { Asset, Market, quoteCurrencies } from "../../../lists/marketlist";
+import { Asset, Market, quoteCurrencies } from "../../../../lists/marketlist";
 import MarketPrice from "./MarketPrice";
 
 // import { toast } from 'sonner';
