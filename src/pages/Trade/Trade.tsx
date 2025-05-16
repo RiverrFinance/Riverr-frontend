@@ -36,7 +36,7 @@ export const Trade = () => {
         market={selectedMarket}
       />
 
-      <div className="max-lg:mt-12 flex flex-col flex-1 gap-5">
+      <div className="max-lg:mt-24 flex flex-col flex-1 gap-5">
         <div className="relative h-[50rem] xxxl:min-h-[750px]">
           <div className="absolute inset-0 lg:right-[31%] bg-[#18191D] rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40">
             <div className="w-full h-full">

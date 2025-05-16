@@ -49,7 +49,7 @@
 }
 
 .scrollbar-custom::-webkit-scrollbar-track {
-  background: #18191D;
+  background: #18191d00;
   border-radius: 4px;
 }
 
@@ -65,7 +65,7 @@
 /* For Firefox */
 .scrollbar-custom {
   scrollbar-width: thin;
-  scrollbar-color: #363c52 #18191D;
+  scrollbar-color: #363c5200 #18191d00;
 }
 
 /* Semantic UI Sidebar Customization */

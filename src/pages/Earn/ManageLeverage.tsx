@@ -225,7 +225,7 @@ export default function ManageLeverage({
   };
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:gap-6 p-4 lg:p-6 bg-[#18191de9] rounded-xl border-2 border-dashed border-[#363c52] border-opacity-40">
+    <div className="grid grid-cols-1 gap-4 lg:gap-6 p-4 lg:p-6 bg-[#18191de9] rounded-xl border-2 border-dashed border-[#363c52] border-opacity-40 w-full">
       <div className="grid grid-cols-1 gap-4 lg:gap-6">
         <div className="flex relative bg-[#1C1C28] rounded-lg p-1">
           <div className="flex relative z-10 w-full">
@@ -235,7 +235,7 @@ export default function ManageLeverage({
                 type="button"
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className="flex-1 py-2 px-4 text-sm font-medium relative transition-colors duration-300 border-2 border-dashed border-transparent"
+                className="flex-1 py-2 px-4 text-sm font-medium relative transition-colors duration-300 border-2 border-solid border-transparent"
               >
                 <span
                   className={`relative z-10 ${
@@ -250,7 +250,7 @@ export default function ManageLeverage({
             ))}
           </div>
           <div
-            className="absolute top-1 h-[calc(100%-8px)] w-[calc(50%-4px)] bg-[#0300ad18] border-2 border-dashed border-[#0300AD] transition-transform duration-300 ease-in-out rounded-sm"
+            className="absolute top-1 h-[calc(100%-8px)] w-[calc(50%-4px)] bg-[#0300ad18] border-2 border-solid border-[#0300AD] transition-transform duration-300 ease-in-out rounded-lg"
             style={{
               transform: `translateX(${
                 activeTab === "Deposit" ? "0%" : "100%"
@@ -264,7 +264,7 @@ export default function ManageLeverage({
             <label className="text-xs lg:text-sm font-medium text-gray-400">
               Amount
             </label>
-            <div className="flex items-center bg-[#1C1C28] rounded-lg p-2 lg:p-4">
+            <div className="flex items-center bg-[#1C1C28] rounded-lg p-4 lg:p-4">
               <input
                 type="text"
                 className="flex-1 bg-transparent border-none focus:outline-none text-sm lg:text-base text-white w-full"

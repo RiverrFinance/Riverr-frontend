@@ -115,8 +115,8 @@ export const Earn = () => {
 
         {/* Right Panel - Operations */}
         <div className="xl:col-span-4 lg:col-span-5 max-lg:row-span-1 max-lg:row-start-1">
-          <div className="h-full border-l-2 border-r-2 border-dashed border-[#363c52] border-opacity-40">
-            <div className="h-full p-6">
+          <div className="h-full">
+            <div className="h-full">
               {activeTab === "Lending" ? (
                 <ManageLeverage
                   readWriteAgent={readWriteAgent}
