@@ -49,6 +49,7 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
   const { user } = useAuth();
   const [visible, setVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  // const [isScrolled, setIsScrolled] = useState(false);
   const [isCheckIfMobileIs480, setIsCheckIfMobileIs480] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
@@ -73,6 +74,15 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
 
     return () => window.removeEventListener("resize", checkIfMobile);
   }, []);
+
+  // is scrolled
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     setIsScrolled(window.scrollY > 10);
+  //   };
+  //   window.addEventListener("scroll", handleScroll);
+  //   return () => window.removeEventListener("scroll", handleScroll);
+  // }, []);
 
   // Active link styling
   const isActiveLink = (path: string): string => {
@@ -190,12 +200,15 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
   );
 
   return (
-    <div className="min-h-screen h-full w-full overflow-x-hidden bg-[#000000] text-white pt-10 pb-5 space-y-28">
+    <div className="min-h-screen h-full w-full overflow-x-hidden bg-[#000000] text-white pt-10 pb-5 space-y-24">
       <BackgroundBeams className="opacity-70" />
       <div className="">
         {/* Navbar */}
-        <div className="backdrop-blur-3xl h-28 bg-transparent fixed top-0 left-0 right-0 md:mx-6 mx-4 z-50 rounded-b-2xl">
-          <div className="bg-[#18191de9] border-2 border-opacity-40 border-dashed border-[#363c52] top-5 left-0 right-0 rounded-b-2xl z-50 relative">
+        <div
+          className={` h-28 fixed top-0 left-0 right-0 z-50 rounded-b-2xl`}>
+          <div
+            className={`bg-[#18191d] border-2 border-opacity-40 border-dashed border-[#363c52] left-0 right-0 rounded-b-2xl z-50 relative `}
+          >
             <GlowingEffect
               spread={2}
               glow={true}
