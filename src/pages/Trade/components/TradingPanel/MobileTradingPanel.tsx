@@ -2,7 +2,6 @@ import { useState, useEffect, memo } from "react";
 import { TradingPanel } from "./TradingPanel";
 import { Market } from "../../../../lists/marketlist";
 import { HttpAgent } from "@dfinity/agent";
-import { Icon } from "semantic-ui-react";
 
 interface Props {
   accountIndex: number;
@@ -16,6 +15,7 @@ export default memo(function MobileTradingPanel({
   market,
 }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [orderType, setOrderType] = useState<"Market" | "Limit">("Limit");
 
   // Prevent body scroll when panel is expanded
   useEffect(() => {
@@ -26,6 +26,21 @@ export default memo(function MobileTradingPanel({
     }
     return () => {
       document.body.style.overflow = "unset";
+    };
+  }, [isExpanded]);
+
+  // Add useEffect for click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (isExpanded && !target.closest(".trading-panel-container")) {
+        setIsExpanded(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isExpanded]);
 
@@ -40,40 +55,29 @@ export default memo(function MobileTradingPanel({
 
       <div className="fixed top-[60px] left-0 right-0 lg:hidden z-40">
         <div
-          className={`bg-[#18191d] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-lg transition-all duration-300 ease-in-out overflow-hidden flex flex-col justify-start ${
-            isExpanded ? "h-[70vh]" : "h-14"
+          className={`trading-panel-container bg-[#18191d] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-lg transition-all duration-300 ease-in-out overflow-hidden flex flex-col justify-start ${
+            isExpanded ? "h-[70vh]" : "h-20"
           }`}
         >
           <div
-            className="sticky top-0 h-14 flex items-center justify-between px-4 cursor-pointer bg-[#18191de9] z-10"
-            onClick={() => setIsExpanded(!isExpanded)}
+            className="sticky top-0 cursor-pointer bg-[#18191de9] z-10"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setIsExpanded(false);
+              }
+            }}
           >
-            <div className="flex items-center gap-2">
-              <img
-                src={market.baseAsset.logoUrl}
-                alt={market.baseAsset.symbol}
-                className="w-6 h-6 rounded-full"
-              />
-              <span className="font-medium text-white">
-                {market.baseAsset.symbol.toUpperCase()} /{" "}
-                {market.quoteAsset.symbol.toUpperCase()}
-              </span>
-            </div>
-            <Icon
-              name={isExpanded ? "angle up" : "angle down"}
-              className="text-white text-2xl"
-            />
-          </div>
-
-          {isExpanded && (
-            <div className="h-[calc(70vh-3.5rem)] overflow-y-auto scrollbar-custom">
+            <div className="h-[calc(70vh-1.5rem)] overflow-y-auto overflow-x-hidden scrollbar-custom">
               <TradingPanel
                 accountIndex={accountIndex}
                 readAgent={readAgent}
                 market={market}
+                isAccordion={true}
+                isExpanded={isExpanded}
+                onExpandChange={setIsExpanded}
               />
             </div>
-          )}
+          </div>
         </div>
       </div>
     </>

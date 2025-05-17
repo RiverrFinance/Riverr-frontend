@@ -7,16 +7,14 @@ import { Toaster } from "sonner";
 import "semantic-ui-css/semantic.min.css";
 import "@nfid/identitykit/react/styles.css";
 import { IdentityKitProvider } from "@nfid/identitykit/react";
-import { NFIDW, InternetIdentity, Stoic } from "@nfid/identitykit";
-
-// import '../styles/sonner.css';
+import { NFIDW, InternetIdentity } from "@nfid/identitykit";
 
 function App() {
   return (
     <IdentityKitProvider
-      signers={[NFIDW, InternetIdentity, Stoic]}
+      signers={[NFIDW, InternetIdentity]}
       authType="ACCOUNTS"
-      windowOpenerFeatures="top=400px,left=300px,width=400px,height=600px"
+      windowOpenerFeatures="top=100px,left=1500rem,width=500px,height=600px"
     >
       <SubApp />
     </IdentityKitProvider>

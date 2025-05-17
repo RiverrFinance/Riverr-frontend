@@ -12,23 +12,31 @@ import { InputError } from "../../types/trading";
 import ActionButton from "./ActionButton";
 import { priceToTick } from "../../utilFunctions";
 import { useAgent } from "@nfid/identitykit/react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { SECOND } from "../../../../utils/constants";
 
 export interface TradingPanelProps {
   market: Market;
   readAgent: HttpAgent;
   accountIndex: number;
+  initialOrderType?: "Market" | "Limit";
+  isAccordion?: boolean;
+  isExpanded?: boolean;
+  onExpandChange?: (expanded: boolean) => void;
 }
 
 export const TradingPanel: React.FC<TradingPanelProps> = ({
   market,
   readAgent,
   accountIndex,
+  initialOrderType = "Limit",
+  isAccordion = false,
+  isExpanded = true,
+  onExpandChange
 }) => {
   const readWriteAgent = useAgent();
   const [error, setError] = useState<InputError>(null);
-  const [orderType, setOrderType] = useState<"Market" | "Limit">("Limit");
+  const [orderType, setOrderType] = useState<"Market" | "Limit">(initialOrderType);
   const [tradeDirection, setTradeDirection] = useState<"Long" | "Short">(
     "Long"
   );
@@ -131,45 +139,77 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
     }
   };
 
+  const handleOrderTypeClick = (type: "Limit" | "Market", e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isAccordion) {
+      if (type === orderType) {
+        // Toggle accordion when clicking the active type
+        onExpandChange?.(!isExpanded);
+      } else {
+        // Switch type and ensure accordion is open
+        setOrderType(type);
+        onExpandChange?.(true);
+      }
+    } else {
+      setOrderType(type);
+    }
+  };
+
   return (
-    <div className={`py-8 px-0 rounded-lg xxxl:space-y-8 overflow-x-hidden`}>
+    <div className={`pt-2 pb-6 px-0 rounded-lg overflow-visible`}>
       <div className="mb-5 xxxl:mt-5 xxxl:space-y-8">
         {/* Order Type Selector */}
         <div className="relative p-1 mb-5 mx-3">
-          <div className="flex relative z-10">
-            {(["Limit", "Market"] as const).map((type) => (
-              <button
-                type="button"
-                key={type}
-                onClick={() => setOrderType(type)}
-                className="flex items-center gap-2 flex-1 py-4 px-4 text-sm font-medium relative transition-colors duration-300"
+          <div className="flex items-center justify-between gap-6">
+            <div className={`flex relative z-10 ${isAccordion ? 'w-[calc(100%-40px)]' : 'w-full'}`}>
+              {(["Limit", "Market"] as const).map((type) => (
+                <button
+                  type="button"
+                  key={type}
+                  onClick={(e) => handleOrderTypeClick(type, e)}
+                  className="flex items-center gap-2 flex-1 py-4 px-4 text-sm font-medium relative transition-colors duration-300"
+                >
+                  <ChevronUp
+                    className={`w-4 h-4 
+                     transition-transform duration-300`}
+                  />
+                  <span
+                    className={`relative z-10 ${
+                      orderType === type
+                        ? "text-white"
+                        : "text-gray-400 hover:text-white"
+                    }`}
+                  >
+                    {type}
+                  </span>
+                </button>
+              ))}
+              
+              {/* Sliding background - Moved inside the buttons container */}
+              <div
+                className={`absolute top-0 h-full transition-transform duration-300 ease-in-out w-1/2 bg-[#0300ad18] border-b-2 border-[#0300AD]`}
+                style={{
+                  transform: `translateX(${orderType === "Market" ? '100%' : '0%'})`,
+                }}
+              />
+            </div>
+            
+            {isAccordion && (
+              <div 
+                className="flex items-center px-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onExpandChange?.(!isExpanded);
+                }}
               >
                 <ChevronDown
-                  className={`w-4 h-4 ${
-                    orderType === type ? "rotate-180" : ""
-                  } transition-transform duration-300`}
-                />
-                <span
-                  className={`relative z-10 ${
-                    orderType === type
-                      ? "text-white"
-                      : "text-gray-400 hover:text-white"
+                  className={`w-5 h-5 text-white transition-transform duration-300 ${
+                    isExpanded ? "rotate-180" : ""
                   }`}
-                >
-                  {type}
-                </span>
-              </button>
-            ))}
+                />
+              </div>
+            )}
           </div>
-          {/* Sliding background */}
-          <div
-            className="absolute top-1 h-[calc(100%-8px)] w-1/2 bg-[#0300ad18] border-b-2 border-[#0300AD] transition-transform duration-300 ease-in-out"
-            style={{
-              transform: `translateX(${
-                orderType === "Market" ? "100%" : "0%"
-              })`,
-            }}
-          />
         </div>
 
         {/* Trade Direction Selector */}
@@ -226,14 +266,6 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
             value={limitPrice}
             setLimitPrice={setLimitPrice}
           />
-          // <div className="flex items-center gap-2 bg-[#1C1C28] rounded-lg p-3 mt-7">
-          //   <input
-          //     title="empty"
-          //     disabled
-          //     type="number"
-          //     className="flex-1 bg-transparent text-white outline-none text-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-          //   />
-          // </div>
         )}
 
         {/* margin Input */}
