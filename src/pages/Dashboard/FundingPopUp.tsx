@@ -256,10 +256,10 @@ export default function FundingPopUp({
                     placeholder="0.0"
                     className="w-full bg-transparent border-none focus:outline-none text-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
-                  <div className="text-sm text-gray-400 flex justify-between mt-2">
+                  <div className="text-sm text-white flex justify-between mt-2">
                     <span className="text-white">
                       Balance:{" "}
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs">
                         {formatUnits(userTokenBalance, asset.decimals)}{" "}
                         {asset.symbol}
                       </span>

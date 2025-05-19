@@ -282,7 +282,7 @@ export default function ManageLeverage({
                 <Icon name="chevron down" className="text-xs lg:text-sm" />
               </div>
             </div>
-            <p className="text-xs lg:text-sm text-gray-500">
+            <p className="text-xs lg:text-sm text-white">
               Available:{" "}
               {formatUnits(
                 activeTab === "Deposit" ? useMarginBalance : usevTokenBalance,

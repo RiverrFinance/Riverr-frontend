@@ -82,7 +82,7 @@ export const MarginInput = ({
     <div>
       <div className="flex justify-between text-sm mb-2">
         <span className="text-gray-400">Collateral</span>
-        <span className="text-gray-400">
+        <span className="text-white">
           Available:{" "}
           {`${formatUnits(userMarginBalance, market.quoteAsset.decimals)}  ${
             market.quoteAsset.symbol
