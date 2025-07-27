@@ -7,7 +7,7 @@ export interface Market {
 }
 
 export interface Asset {
-  priceID: string;
+  priceID: number | string;
   name: string;
   symbol: string;
   image?: string;
@@ -20,7 +20,7 @@ export interface Asset {
 
 export const assetList: Asset[] = [
   {
-    priceID: "internet-computer",
+    priceID: 8916,
     symbol: "ICP",
     name: "Internet Computer",
     vaultID: "5se5w-zaaaa-aaaaf-qanmq-cai",
@@ -31,7 +31,7 @@ export const assetList: Asset[] = [
       "https://coin-images.coingecko.com/coins/images/14495/large/Internet_Computer_logo.png?1696514180",
   },
   {
-    priceID: "tether",
+    priceID: 825,
     symbol: "USDT",
     name: "Tether",
     vaultID: undefined,
@@ -41,7 +41,7 @@ export const assetList: Asset[] = [
       "https://assets.coingecko.com/coins/images/325/small/Tether-logo.png?1668148630",
   },
   {
-    priceID: "bitcoin",
+    priceID: 1,
     symbol: "BTC",
     name: "bitcoin",
     vaultID: undefined,
@@ -51,7 +51,7 @@ export const assetList: Asset[] = [
       "https://assets.coingecko.com/coins/images/1/small/bitcoin.png?1696501408",
   },
   {
-    priceID: "ethereum",
+    priceID: 1027,
     symbol: "ETH",
     name: "ethereum",
     vaultID: undefined,
