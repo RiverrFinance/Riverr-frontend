@@ -3,7 +3,7 @@ import { Asset, assetList } from "../../lists/marketlist";
 import { HttpAgent } from "@dfinity/agent";
 import { AssetComponent } from "./AssetComponent";
 import { useAgent, useAuth } from "@nfid/identitykit/react";
-import { VaultActor } from "../../utils/Interfaces/vaultActor";
+import { LiquidityManagerActor } from "../../utils/Interfaces/liquidityManagerActor";
 import { fetchDetails, fetchTopMovers } from "../../utils/utilFunction";
 import { formatUnits, parseUnits } from "ethers/lib/utils";
 import FundingPopUp from "./FundingPopUp";
@@ -171,7 +171,7 @@ export function Dashboard() {
 
   const fetcherUserMarginBalance = async (asset: Asset): Promise<bigint> => {
     if (asset.vaultID && readWriteAgent) {
-      let vaultActor = new VaultActor(asset.vaultID, readAgent);
+      let vaultActor = new LiquidityManagerActor(asset.vaultID, readAgent);
       return vaultActor.userMarginBalance(user.principal);
     }
     return 0n;

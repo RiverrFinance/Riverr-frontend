@@ -37,7 +37,7 @@ export class MarketActor {
     long: boolean,
     collatreal: bigint,
     leverage: number,
-    maxtick: [] | [bigint]
+    maxtick: bigint
   ): Promise<string | null> {
     let result = await this.market.openLimitPosition(
       index,

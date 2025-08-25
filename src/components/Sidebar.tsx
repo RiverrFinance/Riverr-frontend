@@ -204,8 +204,7 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
       <BackgroundBeams className="opacity-70" />
       <div className="">
         {/* Navbar */}
-        <div
-          className={` h-28 fixed top-0 left-0 right-0 z-50 rounded-b-2xl`}>
+        <div className={` h-28 fixed top-0 left-0 right-0 z-50 rounded-b-2xl`}>
           <div
             className={`bg-[#18191d] border-2 border-opacity-40 border-dashed border-[#363c52] left-0 right-0 rounded-b-2xl z-50 relative `}
           >

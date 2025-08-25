@@ -49,6 +49,7 @@ export default function Position({
 
       setNotificationMessage("Position closed successfully!");
     } catch (error) {
+      alert(error);
       setNotificationMessage("Failed to close position");
     } finally {
       setIsClosing(false);
@@ -100,7 +101,7 @@ export default function Position({
           {formatUnits(order.collateral_value, market.quoteAsset.decimals)}{" "}
           {market.quoteAsset.symbol}
         </td>
-        <td className="p-4">{tickToPrice(order.entry_tick)}</td>
+        <td className="p-4">{tickToPrice(order.entry_tick * 100n)}</td>
         <td className="p-4">{tickToPrice(markTick)}</td>
         <td className="p-4 text-right">
           <button

@@ -4,7 +4,7 @@ import { InputError } from "../../types/trading";
 import { useAuth } from "@nfid/identitykit/react";
 import { useEffect, useState } from "react";
 import { HttpAgent } from "@dfinity/agent";
-import { VaultActor } from "../../../../utils/Interfaces/vaultActor";
+import { LiquidityManagerActor } from "../../../../utils/Interfaces/liquidityManagerActor";
 import { SECOND } from "../../../../utils/constants";
 
 interface Props {
@@ -49,7 +49,10 @@ export const MarginInput = ({
   const fetchSetMarginBalance = async () => {
     try {
       if (market.quoteAsset.vaultID && user) {
-        const vault = new VaultActor(market.quoteAsset.vaultID, readAgent);
+        const vault = new LiquidityManagerActor(
+          market.quoteAsset.vaultID,
+          readAgent
+        );
         const margin = await vault.userMarginBalance(user.principal);
 
         setUserMarginBalance(margin);

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { HttpAgent } from "@dfinity/agent";
 import { TokenActor } from "../../utils/Interfaces/tokenActor";
 import { Principal } from "@dfinity/principal";
-import { VaultActor } from "../../utils/Interfaces/vaultActor";
+import { LiquidityManagerActor } from "../../utils/Interfaces/liquidityManagerActor";
 import { formatUnits, parseUnits } from "ethers/lib/utils";
 import { Modal, Button, Icon } from "semantic-ui-react";
 import { IconButton } from "../../components/Sidebar";
@@ -181,7 +181,10 @@ export default function FundingPopUp({
             return;
           }
         }
-        let vaultActor = new VaultActor(asset.vaultID, readWriteAgent);
+        let vaultActor = new LiquidityManagerActor(
+          asset.vaultID,
+          readWriteAgent
+        );
         setCurrentAction("Depositing...");
         let txResult = await vaultActor.fundAccount(amount, user.principal);
         if (!txResult) {

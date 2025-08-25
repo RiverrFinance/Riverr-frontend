@@ -1,7 +1,7 @@
 import { useAuth } from "@nfid/identitykit/react";
 import { useEffect, useState } from "react";
 import { Asset } from "../../lists/marketlist";
-import { VaultActor } from "../../utils/Interfaces/vaultActor";
+import { LiquidityManagerActor } from "../../utils/Interfaces/liquidityManagerActor";
 import { Agent, HttpAgent } from "@dfinity/agent";
 import { parseUnits, formatUnits } from "ethers/lib/utils";
 import { TokenActor } from "../../utils/Interfaces/tokenActor";
@@ -101,7 +101,7 @@ export default function ManageLeverage({
   const fetchUserMarginBalance = async (): Promise<bigint> => {
     const { vaultID } = selectedAsset;
 
-    const vaultActor = new VaultActor(vaultID, readAgent);
+    const vaultActor = new LiquidityManagerActor(vaultID, readAgent);
     return vaultActor.userMarginBalance(user.principal);
   };
 
@@ -161,12 +161,12 @@ export default function ManageLeverage({
     setCurrentAction("Processing...");
 
     try {
-      const vaultActor = new VaultActor(vaultID, readWriteAgent);
+      const vaultActor = new LiquidityManagerActor(vaultID, readWriteAgent);
       const amount = parseUnits(
         referenceAmount,
         selectedAsset.decimals
       ).toBigInt();
-      const txResult: boolean = await vaultActor.provideLeverage(amount);
+      const txResult: boolean = await vaultActor.lendToVault(amount);
 
       if (!txResult) {
         setTxError("Transaction failed.");
@@ -202,9 +202,9 @@ export default function ManageLeverage({
       }
 
       setCurrentAction("Processing...");
-      const vaultActor = new VaultActor(vaultID, readWriteAgent);
+      const vaultActor = new LiquidityManagerActor(vaultID, readWriteAgent);
 
-      const txResult: string = await vaultActor.removeLeverage(amount);
+      const txResult: string = await vaultActor.collectFromVault(amount);
       if (txResult != "") {
         setTxError(txResult);
       }

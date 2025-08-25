@@ -1,10 +1,10 @@
 import { formatUnits } from "ethers/lib/utils";
-import { StakeDetails } from "../../utils/declarations/vault/vault.did";
+import { LockDetails } from "../../utils/declarations/liquidity_manager/liquidity_manager.did";
 
 interface Props {
   id: bigint;
   feesEarned: string;
-  stake: StakeDetails;
+  stake: LockDetails;
   unStake: () => void;
 }
 export default function Stake({ stake, id, feesEarned, unStake }: Props) {
