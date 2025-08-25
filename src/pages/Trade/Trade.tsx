@@ -8,11 +8,13 @@ import { HttpAgent } from "@dfinity/agent";
 import { ICP_API_HOST } from "../../utils/constants";
 import PositionsPanel from "./components/PositionsPanel/PositionsPanel";
 import MobileTradingPanel from "./components/TradingPanel/MobileTradingPanel";
+import { UpgradeNotification } from "../../components/V2Notification";
 
 export const Trade = () => {
   const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
   const [selectedMarket, setSelectedMarket] = useState<Market>(markets[0]);
   const [accountIndex, setAccountIndex] = useState<number>(0);
+  const [showNotification, setShowNotification] = useState(true);
 
   useEffect(() => {
     HttpAgent.create({ host: ICP_API_HOST }).then(setReadAgent);
@@ -20,7 +22,13 @@ export const Trade = () => {
 
   return (
     <div className="flex flex-col gap-5 min-h-screen p-4 max-xs:px-0 pt-0">
-      <div className="z-50 shrink-0">
+      {showNotification && (
+        <UpgradeNotification 
+          onDismiss={() => setShowNotification(false)}
+        />
+      )}
+      
+      <div className="z-40 shrink-0">
         <MarketSelector
           selectedMarket={selectedMarket}
           onMarketSelect={(market) => {

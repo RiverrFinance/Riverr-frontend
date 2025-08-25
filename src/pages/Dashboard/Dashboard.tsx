@@ -80,7 +80,7 @@ export function Dashboard() {
 
   useEffect(() => {
     fetchAndSetTopMovers();
-    const interval = setInterval(fetchAndSetTopMovers, 40 * SECOND); // Fetch every 35s (three '0' added)
+    const interval = setInterval(fetchAndSetTopMovers, 40 * SECOND); // Fetch every 35s 
     return () => clearInterval(interval);
   }, []);
 
