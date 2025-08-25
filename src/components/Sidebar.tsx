@@ -18,7 +18,7 @@ import {
   Bell,
 } from "lucide-react";
 
-import LogoImg from "../images/Logo.png";
+import LogoImg from "../images/Logo.svg";
 import { BackgroundBeams } from "./Background-beams";
 import { GlowingEffect } from "./Glowing-effect";
 
@@ -147,9 +147,9 @@ export const Sidebar: React.FC<Props> = ({ children }: Props) => {
       className="logo flex items-center gap-3 p-0 md:pl-5 text-white"
     >
       <span className="text-5xl font-bold bg-gradient-to-r from-white to-white bg-clip-text text-transparent text-white">
-        <img src={LogoImg} alt="" />
+        <img src={LogoImg} className=" w-14" alt="" />
       </span>
-      <span className="text-lg hidden sm:inline tracking-wider">QUOTEX</span>
+      <span className="text-lg hidden sm:inline tracking-wider">RIVERR</span>
     </Link>
   );
 

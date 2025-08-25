@@ -15,7 +15,7 @@ export default memo(function MobileTradingPanel({
   market,
 }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [orderType, setOrderType] = useState<"Market" | "Limit">("Limit");
+  // const [orderType, setOrderType] = useState<"Market" | "Limit">("Limit");
 
   // Prevent body scroll when panel is expanded
   useEffect(() => {

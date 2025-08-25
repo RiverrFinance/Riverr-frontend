@@ -7,6 +7,7 @@ import { Modal, Button, Icon } from "semantic-ui-react";
 import { IconButton } from "../../components/Sidebar";
 import Modal_Icon from "../../images/Modal_Icon.png";
 import Marketing_Campaign_1 from "../../images/Marketing_Campaign_1.png";
+import { ClearingHouse } from "../../utils/Interfaces/clearingHouse";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -94,15 +95,9 @@ export default function WithdrawPopUp({
     try {
       if (readWriteAgent) {
         setIsLoading(true);
-        const vaultActor = new LiquidityManagerActor(
-          asset.vaultID,
-          readWriteAgent
-        );
+        const vaultActor = new ClearingHouse(asset.vaultID, readWriteAgent);
         const amount = parseUnits(withdrawAmount, asset.decimals).toBigInt();
-        let txResult: boolean = await vaultActor.withdrawfromAccount(
-          amount,
-          user.principal
-        );
+        let txResult: boolean = await vaultActor.withdraw({ amount });
         console.log(txResult);
         if (!txResult) {
           setTxError("Transaction failed. Please try again.");
@@ -177,10 +172,10 @@ export default function WithdrawPopUp({
                     placeholder="0.0"
                     className="w-full bg-transparent border-none focus:outline-none text-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
-                  <div className="text-sm text-gray-400 flex justify-between mt-2">
+                  <div className="text-sm text-white flex justify-between mt-2">
                     <span className="text-white">
                       Available:{" "}
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs">
                         {marginBalance} {asset.symbol}
                       </span>
                     </span>

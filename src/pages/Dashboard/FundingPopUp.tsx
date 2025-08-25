@@ -11,6 +11,7 @@ import { IconButton } from "../../components/Sidebar";
 import Modal_Icon from "../../images/Modal_Icon.png";
 import Marketing_Campaign_1 from "../../images/Marketing_Campaign_1.png";
 import { SECOND } from "../../utils/constants";
+import { ClearingHouse } from "../../utils/Interfaces/clearingHouse";
 
 interface Props {
   asset: Asset;
@@ -181,12 +182,9 @@ export default function FundingPopUp({
             return;
           }
         }
-        let vaultActor = new LiquidityManagerActor(
-          asset.vaultID,
-          readWriteAgent
-        );
+        let vaultActor = new ClearingHouse(asset.vaultID, readWriteAgent);
         setCurrentAction("Depositing...");
-        let txResult = await vaultActor.fundAccount(amount, user.principal);
+        let txResult = await vaultActor.deposit({ amount, block_index: [] });
         if (!txResult) {
           setTxError("Funding Account failed");
         }
@@ -259,10 +257,10 @@ export default function FundingPopUp({
                     placeholder="0.0"
                     className="w-full bg-transparent border-none focus:outline-none text-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
-                  <div className="text-sm text-gray-400 flex justify-between mt-2">
+                  <div className="text-sm text-white flex justify-between mt-2">
                     <span className="text-white">
                       Balance:{" "}
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs">
                         {formatUnits(userTokenBalance, asset.decimals)}{" "}
                         {asset.symbol}
                       </span>
