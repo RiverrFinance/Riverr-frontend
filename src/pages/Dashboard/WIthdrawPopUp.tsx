@@ -7,7 +7,7 @@ import { Modal, Button, Icon } from "semantic-ui-react";
 import { IconButton } from "../../components/Sidebar";
 import Modal_Icon from "../../images/Modal_Icon.png";
 import Marketing_Campaign_1 from "../../images/Marketing_Campaign_1.png";
-import { ClearingHouse } from "../../utils/Interfaces/clearingHouse";
+//import { ClearingHouse } from "../../utils/Interfaces/clearingHouse";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -95,9 +95,15 @@ export default function WithdrawPopUp({
     try {
       if (readWriteAgent) {
         setIsLoading(true);
-        const vaultActor = new ClearingHouse(asset.vaultID, readWriteAgent);
+        const vaultActor = new LiquidityManagerActor(
+          asset.vaultID,
+          readWriteAgent
+        );
         const amount = parseUnits(withdrawAmount, asset.decimals).toBigInt();
-        let txResult: boolean = await vaultActor.withdraw({ amount });
+        let txResult: boolean = await vaultActor.withdrawfromAccount(
+          amount,
+          user.principal
+        );
         console.log(txResult);
         if (!txResult) {
           setTxError("Transaction failed. Please try again.");

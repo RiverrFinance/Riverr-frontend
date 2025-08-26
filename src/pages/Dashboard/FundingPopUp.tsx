@@ -11,7 +11,7 @@ import { IconButton } from "../../components/Sidebar";
 import Modal_Icon from "../../images/Modal_Icon.png";
 import Marketing_Campaign_1 from "../../images/Marketing_Campaign_1.png";
 import { SECOND } from "../../utils/constants";
-import { ClearingHouse } from "../../utils/Interfaces/clearingHouse";
+//import { ClearingHouse } from "../../utils/Interfaces/clearingHouse";
 
 interface Props {
   asset: Asset;
@@ -182,9 +182,12 @@ export default function FundingPopUp({
             return;
           }
         }
-        let vaultActor = new ClearingHouse(asset.vaultID, readWriteAgent);
+        let vaultActor = new LiquidityManagerActor(
+          asset.vaultID,
+          readWriteAgent
+        );
         setCurrentAction("Depositing...");
-        let txResult = await vaultActor.deposit({ amount, block_index: [] });
+        let txResult = await vaultActor.fundAccount(amount, user.principal);
         if (!txResult) {
           setTxError("Funding Account failed");
         }

@@ -20,7 +20,7 @@ export interface Asset {
 
 export const assetList: Asset[] = [
   {
-    priceID: 8916,
+    priceID: "ICP",
     symbol: "ICP",
     name: "Internet Computer",
     vaultID: "5se5w-zaaaa-aaaaf-qanmq-cai",
@@ -31,17 +31,17 @@ export const assetList: Asset[] = [
       "https://coin-images.coingecko.com/coins/images/14495/large/Internet_Computer_logo.png?1696514180",
   },
   {
-    priceID: 825,
+    priceID: "USDT",
     symbol: "USDT",
     name: "Tether",
     vaultID: undefined,
     decimals: 6,
-    canisterID: "cngnf-vqaaa-aaaar-qag4q-cai",
+    canisterID: "lpgic-cqaaa-aaaaf-qbtiq-cai",
     logoUrl:
       "https://assets.coingecko.com/coins/images/325/small/Tether-logo.png?1668148630",
   },
   {
-    priceID: 1,
+    priceID: "BTC",
     symbol: "BTC",
     name: "bitcoin",
     vaultID: undefined,
@@ -51,7 +51,7 @@ export const assetList: Asset[] = [
       "https://assets.coingecko.com/coins/images/1/small/bitcoin.png?1696501408",
   },
   {
-    priceID: 1027,
+    priceID: "ETH",
     symbol: "ETH",
     name: "ethereum",
     vaultID: undefined,
@@ -68,7 +68,7 @@ export const markets: Array<Market> = [
     baseAsset: assetList[2],
     quoteAsset: quoteCurrencies[0],
     chartId: "xmiu5-jqaaa-aaaag-qbz7q-cai",
-    market_id: "i4w3l-hiaaa-aaaaf-qao5a-cai",
+    market_id: "lgfd6-uyaaa-aaaaf-qbtja-cai",
     isFavorite: false,
   },
   {

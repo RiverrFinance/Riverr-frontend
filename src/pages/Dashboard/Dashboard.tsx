@@ -13,7 +13,7 @@ import { Principal } from "@dfinity/principal";
 import { Eye, EyeOff, Droplets, Loader } from "lucide-react";
 import { ICP_API_HOST, SECOND } from "../../utils/constants";
 import { GlowingEffect } from "../../components/Glowing-effect";
-import { ClearingHouse } from "../../utils/Interfaces/clearingHouse";
+//import { ClearingHouse } from "../../utils/Interfaces/clearingHouse";
 
 interface PriceDetails {
   price: number;
@@ -80,9 +80,9 @@ export function Dashboard() {
   }, [readWriteAgent]);
 
   useEffect(() => {
-    fetchAndSetTopMovers();
-    const interval = setInterval(fetchAndSetTopMovers, 40 * SECOND); // Fetch every 35s
-    return () => clearInterval(interval);
+    // fetchAndSetTopMovers();
+    //  const interval = setInterval(fetchAndSetTopMovers, 100 * SECOND); // Fetch every 35s
+    //  return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -172,8 +172,8 @@ export function Dashboard() {
 
   const fetcherUserMarginBalance = async (asset: Asset): Promise<bigint> => {
     if (asset.vaultID && readWriteAgent) {
-      let vaultActor = new ClearingHouse(asset.vaultID, readAgent);
-      return vaultActor.getUserBalance(user.principal);
+      let vaultActor = new LiquidityManagerActor(asset.vaultID, readAgent);
+      return vaultActor.userMarginBalance(user.principal);
     }
     return 0n;
   };

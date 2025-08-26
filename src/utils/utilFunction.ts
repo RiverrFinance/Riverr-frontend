@@ -1,7 +1,7 @@
 export const fetchDetails = async (id: string | number) => {
   try {
     return await fetch(
-      `https://quotex-backend.onrender.com/api/cmc/price/${id}`
+      `https://quotex-backend.onrender.com/api/diadata/price/${id}`
     );
   } catch {}
 };
