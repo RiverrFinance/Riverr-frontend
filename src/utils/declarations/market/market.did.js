@@ -9,6 +9,7 @@ export const idlFactory = ({ IDL }) => {
     'quote_asset' : Asset,
     'base_asset' : Asset,
     'xrc_id' : IDL.Principal,
+    'tick_spacing' : IDL.Nat64,
   });
   const LimitOrder = IDL.Record({
     'buy' : IDL.Bool,
@@ -43,17 +44,6 @@ export const idlFactory = ({ IDL }) => {
     'not_paused' : IDL.Bool,
     'min_collateral' : IDL.Nat,
   });
-  const TickState = IDL.Variant({ 'BUY' : IDL.Null, 'SELL' : IDL.Null });
-  const LiquidityBoundary = IDL.Record({
-    'upper_bound' : IDL.Nat,
-    'lower_bound' : IDL.Nat,
-    'lifetime_removed_liquidity' : IDL.Nat,
-  });
-  const TickDetails = IDL.Record({
-    'tick_state' : TickState,
-    'liq_bounds' : LiquidityBoundary,
-    'created_timestamp' : IDL.Nat64,
-  });
   const Result = IDL.Variant({ 'Ok' : PositionParameters, 'Err' : IDL.Text });
   return IDL.Service({
     'closeLimitPosition' : IDL.Func([IDL.Nat8], [IDL.Nat], []),
@@ -70,10 +60,9 @@ export const idlFactory = ({ IDL }) => {
     'getBestOffers' : IDL.Func([], [IDL.Nat64, IDL.Nat64], ['query']),
     'getMarketDetails' : IDL.Func([], [MarketDetails], ['query']),
     'getStateDetails' : IDL.Func([], [StateDetails], ['query']),
-    'getTickDetails' : IDL.Func([IDL.Nat64], [TickDetails], ['query']),
     'liquidatePosition' : IDL.Func([IDL.Principal, IDL.Nat8], [IDL.Bool], []),
     'openLimitPosition' : IDL.Func(
-        [IDL.Nat8, IDL.Bool, IDL.Nat, IDL.Nat8, IDL.Opt(IDL.Nat64)],
+        [IDL.Nat8, IDL.Bool, IDL.Nat, IDL.Nat8, IDL.Nat64],
         [Result],
         [],
       ),
@@ -99,6 +88,7 @@ export const init = ({ IDL }) => {
     'quote_asset' : Asset,
     'base_asset' : Asset,
     'xrc_id' : IDL.Principal,
+    'tick_spacing' : IDL.Nat64,
   });
   return [MarketDetails];
 };

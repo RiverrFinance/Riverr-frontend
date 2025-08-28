@@ -32,11 +32,13 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
   initialOrderType = "Limit",
   isAccordion = false,
   isExpanded = true,
-  onExpandChange
+  onExpandChange,
 }) => {
   const readWriteAgent = useAgent();
   const [error, setError] = useState<InputError>(null);
-  const [orderType, setOrderType] = useState<"Market" | "Limit">(initialOrderType);
+  const [orderType, setOrderType] = useState<"Market" | "Limit">(
+    initialOrderType
+  );
   const [tradeDirection, setTradeDirection] = useState<"Long" | "Short">(
     "Long"
   );
@@ -102,13 +104,12 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
       // let response = await marketActor.closePosition(accountIndex);
       let marginIn = parseUnits(margin, market.quoteAsset.decimals).toBigInt();
       let txresponse: string | null;
-      let max_tick: [bigint] | [];
       if (orderType == "Limit") {
         if (limitPrice == "") {
           setError("Limit Price is required");
           return;
         }
-        max_tick = [priceToTick(limitPrice)];
+        const max_tick = priceToTick(limitPrice);
 
         txresponse = await marketActor.openLimitOrder(
           accountIndex,
@@ -118,7 +119,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
           max_tick
         );
       } else {
-        max_tick = [];
+        const max_tick: [bigint] | [] = [];
         txresponse = await marketActor.opneMarketOrder(
           accountIndex,
           tradeDirection == "Long",
@@ -139,7 +140,10 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
     }
   };
 
-  const handleOrderTypeClick = (type: "Limit" | "Market", e: React.MouseEvent) => {
+  const handleOrderTypeClick = (
+    type: "Limit" | "Market",
+    e: React.MouseEvent
+  ) => {
     e.stopPropagation();
     if (isAccordion) {
       if (type === orderType) {
@@ -184,18 +188,20 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
                   </span>
                 </button>
               ))}
-              
+
               {/* Sliding background - Moved inside the buttons container */}
               <div
                 className={`absolute top-0 h-full transition-transform duration-300 ease-in-out w-1/2 bg-[#0300ad18] border-b-2 border-[#0300AD] rounded-lg`}
                 style={{
-                  transform: `translateX(${orderType === "Market" ? '100%' : '0%'})`,
+                  transform: `translateX(${
+                    orderType === "Market" ? "100%" : "0%"
+                  })`,
                 }}
               />
             </div>
-            
+
             {isAccordion && (
-              <div 
+              <div
                 className="flex items-center px-2"
                 onClick={(e) => {
                   e.stopPropagation();

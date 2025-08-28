@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Doughnut } from "react-chartjs-2";
-import { VaultStakingDetails } from "../../utils/declarations/vault/vault.did";
+import { Vault } from "../../utils/declarations/liquidity_manager/liquidity_manager.did";
 import { HttpAgent } from "@dfinity/agent";
 import { ICP_API_HOST, SECOND } from "../../utils/constants";
 import { Asset } from "../../lists/marketlist";
-import { VaultActor } from "../../utils/Interfaces/vaultActor";
+import { LiquidityManagerActor } from "../../utils/Interfaces/liquidityManagerActor";
 import { formatUnits, parseUnits } from "ethers/lib/utils";
 
 const COLORS = {
@@ -60,9 +60,11 @@ export const VaultDataAnalytics = ({ selectedAsset }: Props) => {
 
   const fetchSetLiquidityAnalytics = async () => {
     try {
-      const vaultActor = new VaultActor(selectedAsset.vaultID, readAgent);
-      let details: VaultStakingDetails =
-        await vaultActor.getVaultStakingDetails();
+      const vaultActor = new LiquidityManagerActor(
+        selectedAsset.vaultID,
+        readAgent
+      );
+      let details: Vault = await vaultActor.getVault();
 
       const { free_liquidity, debt } = details;
       setPoolUtilizationMetric({

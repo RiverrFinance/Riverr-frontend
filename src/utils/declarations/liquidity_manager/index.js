@@ -1,8 +1,8 @@
 import { Actor, HttpAgent } from "@dfinity/agent";
 
 // Imports and re-exports candid interface
-import { idlFactory } from "./market.did.js";
-export { idlFactory } from "./market.did.js";
+import { idlFactory } from "./liquidity_manager.did.js";
+export { idlFactory } from "./liquidity_manager.did.js";
 
 /* CANISTER_ID is replaced by webpack based on node environment
  * Note: canister environment variable will be standardized as
@@ -20,6 +20,8 @@ export const createActor = (canisterId, options = {}) => {
     );
   }
 
+  // Fetch root key for certificate validation during development
+
   // Creates an actor with using the candid interface and the HttpAgent
   return Actor.createActor(idlFactory, {
     agent,
@@ -28,4 +30,6 @@ export const createActor = (canisterId, options = {}) => {
   });
 };
 
-export const market = canisterId ? createActor(canisterId) : undefined;
+export const liquidity_manager = canisterId
+  ? createActor(canisterId)
+  : undefined;

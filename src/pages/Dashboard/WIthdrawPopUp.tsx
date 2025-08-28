@@ -1,7 +1,7 @@
 import { useAgent, useAuth } from "@nfid/identitykit/react";
 import React, { useEffect, useState } from "react";
 import { Asset } from "../../lists/marketlist";
-import { VaultActor } from "../../utils/Interfaces/vaultActor";
+import { LiquidityManagerActor } from "../../utils/Interfaces/liquidityManagerActor";
 import { parseUnits } from "ethers/lib/utils";
 import { Modal, Button, Icon } from "semantic-ui-react";
 import Modal_Icon from "../../images/Modal_Icon.png";
@@ -94,7 +94,10 @@ export default function WithdrawPopUp({
     try {
       if (readWriteAgent) {
         setIsLoading(true);
-        const vaultActor = new VaultActor(asset.vaultID, readWriteAgent);
+        const vaultActor = new LiquidityManagerActor(
+          asset.vaultID,
+          readWriteAgent
+        );
         const amount = parseUnits(withdrawAmount, asset.decimals).toBigInt();
         let txResult: boolean = await vaultActor.withdrawfromAccount(
           amount,

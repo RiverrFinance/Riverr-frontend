@@ -4,8 +4,8 @@ import React, { useEffect, useState } from "react";
 import { Asset } from "../../lists/marketlist";
 import { parseUnits, formatUnits } from "ethers/lib/utils";
 import { TokenActor } from "../../utils/Interfaces/tokenActor";
-import { StakeSpan } from "../../utils/declarations/vault/vault.did";
-import { VaultActor } from "../../utils/Interfaces/vaultActor";
+import { LockSpan } from "../../utils/declarations/liquidity_manager/liquidity_manager.did";
+import { LiquidityManagerActor } from "../../utils/Interfaces/liquidityManagerActor";
 import { Principal } from "@dfinity/principal";
 import { Icon, Dropdown } from "semantic-ui-react";
 import { TransactionModal } from "./TransactionModal";
@@ -150,8 +150,8 @@ export default function ManageLock({
 
       setCurrentAction("Processing...");
 
-      const vaultActor = new VaultActor(vaultID, readWriteAgent);
-      let span: StakeSpan;
+      const vaultActor = new LiquidityManagerActor(vaultID, readWriteAgent);
+      let span: LockSpan;
       if (stakeSpan == "1 Year") {
         span = { Year: null };
       } else if (stakeSpan == "2 Months") {
@@ -159,10 +159,10 @@ export default function ManageLock({
       } else {
         span = { Month6: null };
       }
-      const txResult = await vaultActor.stakeVirtualTokens(amount, span);
+      const txResult = await vaultActor.lockQTokens(amount, span);
 
       if (!txResult) {
-        setTxError("Staking transaction failed");
+        setTxError("Locking transaction failed");
       }
     } catch (e) {
       setTxError("An unknown error occurred.");

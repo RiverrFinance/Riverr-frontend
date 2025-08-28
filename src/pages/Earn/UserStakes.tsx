@@ -1,9 +1,9 @@
 import { Agent, HttpAgent } from "@dfinity/agent";
 import { Asset } from "../../lists/marketlist";
 import { useEffect, useState } from "react";
-import { StakeDetails } from "../../utils/declarations/vault/vault.did";
+import { LockDetails } from "../../utils/declarations/liquidity_manager/liquidity_manager.did";
 import { useAuth } from "@nfid/identitykit/react";
-import { VaultActor } from "../../utils/Interfaces/vaultActor";
+import { LiquidityManagerActor } from "../../utils/Interfaces/liquidityManagerActor";
 import { TransactionModal } from "./TransactionModal";
 import { formatUnits } from "ethers/lib/utils";
 import Stake from "./Stake";
@@ -27,7 +27,7 @@ export const UserStakes = ({
     null
   );
   const [userStakes, setUserStakes] = useState<
-    Array<[bigint, StakeDetails, bigint]>
+    Array<[bigint, LockDetails, bigint]>
   >([]);
   const [index, setReferenceIndex] = useState<number | null>(null);
   const [referenceAmount, setReferenceAmount] = useState<bigint>(0n);
@@ -66,10 +66,10 @@ export const UserStakes = ({
     const { vaultID } = selectedAsset;
 
     try {
-      let vaultActor = new VaultActor(vaultID, readAgent);
+      let vaultActor = new LiquidityManagerActor(vaultID, readAgent);
 
-      const stakes: [bigint, StakeDetails, bigint][] =
-        await vaultActor.getUserStakes(user.principal);
+      const stakes: [bigint, LockDetails, bigint][] =
+        await vaultActor.getUserLocks(user.principal);
       setUserStakes(stakes);
     } catch {
       return;
@@ -83,11 +83,11 @@ export const UserStakes = ({
 
     try {
       let id: bigint = userStakes[index][0];
-      let vaultactor = new VaultActor(vaultID, readWriteAgent);
-      let txResult = await vaultactor.unstakeVirtualToken(id);
+      let vaultactor = new LiquidityManagerActor(vaultID, readWriteAgent);
+      let txResult = await vaultactor.unlockQTokens(id);
 
       if (!txResult) {
-        setTxError("Unstaking transaction failed.");
+        setTxError("Unlocking transaction failed.");
         setCurrentAction(null);
         return;
       }
