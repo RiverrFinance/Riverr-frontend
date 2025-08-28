@@ -156,7 +156,7 @@ export const VaultDataAnalytics = ({ selectedAsset }: Props) => {
   };
 
   return (
-    <div className="grid grid-rows-[1fr_1fr] max-lg:grid-rows-[200px_200px] max-md:grid-rows-[400px_200px] grid-cols-1 max-sm:gap-3 gap-1 xl:gap-3 h-fit lg:h-[400px] max-lg:h-full max-lg:-mt-16">
+    <div className="grid grid-rows-[1fr_1fr] max-lg:grid-rows-[200px_200px] max-md:grid-rows-[400px_200px] grid-cols-1 max-sm:gap-3 gap-1 xl:gap-3 h-fit lg:h-[400px] max-lg:h-full max-lg:mt-5">
       <div className="row-span-1 grid grid-cols-1 md:grid-cols-2 gap-3 max-sm:gap-3 max-md:gap-0 min-h-0 h-fit">
         {/* Risk Analysis Chart - Fixed border and container */}
         <div className="glass rounded-3xl p-3 flex flex-col min-h-0 max-sm:h-full h-fit ">

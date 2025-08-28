@@ -26,7 +26,7 @@ export const Earn = () => {
   } as const;
 
   return (
-    <div className="flex flex-col min-h-screen gap-6 px-4 sm:px-5 md:px-6 pt-4 sm:pt-6">
+    <div className="flex flex-col min-h-screen gap-6 px-0 md:px-6 pt-4 sm:pt-6">
       {/* Header Section with Summary Card and Tabs */}
       <div className="grid max-lg:grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
         {/* Summary Card */}

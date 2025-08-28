@@ -1,141 +1,80 @@
-import React from 'react';
-import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import React, { useMemo } from 'react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 
 interface CryptoChartProps {
   pricesArray: number[];
   priceChange24hArray: number[];
-  assetNames?: string[];
+  assetNames: string[];
 }
 
-interface ChartDataPoint {
-  time: string;
-  price: number;
-  asset: string;
-}
-
-const CryptoChart: React.FC<CryptoChartProps> = ({ 
-  pricesArray, 
-  priceChange24hArray, 
-  assetNames = [] 
+const CryptoChart: React.FC<CryptoChartProps> = ({
+  pricesArray,
+  priceChange24hArray,
+  assetNames,
 }) => {
-  // Create chart data from existing price data
-  const createChartData = (): ChartDataPoint[] => {
-    if (!pricesArray.length) return [];
-    
-    // Use the first asset's price as primary chart data
-    const primaryPrice = pricesArray[0] || 0;
-    const primaryChange = priceChange24hArray[0] || 0;
-    const primaryAsset = assetNames[0] || 'Asset';
-    
-    // Generate hourly data points based on the 24h change
-    const data: ChartDataPoint[] = [];
-    const now = new Date();
-    const hourlyChange = primaryChange / 24; // Distribute change across 24 hours
-    
-    for (let i = 23; i >= 0; i--) {
-      const time = new Date(now.getTime() - i * 60 * 60 * 1000);
-      const progressRatio = (24 - i) / 24;
-      const priceAtTime = primaryPrice * (1 - (primaryChange / 100) + (primaryChange / 100) * progressRatio);
-      
-      data.push({
-        time: time.getHours().toString().padStart(2, '0') + ':00',
-        price: Math.max(0, priceAtTime),
-        asset: primaryAsset,
-      });
+  const icpIndex = 0;
+  const icpPriceNow = pricesArray[icpIndex] ?? 0;
+  const icpChangePct = priceChange24hArray[icpIndex] ?? 0;
+  const icpPrice24h = useMemo(() => {
+    const denom = 1 + (icpChangePct / 100);
+    if (denom === 0) return icpPriceNow;
+    return icpPriceNow / denom;
+  }, [icpPriceNow, icpChangePct]);
+
+  const chartData = useMemo(() => {
+    const points = 24; // approximate hourly points for last 24h
+    const data = [] as Array<{ name: string; uv: number }>;
+    for (let i = 0; i < points; i++) {
+      const t = i / (points - 1);
+      const price = icpPrice24h + (icpPriceNow - icpPrice24h) * t;
+      const uv = price - icpPrice24h; // offset so split gradient can be centered at 0
+      data.push({ name: `${i}`, uv });
     }
-    
     return data;
+  }, [icpPrice24h, icpPriceNow]);
+
+  const gradientOffset = () => {
+    const dataMax = Math.max(...chartData.map((i) => i.uv));
+    const dataMin = Math.min(...chartData.map((i) => i.uv));
+    if (dataMax <= 0) return 0;
+    if (dataMin >= 0) return 1;
+    return dataMax / (dataMax - dataMin);
   };
 
-  const chartData = createChartData();
-  
-  // Calculate overall trend
-  const getOverallTrend = () => {
-    if (!priceChange24hArray.length) return 0;
-    return priceChange24hArray[0] || 0;
-  };
+  const off = gradientOffset();
 
-  const overallChange = getOverallTrend();
-  const isPositive = overallChange >= 0;
-
-  // Custom tooltip
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-gray-900 border border-gray-700 rounded-lg p-3 shadow-lg">
-          <p className="text-gray-300 text-sm">{`Time: ${label}`}</p>
-          <p className="text-white font-semibold">
-            {`Price: $${payload[0].value.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}`}
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  // Show loading state if no data
-  if (!pricesArray.length || !chartData.length) {
-    return (
-      <div className="flex items-center justify-center h-full min-h-[180px]">
-        <div className="text-gray-400 text-sm">Loading chart data...</div>
-      </div>
-    );
-  }
+  const isUp = icpPriceNow >= icpPrice24h;
+  const primaryColor = isUp ? '#10b981' : '#ef4444';
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-[110px] md:h-[130px]">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart
-          data={chartData}
-          margin={{
-            top: 5,
-            right: 5,
-            left: 5,
-            bottom: 5,
-          }}
-        >
+        <AreaChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: -12 }}>
           <defs>
-            <linearGradient id="cryptoGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop 
-                offset="0%" 
-                stopColor={isPositive ? "#10b981" : "#ef4444"} 
-                stopOpacity={0.3}
-              />
-              <stop 
-                offset="100%" 
-                stopColor={isPositive ? "#10b981" : "#ef4444"} 
-                stopOpacity={0.05}
-              />
+            <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={primaryColor} stopOpacity={0.25} />
+              <stop offset="100%" stopColor={primaryColor} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <XAxis 
-            dataKey="time" 
-            axisLine={false}
-            tickLine={false}
-            tick={{ fontSize: 12, fill: '#9ca3af' }}
-            interval="preserveStartEnd"
-          />
-          <YAxis 
-            hide
-            domain={['dataMin * 0.95', 'dataMax * 1.05']}
-          />
-          <CustomTooltip />
+          <CartesianGrid stroke="#2b3147" strokeOpacity={0.1} vertical={false} />
+          <XAxis dataKey="name" hide />
+          <YAxis hide />
           <Area
             type="monotone"
-            dataKey="price"
-            stroke={isPositive ? "#10b981" : "#ef4444"}
+            dataKey="uv"
+            stroke={primaryColor}
+            strokeOpacity={0.5}
+            strokeWidth={4}
+            fillOpacity={0}
+            isAnimationActive={false}
+          />
+          <Area
+            type="monotone"
+            dataKey="uv"
+            stroke={primaryColor}
             strokeWidth={2}
-            fill="url(#cryptoGradient)"
-            dot={false}
-            activeDot={{
-              r: 4,
-              fill: isPositive ? "#10b981" : "#ef4444",
-              stroke: "#ffffff",
-              strokeWidth: 2,
-            }}
+            fill="url(#areaFill)"
+            isAnimationActive={false}
           />
         </AreaChart>
       </ResponsiveContainer>

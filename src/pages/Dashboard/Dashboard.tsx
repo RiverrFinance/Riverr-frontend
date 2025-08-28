@@ -316,7 +316,8 @@ export function Dashboard() {
             <div className="flex flex-col space-y-3 mb-4">
               <div className="flex justify-between items-start">
                 <div className="flex flex-col space-y-2">
-                  <div className="text-md text-gray-300">Trading Status</div>
+                  <div className="text-md text-gray-300">Trading Status: <span className="text-white text-xs">ICP</span></div>
+                  <div className="text-sm text-gray-400">Price: ${format(pricesArray[0] || 0)}</div>
                   {/* <div className="text-[15px] font-bold space-x-2 transition-all text-green-400">
                     <span>Active</span>
                   </div> */}
@@ -331,7 +332,7 @@ export function Dashboard() {
               {/* <div className="text-sm text-gray-400">24h Volume: $2.4M</div> */}
             </div>
 
-            <div className="flex-1 min-h-[180px] w-full">
+            <div className="flex-1 w-full">
               <CryptoChart 
                 pricesArray={pricesArray}
                 priceChange24hArray={priceChange24hArray}
