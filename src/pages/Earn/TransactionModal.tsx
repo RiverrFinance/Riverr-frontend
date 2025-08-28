@@ -1,9 +1,9 @@
 import React, { useState, useEffect, memo } from "react";
 import { Modal, Icon, Button } from "semantic-ui-react";
 import { Asset, assetList } from "../../lists/marketlist";
-import { IconButton } from "../../components/Sidebar";
 import Modal_Icon from "../../images/Modal_Icon.png";
 import Marketing_Campaign_1 from "../../images/Marketing_Campaign_1.png";
+import { IconButton } from "../../components/Navbar";
 
 export interface TransactionModalProps {
   isOpen: boolean;
@@ -51,9 +51,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = memo(
         open={isOpen}
         onClose={onClose}
         size="tiny"
-        className="!bg-[#141416] p-5 !rounded-3xl"
+        className="!bg-[#0A1022]/90 !backdrop-blur-xl !rounded-3xl !border !border-white/10 !p-0"
       >
-        <Modal.Content className="!bg-transparent !text-white space-y-5">
+        <Modal.Content className="!bg-transparent !text-white !p-5 space-y-5">
           {view === "preview" ? (
             <>
               <div className="!flex justify-between content-center items-center mb-5 !bg-transparent !text-white">
@@ -77,7 +77,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = memo(
                     ? asset.symbol
                     : `Q${asset.symbol}`}
                 </h3>
-                <div className="flex items-center justify-between p-4 bg-[#1C1C28] rounded-lg">
+                <div className="glass rounded-xl border border-white/10 bg-white/5 p-4 flex items-center justify-between">
                   <span className="text-gray-400">Asset</span>
                   <div className="flex items-center gap-2">
                     <img

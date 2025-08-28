@@ -48,19 +48,19 @@ export default memo(function MobileTradingPanel({
     <>
       {isExpanded && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
           onClick={() => setIsExpanded(false)}
         />
       )}
 
-      <div className="fixed top-[60px] left-0 right-0 lg:hidden z-40">
+      <div className="fixed top-[60px] max-sm:top-[70px] left-0 right-0 lg:hidden z-50">
         <div
-          className={`trading-panel-container bg-[#18191d] border-2 border-dashed border-[#363c52] border-opacity-40 rounded-lg transition-all duration-300 ease-in-out overflow-hidden flex flex-col justify-start ${
+          className={`trading-panel-container bg-[#0A1022] border-2 border-[#363c52] border-opacity-40 rounded-2xl transition-all duration-300 ease-in-out overflow-hidden flex flex-col justify-start shadow-2xl ${
             isExpanded ? "h-[70vh]" : "h-20"
           }`}
         >
           <div
-            className="sticky top-0 cursor-pointer bg-[#18191de9] z-10"
+            className="sticky top-0 cursor-pointer bg-transparent z-10"
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 setIsExpanded(false);

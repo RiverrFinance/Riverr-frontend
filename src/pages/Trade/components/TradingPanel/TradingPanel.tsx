@@ -156,18 +156,18 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
   };
 
   return (
-    <div className={`pt-2 pb-6 px-0 rounded-lg overflow-visible`}>
-      <div className="mb-5 xxxl:mt-5 xxxl:space-y-8">
+    <div className={`pt-4 pb-6 px-0 rounded-2xl overflow-visible h-full`}>
+      <div className="mb-6 xxxl:mt-6 xxxl:space-y-8 px-4">
         {/* Order Type Selector */}
-        <div className="relative p-1 mb-5 mx-3">
-          <div className="flex items-center justify-between gap-6">
+        <div className="relative p-2 mb-6">
+          <div className="flex items-center justify-between gap-4 sm:gap-6">
             <div className={`flex relative z-10 ${isAccordion ? 'w-[calc(100%-40px)]' : 'w-full'}`}>
               {(["Limit", "Market"] as const).map((type) => (
                 <button
                   type="button"
                   key={type}
                   onClick={(e) => handleOrderTypeClick(type, e)}
-                  className="flex items-center gap-2 flex-1 py-4 px-4 text-sm font-medium relative transition-colors duration-300"
+                  className="flex items-center gap-2 flex-1 py-3 sm:py-4 px-3 sm:px-4 text-xs sm:text-sm font-medium relative transition-colors duration-300"
                 >
                   <ChevronUp
                     className={`w-4 h-4 
@@ -187,7 +187,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
               
               {/* Sliding background - Moved inside the buttons container */}
               <div
-                className={`absolute top-0 h-full transition-transform duration-300 ease-in-out w-1/2 bg-[#0300ad18] border-b-2 border-[#0300AD]`}
+                className={`absolute top-0 h-full transition-transform duration-300 ease-in-out w-1/2 bg-[#0300ad18] border-b-2 border-[#0300AD] rounded-lg`}
                 style={{
                   transform: `translateX(${orderType === "Market" ? '100%' : '0%'})`,
                 }}
@@ -213,14 +213,14 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
         </div>
 
         {/* Trade Direction Selector */}
-        <div className="relative mx-4 border border-[#363c52] rounded-lg border-opacity-40 bg-[#18191de9]">
+        <div className="relative border border-[#363c52] rounded-xl border-opacity-40 bg-white/5 backdrop-blur-sm">
           <div className="flex relative z-10">
             {(["Long", "Short"] as const).map((type) => (
               <button
                 type="button"
                 key={type}
                 onClick={() => setTradeDirection(type)}
-                className="flex-1 py-2  text-sm font-medium relative transition-colors duration-300"
+                className="flex-1 py-2.5 sm:py-3 text-xs sm:text-sm font-medium relative transition-colors duration-300"
               >
                 <span
                   className={`relative z-10 ${
@@ -236,7 +236,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
           </div>
           {/* Sliding background */}
           <div
-            className="absolute top-0 left-0 h-[calc(100%-0px)] w-[calc(50%-0px)] bg-[#0300ad18] border-2 border-dashed border-[#0300AD] transition-transform duration-300 ease-in-out rounded-md"
+            className="absolute top-0 left-0 h-full w-1/2 bg-[#0300ad18] border-2 border-dashed border-[#0300AD] transition-transform duration-300 ease-in-out rounded-lg"
             style={{
               transform: `translateX(${
                 tradeDirection === "Short" ? "100%" : "0%"
@@ -246,7 +246,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
         </div>
       </div>
 
-      <div className="px-4 pt-4 space-y-14  xxxl:space-y-18">
+      <div className="px-4 sm:px-6 pt-4 sm:pt-6 space-y-10 sm:space-y-14 xxxl:space-y-20">
         {/* Limit Price Input */}
         {orderType == "Limit" ? (
           <PriceInput
@@ -285,7 +285,7 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
           setLeverage={setLeverage}
         />
 
-        <div className="space-y-4 text-sm text-gray-400 pt-10 border-b border-gray-700 pb-5">
+        <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-gray-400 pt-8 sm:pt-10 border-b border-gray-700/50 pb-5 sm:pb-6">
           <div className="flex justify-between">
             <span>Total: {total()}</span>
             {market.quoteAsset.symbol}
@@ -302,11 +302,11 @@ export const TradingPanel: React.FC<TradingPanelProps> = ({
       </div>
 
       {showNotification && (
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
           <div
-            className={`px-6 py-3 rounded-lg shadow-lg ${
+            className={`px-6 py-4 rounded-xl shadow-lg ${
               txErrorMessage ? "bg-red-500" : "bg-green-500"
-            } text-white`}
+            } text-white font-medium`}
           >
             {txErrorMessage ? txErrorMessage : "Position Opened Successfully"}
           </div>

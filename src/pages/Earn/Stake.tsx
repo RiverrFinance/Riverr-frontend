@@ -43,29 +43,33 @@ export default function Stake({ stake, id, feesEarned, unStake }: Props) {
   };
 
   return (
-    <div className="bg-[#1C1C28] rounded-md p-4 space-y-2 text-white">
+    <div className="glass rounded-2xl p-4 sm:p-5 bg-white/5 backdrop-blur-sm border border-white/10 space-y-3 text-white">
       <div className="flex justify-between items-center">
-        <p className="text-sm font-semibold">
+        <p className="text-sm sm:text-base font-semibold">
           POSITION ID: {formatUnits(id, 10)}
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 text-sm text-gray-400">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs sm:text-sm text-gray-400">
         <div>
           <p>EARNINGS</p>
-          <p className="text-green-500 font-semibold">{feesEarned}</p>
+          <p className="text-green-400 font-semibold text-sm sm:text-base">{feesEarned}</p>
         </div>
         <div>
           <p>TIME REMAINING</p>
-          <p className="text-white font-semibold">{timeRemaining()}</p>
+          <p className="text-white font-semibold text-sm sm:text-base">{timeRemaining()}</p>
         </div>
       </div>
 
-      <div className="mt-4">
+      <div className="pt-2">
         <button
           type="button"
           disabled={!isExpired()}
-          className="w-full py-2 rounded-md font-semibold transition-colors duration-200 bg-bg-[#0300adaf] hover:bg-[#0300ad18] text-white border-b pb-2"
+          className={`w-full py-2.5 sm:py-3 rounded-xl font-semibold transition-all duration-200 ${
+            isExpired()
+              ? "bg-[#0300AD] text-white hover:bg-[#0300AD]/90 hover:-translate-y-0.5 hover:shadow-[0_2px_0_0_#0300AD]"
+              : "bg-gray-600/50 text-gray-400 cursor-not-allowed"
+          }`}
           onClick={() => unStake()}
         >
           Close Position

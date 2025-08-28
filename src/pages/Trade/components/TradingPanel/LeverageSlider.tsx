@@ -12,15 +12,15 @@ export const LeverageSlider = ({
   const leveragePoints = [1, 10, 20, 40, 60, 80, 100];
 
   return (
-    <div className="space-y-3 px-1">
+    <div className="space-y-4 px-2">
       <div className="relative">
         {/* Track container */}
-        <div className="relative w-full h-1 bg-gray-700 rounded-full mx-1 mt-6 mb-1">
+        <div className="relative w-full h-2 bg-gray-700/50 rounded-full mx-1 mt-8 mb-2">
           {" "}
           {/* Adjusted margins */}
           {/* Active Track */}
           <div
-            className="absolute h-full bg-[#0300AD] rounded-full"
+            className="absolute h-full bg-gradient-to-r from-[#0300AD] to-[#0300AD]/80 rounded-full"
             style={{
               width: `calc(${(value / maxLeverage) * 100}% - ${
                 (((value / maxLeverage) * 100) / 100) * 4
@@ -35,15 +35,15 @@ export const LeverageSlider = ({
               return (
                 <div
                   key={point}
-                  className="absolute -bottom-1 h-3" // Changed from top-0 to bottom-0
+                  className="absolute -bottom-1 h-4" // Changed from top-0 to bottom-0
                   style={{
                     left: `calc(${position}% - ${(position / 100) * 4}px)`,
                     transform: "translateX(-50%)",
                   }}
                 >
                   <div
-                    className={`w-px h-full ${
-                      value >= point ? "bg-[#0300AD]" : "bg-gray-600"
+                    className={`w-0.5 h-full ${
+                      value >= point ? "bg-[#0300AD]" : "bg-gray-600/50"
                     }`}
                   />
                 </div>
@@ -53,7 +53,7 @@ export const LeverageSlider = ({
         </div>
 
         {/* Leverage Points Labels - moved above the track */}
-        <div className="relative w-full -mt-1">
+        <div className="relative w-full -mt-2">
           {" "}
           {/* Negative margin to pull up */}
           {leveragePoints.map((point) => {
@@ -67,7 +67,7 @@ export const LeverageSlider = ({
                 style={{
                   left: `calc(${position}% - ${(position / 100) * 4}px)`,
                   transform: "translateX(-50%)",
-                  top: "1.5rem", // Positioned above the track
+                  top: "2rem", // Positioned above the track
                 }}
               >
                 {point}x
@@ -99,7 +99,7 @@ export const LeverageSlider = ({
           }}
         >
           <div className="relative">
-            <div className="text-white text-xs font-medium px-2 py-0.5 bg-[#0300AD] rounded-md whitespace-nowrap">
+            <div className="text-white text-xs font-medium px-3 py-1 bg-[#0300AD] rounded-lg whitespace-nowrap shadow-lg">
               {value.toFixed(1)}x
             </div>
             <div className="absolute bottom-0 left-1/2 w-2 h-2 bg-[#0300AD] transform -translate-x-1/2 translate-y-1/2 rotate-45" />

@@ -157,7 +157,7 @@ export const VaultDataAnalytics = ({ selectedAsset }: Props) => {
     <div className="grid grid-rows-[1fr_1fr] max-lg:grid-rows-[200px_200px] max-md:grid-rows-[400px_200px] grid-cols-1 max-sm:gap-3 gap-1 xl:gap-3 h-fit lg:h-[400px] max-lg:h-full max-lg:-mt-16">
       <div className="row-span-1 grid grid-cols-1 md:grid-cols-2 gap-3 max-sm:gap-3 max-md:gap-0 min-h-0 h-fit">
         {/* Risk Analysis Chart - Fixed border and container */}
-        <div className="bg-[#18191de9] rounded-3xl p-3 border-2 border-dashed border-[#363c52] border-opacity-40 flex flex-col min-h-0 max-sm:h-full h-fit ">
+        <div className="glass rounded-3xl p-3 flex flex-col min-h-0 max-sm:h-full h-fit ">
           <h3 className="text-sm font-bold mb-1">Locked Liquidty Spread</h3>
           <div className="flex-1 w-full h-[140px]">
             <Doughnut
@@ -177,7 +177,7 @@ export const VaultDataAnalytics = ({ selectedAsset }: Props) => {
         </div>
 
         {/* APY Overview Chart - Fixed border */}
-        <div className="bg-[#18191de9] rounded-3xl p-3 border-2 border-dashed border-[#3e445b] border-opacity-40 flex flex-col min-h-0 max-sm:h-full h-fit">
+        <div className="glass rounded-3xl p-3 flex flex-col min-h-0 max-sm:h-full h-fit">
           <h3 className="text-sm font-bold mb-1">Liquidty Lock Metric</h3>
           <div className="flex-1 w-full h-[140px]">
             <Doughnut
@@ -198,7 +198,7 @@ export const VaultDataAnalytics = ({ selectedAsset }: Props) => {
       </div>
 
       {/* Lending Distribution - Fixed border and container */}
-      <div className="row-span-1 bg-[#18191de9] rounded-3xl p-3 border-2 border-dashed border-[#363c52] border-opacity-40 flex flex-col min-h-0 max-sm:h-full max-lg:h-fit lg:h-full">
+      <div className="row-span-1 glass rounded-3xl p-3 border-2 flex flex-col min-h-0 max-sm:h-full max-lg:h-fit lg:h-full">
         <h3 className="text-sm font-bold mb-1">Pool Utilization Metric</h3>
         <div className="flex-1 w-full h-[140px]">
           <Doughnut

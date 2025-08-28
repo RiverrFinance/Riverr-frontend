@@ -180,25 +180,25 @@ export default function ManageLock({
   };
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:gap-6 p-4 lg:p-6 bg-[#18191D] rounded-xl border-2 border-dashed border-[#363c52] border-opacity-40">
+    <div className="grid grid-cols-1 gap-4 lg:gap-6 p-4 sm:p-5 lg:p-6 glass rounded-2xl border-2 border-dashed border-[#363c52] border-opacity-40">
       {/* Tab Container */}
-      <div className="flex relative bg-[#1C1C28] rounded-lg p-1">
+      <div className="flex relative bg-white/5 rounded-lg p-1">
         <div className="flex relative z-10 w-full"></div>
         <div
-          className="absolute top-1 h-[calc(100%-8px)] w-[calc(50%-4px)] bg-[#0300ad18] border-2 border-dashed border-[#0300AD] transition-transform duration-300 ease-in-out rounded-sm"
+          className="absolute top-1 h-[calc(100%-8px)] w-[calc(50%-4px)] bg-[#0300ad18] border-2 border-dashed border-[#0300AD] transition-transform duration-300 ease-in-out rounded-lg"
           style={{
             transform: `translateX("0%")`,
           }}
         />
       </div>
 
-      <div className="grid gap-4 lg:gap-6">
+      <div className="grid gap-3 lg:gap-6">
         {/* Amount Input */}
         <div className="space-y-2 lg:space-y-3">
           <label className="text-xs lg:text-sm font-medium text-gray-400">
             Amount
           </label>
-          <div className="flex items-center bg-[#1C1C28] rounded-lg p-2 lg:p-4">
+          <div className="flex items-center glass rounded-lg p-2 lg:p-4 border border-white/10">
             <input
               type="text"
               className="flex-1 bg-transparent border-none focus:outline-none text-sm lg:text-base text-white w-full"
@@ -252,7 +252,7 @@ export default function ManageLock({
             type="button"
             onClick={handleModalOpen}
             disabled={error != null || referenceAmount == "" || !stakeSpan}
-            className={`w-full py-3 lg:py-4 rounded-full text-sm lg:text-base font-medium transition-all duration-300 
+            className={`w-full py-3 lg:py-4 rounded-xl text-sm lg:text-base font-medium transition-all duration-300 
                 ${
                   !error && referenceAmount != "" && stakeSpan
                     ? "bg-[#0300AD] text-white hover:bg-[#0300AD]/90 hover:-translate-y-0.5 hover:shadow-[0_2px_0_0_#0300AD]"
@@ -266,7 +266,7 @@ export default function ManageLock({
               : "Stake"}
           </button>
         ) : (
-          <div className="bg-[#0300AD] hover:bg-[#02007a] rounded-md p-1">
+          <div className="bg-gradient-to-r from-[#0300AD] to-[#19195c] hover:from-[#02007a] hover:to-[#16213e] shadow-lg hover:shadow-xl border border-[#0300AD]/30 rounded-xl p-1">
             <ConnectWallet />
           </div>
         )}

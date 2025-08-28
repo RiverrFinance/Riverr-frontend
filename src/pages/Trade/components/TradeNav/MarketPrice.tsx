@@ -50,18 +50,18 @@ const MarketPrice = memo(({ market }: { market: Market }) => {
   };
 
   return (
-    <div className="flex items-center space-x-6 text-sm text-gray-400  max-xs:text-[10px]">
-      <div>
-        <div>Price</div>
-        <div className="text-white font-semibold">
+    <div className="flex items-center space-x-8 max-sm:space-x-4 text-sm text-gray-400 max-sm:text-xs">
+      <div className="glass rounded-xl p-3 border border-white/10 bg-white/5 backdrop-blur-sm min-w-[80px]">
+        <div className="text-xs text-gray-400 mb-1 uppercase tracking-wide">Price</div>
+        <div className="text-white font-semibold text-lg max-sm:text-sm">
           {formatPrice(details.price)}
         </div>
       </div>
-      <div>
-        <div>24h Change</div>
+      <div className="glass rounded-xl p-3 border border-white/10 bg-white/5 backdrop-blur-sm min-w-[80px]">
+        <div className="text-xs text-gray-400 mb-1 uppercase tracking-wide">24h Change</div>
         <div
-          className={`font-semibold ${
-            details.price_change_24h >= 0 ? "text-green-500" : "text-red-500"
+          className={`font-semibold text-lg max-sm:text-sm ${
+            details.price_change_24h >= 0 ? "text-green-400" : "text-red-400"
           }`}
         >
           {formatPercent(details.price_change_24h)}%
@@ -82,10 +82,8 @@ const formatPrice = (price: number | string) => {
       });
 };
 
-// //  // Function to format percentage (copied from your Pairs component)
 const formatPercent = (percent: number | string) => {
-  // Added string type for placeholder
-  if (typeof percent === "string") return percent; // Handle placeholder string
+  if (typeof percent === "string") return percent; 
   if (!percent) return "0.00";
   return percent.toFixed(2);
 };

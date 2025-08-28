@@ -26,21 +26,19 @@ export const Earn = () => {
   } as const;
 
   return (
-    <div className="flex flex-col min-h-screen gap-6 px-4 max-sm:mb-10 mb-0">
+    <div className="flex flex-col min-h-screen gap-6 px-4 sm:px-5 md:px-6 pt-4 sm:pt-6">
       {/* Header Section with Summary Card and Tabs */}
-      <div className="grid max-lg:grid-cols-1 lg:grid-cols-12 gap-6 bg-[#18191de9] rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40">
+      <div className="grid max-lg:grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
         {/* Summary Card */}
-        <div className="lg:col-span-8 p-4 lg:p-8 max-lg:border-b-2 lg:border-r-2 border-dashed border-[#363c52] border-opacity-40">
+        <div className="lg:col-span-8 glass rounded-2xl md:rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40 p-4 sm:p-6 lg:p-8">
           <div className="relative z-10">
-            <h1 className="text-2xl lg:text-3xl font-bold mb-2 lg:mb-4">
-              Welcome
-            </h1>
+            <h1 className="text-2xl lg:text-3xl font-bold mb-2 lg:mb-4">Welcome</h1>
             <p className="text-gray-400 mb-4 lg:mb-6 text-sm lg:text-base">
               Earn passive income by providing liquidity or staking your assets
             </p>
 
             {/* Currency Selection */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 lg:gap-4">
+            <div className="grid grid-cols-2 xs:grid-cols-3 md:grid-cols-4 gap-2 lg:gap-4">
               {assetList.map((asset) => (
                 <button
                   title="Select Asset"
@@ -50,7 +48,7 @@ export const Earn = () => {
                   className={`flex items-center gap-2 p-3 lg:p-4 rounded-xl lg:rounded-2xl transition-all duration-300 ${
                     selectedAsset.symbol === asset.symbol
                       ? "bg-[#0300ad18] border-2 border-[#0300AD]"
-                      : "bg-[#1C1C28] hover:bg-[#0300ad18] border-2 border-transparent"
+                      : "bg-white/5 hover:bg-[#0300ad18] border-2 border-transparent"
                   }`}
                 >
                   <img
@@ -70,7 +68,7 @@ export const Earn = () => {
         </div>
 
         {/* Tab Selection */}
-        <div className="lg:col-span-4 p-4 lg:p-8 flex items-center">
+        <div className="lg:col-span-4 glass rounded-2xl md:rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40 p-4 sm:p-6 lg:p-8 flex items-center">
           <div className="flex gap-2 lg:gap-4 w-full">
             {(["Lending", "Lock"] as const).map((tab) => {
               const IconComponent = tabIcons[tab];
@@ -84,7 +82,7 @@ export const Earn = () => {
                     ${
                       activeTab === tab
                         ? "bg-[#0300ad18] border-2 border-[#0300AD]"
-                        : "bg-[#1C1C28] hover:bg-[#0300ad18] border-2 border-transparent"
+                        : "bg-white/5 hover:bg-[#0300ad18] border-2 border-transparent"
                     }`}
                 >
                   <div className="flex items-center justify-center gap-1.5 lg:gap-2">
@@ -99,9 +97,9 @@ export const Earn = () => {
       </div>
 
       {/* Main Content */}
-      <div className="grid lg:grid-cols-12 max-lg:grid-rows-[300px_1fr] gap-6 h-full">
+      <div className="grid lg:grid-cols-12 gap-4 sm:gap-6 h-full">
         {/* Left Panel */}
-        <div className="xl:col-span-8 lg:col-span-7 max-lg:row-span-2 max-lg:row-start-2 transition-all duration-300">
+        <div className="xl:col-span-8 lg:col-span-7 order-2 lg:order-1">
           {activeTab === "Lending" ? (
             <VaultDataAnalytics selectedAsset={selectedAsset} />
           ) : (
@@ -114,7 +112,7 @@ export const Earn = () => {
         </div>
 
         {/* Right Panel - Operations */}
-        <div className="xl:col-span-4 lg:col-span-5 max-lg:row-span-1 max-lg:row-start-1">
+        <div className="xl:col-span-4 lg:col-span-5 order-1 lg:order-2">
           <div className="h-full">
             <div className="h-full">
               {activeTab === "Lending" ? (

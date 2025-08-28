@@ -109,13 +109,13 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
   });
 
   return (
-    <div className="relative bg-transparent px-3 pt-0 rounded-md">
-      <div className="flex items-center justify-between">
+    <div className="relative glass px-6 py-4 rounded-2xl">
+      <div className="flex flex-wrap items-center justify-between gap-2 max-xs:justify-evenly max-md:w-full">
         <div className="flex items-center">
           <button
             title="Close"
             type="button"
-            className="hover:scale-110 transition-transform mr-2 focus:outline-none"
+            className="hover:scale-110 transition-transform mr-3 focus:outline-none p-2 rounded-lg hover:bg-white/10"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -137,39 +137,40 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
             <button
               type="button"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="hover:bg-white/5 rounded-lg p-2 transition-colors"
             >
-              <div className="flex items-center gap-2 text-white text-lg font-bold focus:outline-none">
+              <div className="flex items-center gap-3 text-white text-lg font-bold focus:outline-none">
                 {selectedMarket.baseAsset.logoUrl && (
                   <img
                     src={selectedMarket.baseAsset.logoUrl}
                     alt={selectedMarket.baseAsset.symbol}
-                    className="w-6 h-6 rounded-full"
+                    className="w-8 h-8 rounded-full"
                   />
                 )}
                 <div className="flex items-center">
-                  <span className="max-xs:text-sm">
+                  <span className="max-sm:text-sm">
                     {selectedMarket.baseAsset.symbol.toUpperCase()} /{" "}
                     {selectedMarket.quoteAsset.symbol.toUpperCase()}
                   </span>
 
-                  <ChevronDown className="w-4 h-4" />
+                  <ChevronDown className="w-5 h-5 ml-2" />
                 </div>
               </div>
-              <div className="text-gray-400 text-sm  max-xs:text-xs ml-8">
+              <div className="text-gray-400 text-sm max-xs:text-xs ml-11 max-sm:ml-8">
                 {selectedMarket.baseAsset.name}
               </div>
             </button>
 
             {/* Dropdown Menu */}
             {isDropdownOpen && (
-              <div className="absolute top-full left-0 max-xs:-left-8 mt-2 w-80 sm:w-96 p-5 bg-[#18191D] rounded-md shadow-lg z-50 overflow-hidden border-2 border-dashed border-[#363c52] border-opacity-40">
-                <div className="p-3 border-b border-gray-700 flex items-center justify-between">
+              <div className="absolute bg-[#0A1022] top-full left-0 max-xs:-left-8 mt-3 w-80 sm:w-96 rounded-2xl shadow-lg z-50 overflow-hidden">
+                <div className="p-4 border-b border-gray-700/50 flex items-center justify-between">
                   <span className="text-white font-semibold">
                     Select Crypto Pair
                   </span>
                   <button
                     onClick={() => setIsDropdownOpen(false)}
-                    className="text-gray-400 hover:text-white focus:outline-none"
+                    className="text-gray-400 hover:text-white focus:outline-none p-2 rounded-lg hover:bg-white/10 transition-colors"
                     title="Close"
                     type="button"
                   >
@@ -178,13 +179,13 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                 </div>
 
                 {/* Search Input */}
-                <div className="pt-5">
-                  <div className="flex items-center bg-[#242529] rounded-md px-3 py-2">
-                    <Search className="w-4 h-4 text-gray-400 mr-2" />
+                <div className="p-4">
+                  <div className="flex items-center bg-white/5 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/10">
+                    <Search className="w-4 h-4 text-gray-400 mr-3" />
                     <input
                       type="text"
                       placeholder="Search crypto"
-                      className="w-full bg-transparent border-none focus:outline-none text-white text-sm mt-1"
+                      className="w-full bg-transparent border-none focus:outline-none text-white text-sm"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -192,14 +193,14 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                 </div>
 
                 {/* Quote Currency Tabs */}
-                <div className="relative p-1 my-3">
+                <div className="relative p-2 mx-4 mb-4">
                   <div className="flex relative z-10">
                     {quoteCurrencies.map((currency) => (
                       <button
                         type="button"
                         key={currency.priceID}
                         onClick={() => setSelectedQuoteCurrency(currency)}
-                        className="flex-1 py-2 px-2 text-xs font-medium relative transition-colors duration-300"
+                        className="flex-1 py-3 px-3 text-sm font-medium relative transition-colors duration-300"
                       >
                         <span
                           className={`relative z-10 flex items-center justify-center gap-2 ${
@@ -212,7 +213,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                             <img
                               src={currency.logoUrl}
                               alt={currency.symbol}
-                              className="w-4 h-4 rounded-full"
+                              className="w-5 h-5 rounded-full"
                             />
                           )}
                           {currency.symbol}
@@ -222,7 +223,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                   </div>
                   {/* Sliding background */}
                   <div
-                    className="absolute top-1 h-[calc(100%-8px)] w-[calc(50%-0px)] bg-[#0300ad18] border-b-2 border-[#0300AD] transition-transform duration-300 ease-in-out rounded-sm"
+                    className="absolute top-2 h-[calc(100%-16px)] w-[calc(50%-8px)] bg-[#0300ad18] border-b-2 border-[#0300AD] transition-transform duration-300 ease-in-out rounded-lg"
                     style={{
                       transform: `translateX(${
                         selectedQuoteCurrency.priceID ===
@@ -235,14 +236,14 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                 </div>
 
                 {/* Filtering Tabs (All, Favorites ) */}
-                <div className="relative p-1 mb-3">
+                <div className="relative p-2 mx-4 mb-4">
                   <div className="flex relative z-10">
                     {tabs.map((tab) => (
                       <button
                         type="button"
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className="flex-1 py-2 px-2 text-xs font-medium relative transition-colors duration-300"
+                        className="flex-1 py-3 px-3 text-sm font-medium relative transition-colors duration-300"
                       >
                         <span
                           className={`relative z-10 ${
@@ -258,7 +259,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                   </div>
                   {/* Sliding background */}
                   <div
-                    className="absolute top-1 h-[calc(100%-8px)] w-[calc(50%-0px)] bg-[#0300ad18] border-b-2 border-[#0300AD] transition-transform duration-300 ease-in-out rounded-sm"
+                    className="absolute top-2 h-[calc(100%-16px)] w-[calc(50%-8px)] bg-[#0300ad18] border-b-2 border-[#0300AD] transition-transform duration-300 ease-in-out rounded-lg"
                     style={{
                       transform: `translateX(${
                         activeTab === "All" ? "0%" : "100%"
@@ -268,7 +269,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                 </div>
 
                 {/* List of Pairs (Filtered) */}
-                <div className="max-h-60 overflow-y-auto">
+                <div className="max-h-60 overflow-y-auto p-2">
                   {filteredMarkets.map((market) => (
                     <div
                       key={market.chartId}
@@ -276,6 +277,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                         onMarketSelect(market);
                         setIsDropdownOpen(false);
                       }}
+                      className="hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
                     >
                       <Pairs
                         market={market}
@@ -302,8 +304,8 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
 
 const StarIcon = ({ filled }: { filled: boolean }) => (
   <svg
-    width="16"
-    height="16"
+    width="18"
+    height="18"
     viewBox="0 0 24 24"
     fill={filled ? "currentColor" : "none"}
     stroke="currentColor"

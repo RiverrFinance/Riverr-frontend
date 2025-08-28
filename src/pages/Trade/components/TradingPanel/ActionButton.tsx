@@ -16,15 +16,15 @@ export default function ActionButton({ currentError, onClick }: Props) {
         <button
           type="button"
           disabled={currentError != null}
-          className="bg-[#0300AD] rounded-md flex justify-center items-center gap-2 px-5 py-3 w-full cursor-pointer"
+          className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] hover:from-[#0f3460] hover:to-[#1a1a2e] disabled:from-gray-600 disabled:to-gray-600/90 border border-[#0300AD]/30 shadow-lg hover:shadow-xl rounded-xl flex justify-center items-center gap-3 px-6 py-4 w-full cursor-pointer transition-all duration-300 disabled:cursor-not-allowed"
           onClick={onClick}
         >
-          <span className="text-center font-semibold text-[13px]">
+          <span className="text-center font-semibold text-sm text-white">
             Open Order
           </span>
         </button>
       ) : (
-        <div className="bg-[#0300AD] hover:bg-[#02007a] rounded-md flex justify-center items-center gap-2 px-5 w-full">
+        <div className="bg-gradient-to-r from-[#0300AD] to-[#19195c] hover:from-[#02007a] hover:to-[#16213e] shadow-lg hover:shadow-xl border border-[#0300AD]/30 rounded-xl flex justify-center items-center gap-3 px-6 py-1 w-full cursor-pointer transition-all duration-300">
           <ConnectWallet />
         </div>
       )}

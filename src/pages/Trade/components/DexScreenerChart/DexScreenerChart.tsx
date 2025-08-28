@@ -29,10 +29,18 @@ const DexScreenerChart: React.FC<DexScreenerChartProps> = ({ chart_id }) => {
   };
 
   return (
-    <div className="w-full h-full !rounded-3xl !rounded-b-3xl bg-[#18191de9] border-2 border-dashed border-[#363c52] border-opacity-40 overflow-hidden relative">
+    <div className="w-full h-full glass rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40 overflow-hidden relative">
       {(isLoading || isError) && (
-        <div className="absolute inset-0 flex items-center justify-center bg-[#18191D] z-10">
-          <RingLoader color="#ffffff" size={90} />
+        <div className="absolute inset-0 flex items-center justify-center bg-[#18191D]/80 backdrop-blur-sm z-10">
+          <div className="flex flex-col items-center gap-4">
+            <RingLoader color="#ffffff" size={90} />
+            {isError && (
+              <div className="text-center">
+                <div className="text-lg font-medium text-white mb-2">Chart Loading Error</div>
+                <div className="text-sm text-gray-400">Please refresh the page to try again</div>
+              </div>
+            )}
+          </div>
         </div>
       )}
       {!isError && (

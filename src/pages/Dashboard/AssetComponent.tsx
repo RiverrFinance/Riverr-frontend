@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Asset } from "../../lists/marketlist";
-import { IconButton } from "../../components/Sidebar";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
-import { GlowingEffect } from "../../components/Glowing-effect";
+import { IconButton } from "../../components/Navbar";
 
 interface Props {
   price: number;
   asset: Asset;
   userBalance: string;
+  priceChange24h: number;
   index: number;
   openAccordionIndex: number;
   onAccordionToggle: (index: number) => void;
@@ -19,6 +19,7 @@ export const AssetComponent = function AssetComponent({
   asset,
   price,
   userBalance,
+  priceChange24h,
   index,
   openAccordionIndex,
   onAccordionToggle,
@@ -37,88 +38,137 @@ export const AssetComponent = function AssetComponent({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // line chart
+  const renderLineChart = (isPositive: boolean) => {
+    const color = isPositive ? 'text-green-400' : 'text-red-400';
+    const strokeColor = isPositive ? 'stroke-green-400' : 'stroke-red-400';
+    
+    return (
+      <div className="flex items-center h-8">
+        <svg className="w-12 h-6" viewBox="0 0 50 24">
+          <path
+            d="M0 20 L8 16 L16 18 L24 12 L32 14 L40 8 L48 6"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            fill="none"
+            className={strokeColor}
+          />
+          <circle cx="48" cy="6" r="2" className={`fill-current ${color}`} />
+        </svg>
+      </div>
+    );
+  };
+  const isPositiveChange = priceChange24h >= 0;
+
   return (
-    <>
-      <div
-        key={asset.name}
-        className="relative rounded-2xl col-span-12 grid grid-cols-12 max-xs:gap-5 items-center justify-between py-2 cursor-pointer"
-        onClick={isMobileView ? () => onAccordionToggle(index) : undefined}
+    <div className="mb-4">
+      <div 
+        className="glass rounded-2xl p-6 border border-white/10 hover:border-white/20 transition-all duration-300 cursor-pointer group relative"
+        onClick={() => onAccordionToggle(index)}
       >
-        <div className="col-span-4 max-lg:col-span-6 max-xs:col-span-5 flex items-center">
-          <div className="mr-2 max-xs:sr-only">
+        <div className="flex items-start justify-between mb-4">
+          {/* Left side - Currency info */}
+          <div className="flex items-center gap-4">
+            {/* Currency Icon */}
             {asset.logoUrl && (
               <img
                 src={asset.logoUrl}
                 alt={asset.name}
-                className="w-6 h-6 rounded-full"
+                className="w-8 h-8 rounded-full mr-2"
               />
             )}
-          </div>
-          <div>
-            <div className="text-md font-semibold capitalize whitespace-break-spaces">
-              {asset.name}
+            
+            {/* Currency details */}
+            <div>
+              <div className="text-lg font-semibold text-white">
+                {asset.symbol.toUpperCase()}
+              </div>
+              <div className="text-xs capitalize text-gray-400">
+                {asset.name}
+              </div>
             </div>
-            <div className="text-sm text-gray-500 whitespace-break-spaces">
-              {asset.symbol}
+          </div>
+
+          {/* Status indicator */}
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${
+              isPositiveChange ? 'bg-green-400' : 'bg-red-400'
+            }`} />
+            <div className={`text-xs font-medium ${
+              isPositiveChange ? 'text-green-400' : 'text-red-400'
+            }`}>
+              {isPositiveChange ? '↗' : '↘'}
             </div>
           </div>
         </div>
-        <div className="col-span-2 max-lg:col-span-3 max-xs:col-span-4 text-sm whitespace-break-spaces">
-          ${formatPrice(price)}
-        </div>
-        <div className="col-span-2 max-lg:col-span-3 max-xs:col-span-3 text-sm font-medium ml-8 max-xs:ml-">
+
+        {/* Balance Amount */}
+        <div className="text-3xl font-bold text-white mb-4">
           {userBalance}
         </div>
 
-        {!isMobileView && (
-          <div className="col-span-4 flex justify-end gap-2">
+        {/* Bottom row - Change indicators and chart */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {/* Price */}
+            <div className="text-sm text-white">
+              ${formatPrice(price)}
+            </div>
+            
+            {/* Percentage change pill */}
+            <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+              isPositiveChange
+                ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                : 'bg-red-500/20 text-red-400 border border-red-500/30'
+            }`}>
+              {isPositiveChange ? '+' : ''}{priceChange24h.toFixed(2)}%
+            </div>
+          </div>
+
+          {/* Chart */}
+          <div className={isPositiveChange ? 'text-green-400' : 'text-red-400'}>
+            {renderLineChart(isPositiveChange)}
+          </div>
+        </div>
+
+        {/* Hover effect */}
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#14024262] to-[#02074c1a] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+      </div>
+
+      {/* Chain connector */}
+      {isAccordionOpen && (
+        <div className="flex justify-between px-8">
+          <div className="w-px h-4 bg-gradient-to-b from-blue-400 to-blue-600" />
+          <div className="w-[0.5px] h-4 bg-gradient-to-b from-blue-400 to-blue-600" />
+        </div>
+      )}
+
+      {/* Expanded Actions */}
+      <div 
+        className={`glass rounded-2xl p-4 border border-white/10 bg-white/5 backdrop-blur-sm transition-all duration-500 ease-out ${
+          isAccordionOpen 
+            ? 'opacity-100 max-h-32 translate-y-0' 
+            : 'opacity-0 max-h-0 translate-y-4 overflow-hidden'
+        }`}
+      >
+          <div className="flex gap-3">
             <IconButton
               onClick={() => onDeposit(asset)}
               title="Deposit"
-              className="!bg-[#0300ad] hover:!bg-[#0000003d] text-white text-sm font-normal px-5 py-2 rounded-full flex items-center gap-2 justify-items-center border border-[#353434] hover:!-translate-y-0.5 hover:shadow-[0_2px_0_0_#0300AD]"
+            className="flex-1 bg-gradient-to-r from-blue-600/15 to-blue-700/15 hover:from-blue-600/30 hover:to-blue-700/30 text-blue-300 hover:text-blue-200 text-sm font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm hover:shadow-blue-500/15 border border-blue-500/20 backdrop-blur-sm"
             >
               <ArrowDownRight className="w-4 h-4" />
             </IconButton>
             <IconButton
               onClick={() => onWithdraw(asset)}
               title="Withdraw"
-              className="bg-[#000000b3] hover:bg-[#0000003d] text-white text-sm font-normal px-5 py-2 rounded-full flex items-center gap-2 justify-items-center border border-[#4d4c4c] hover:!-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD]"
+            className="flex-1 bg-gradient-to-r from-gray-600/15 to-gray-700/15 hover:from-gray-600/30 hover:to-gray-700/30 text-gray-300 hover:text-gray-200 text-sm font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm hover:shadow-gray-500/15 border border-gray-500/20 backdrop-blur-sm"
             >
               <ArrowUpRight className="w-4 h-4" />
             </IconButton>
           </div>
-        )}
-      </div>
-
-      {isMobileView && isAccordionOpen && (
-        <div
-          className={`col-span-12 mt-2 flex flex-col items-center justify-center transition-all duration-300 ${
-            isAccordionOpen ? "animate-slideDown" : "animate-slideUp"
-          }`}
-        >
-          <IconButton
-            title="Deposit"
-            onClick={() => {
-              onAccordionToggle(index);
-              onDeposit(asset);
-            }}
-            className="!bg-[#0300ad] hover:!bg-[#0000003d] text-white text-sm font-normal py-2 rounded-full flex items-center gap-2 justify-center w-full border border-[#353434] hover:!-translate-y-0.5 hover:shadow-[0_2px_0_0_#0300AD]"
-          >
-            <ArrowDownRight className="w-4 h-4" />
-          </IconButton>
-          <IconButton
-            title="Withdraw"
-            onClick={() => {
-              onAccordionToggle(index);
-              onWithdraw(asset);
-            }}
-            className="bg-[#000000b3] hover:bg-[#0000003d] text-white text-sm font-normal py-2 rounded-full flex items-center gap-2 justify-center w-full border border-[#4d4c4c] mt-2 hover:!-translate-y-0.5 hover:shadow-[0_2px_0_0_#0300AD]"
-          >
-            <ArrowUpRight className="w-4 h-4" />
-          </IconButton>
         </div>
-      )}
-    </>
+    </div>
   );
 };
 

@@ -4,11 +4,28 @@
 
 
 *{
-  font-family: "", monospace;
+  /* font-family: "", monospace; */
   font-optical-sizing: auto;
   font-style: normal;
   letter-spacing: 1px;
 }
+
+body {
+  background-color: #0A1022 !important;
+}
+/* body {
+  background-color: #0D102B !important;
+  background-color: #0A1022 !important;
+  background: linear-gradient(135deg, #000000 0%, #0D102B 20%, #1A2056 40%, #273081 60%, #3440AC 80%, #4150D7 100%);    
+  background-attachment: fixed !important;  
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+} */
 
 .logo {
   will-change: filter;
@@ -244,4 +261,12 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Reusable glass effect for cards/sections */
+.glass {
+  background: #03050b51;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }

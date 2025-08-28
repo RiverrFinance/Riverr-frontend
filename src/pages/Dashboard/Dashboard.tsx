@@ -12,7 +12,13 @@ import { MinterActor } from "../../utils/Interfaces/tokenActor";
 import { Principal } from "@dfinity/principal";
 import { Eye, EyeOff, Droplets, Loader } from "lucide-react";
 import { ICP_API_HOST, SECOND } from "../../utils/constants";
-import { GlowingEffect } from "../../components/Glowing-effect";
+import {
+  GradientBackgroundBackward,
+  GradientBackgroundForward,
+} from "../../components/GradientBackground";
+import TopMovers from "./TopMovers";
+import LineChart from "../../components/LineChart";
+import CryptoChart from "./CryptoChart"; 
 
 interface PriceDetails {
   price: number;
@@ -40,6 +46,7 @@ export function Dashboard() {
   const { user } = useAuth();
   const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
   const [pricesArray, setPricesArray] = useState<number[]>([]);
+  const [priceChange24hArray, setPriceChange24hArray] = useState<number[]>([]);
   const [balancesArray, setBalancesArray] = useState<string[]>([]);
   const [totalValue, setTotalValue] = useState<number>(0);
 
@@ -80,7 +87,7 @@ export function Dashboard() {
 
   useEffect(() => {
     fetchAndSetTopMovers();
-    const interval = setInterval(fetchAndSetTopMovers, 40 * SECOND); // Fetch every 35s 
+    const interval = setInterval(fetchAndSetTopMovers, 40 * SECOND); // Fetch every 35s
     return () => clearInterval(interval);
   }, []);
 
@@ -122,24 +129,31 @@ export function Dashboard() {
     updateValueDetails();
   };
 
-  const getUserAssetValue = async (asset: Asset): Promise<[number, string]> => {
+  const getUserAssetValue = async (
+    asset: Asset
+  ): Promise<[number, string, number]> => {
     let price = await fetchAssetPrice(asset);
     let userMargin = await fetcherUserMarginBalance(asset);
-    return [price, formatUnits(userMargin, asset.decimals)]; //formatUnits(userMargin, asset.decimals)];
+    let priceChange24h = await fetchPriceChange24h(asset);
+    return [price, formatUnits(userMargin, asset.decimals), priceChange24h]; //formatUnits(userMargin, asset.decimals)];
   };
 
   const updateValueDetails = async () => {
     try {
-      let sendPromiseList: Promise<[number, string]>[] = assetList.map(
+      let sendPromiseList: Promise<[number, string, number]>[] = assetList.map(
         (asset) => getUserAssetValue(asset)
       );
-      let resolvedPromiseList: [number, string][] = await Promise.all(
+      let resolvedPromiseList: [number, string, number][] = await Promise.all(
         sendPromiseList
       );
       const prices = resolvedPromiseList.map(([price]) => price);
       const balances = resolvedPromiseList.map(([, balance]) => balance);
+      const priceChanges24h = resolvedPromiseList.map(
+        ([, , priceChange]) => priceChange
+      );
       setPricesArray(prices);
       setBalancesArray(balances);
+      setPriceChange24hArray(priceChanges24h);
     } catch {}
   };
 
@@ -185,6 +199,14 @@ export function Dashboard() {
     return price;
   };
 
+  const fetchPriceChange24h = async (asset: Asset): Promise<number> => {
+    let response = await fetchDetails(asset.priceID);
+    let assetValueDetails: PriceDetails = await response.json();
+    let { price_change_24h } = assetValueDetails;
+
+    return price_change_24h;
+  };
+
   const receiveFaucet = async () => {
     if (readWriteAgent) {
       setIsClaimingFaucet(true);
@@ -208,11 +230,24 @@ export function Dashboard() {
     }
   };
 
+  const getPrimaryPriceChange = () => {
+    return priceChange24hArray[0] || 0;
+  };
+
+  const primaryPriceChange = getPrimaryPriceChange();
+  const isPositive = primaryPriceChange >= 0;
+
+  const assetNames = assetList.map(asset => asset.name);
+
+
   return (
-    <div className="max-h-fit bg-transparent rounded-3xl grid md:grid-cols-12 md:gap-5 gap-10 ">
-      <div className="md:space-y-6 space-y-3 lg:col-span-8 md:col-span-7 h-full overflow-hidden flex flex-col">
-        <div className="py-5 max-xs:py-2 px-5 max-xs:px-2 h-fit bg-[#18191de9] rounded-2xl md:rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40">
-          <div className="bg-[#0300AD] rounded-lg md:rounded-2xl py-10 md:px-10 px-12  h-fit flex max-xs:flex-col max-xs:gap-8 justify-between items-start xs:items-center">
+    <div className="max-h-fit bg-transparent rounded-3xl grid grid-cols-1 gap-6">
+      {/* Total Value and Trading Component */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Total Value Component */}
+        <div className="py-5 max-xs:py-2 px-5 max-xs:px-2 h-full glass rounded-2xl md:rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40 overflow-hidden">
+          <GradientBackgroundForward />
+          <div className="glass rounded-lg md:rounded-2xl py-10 md:px-10 px-12 h-full flex max-xs:flex-col max-xs:gap-8 justify-between items-start xs:items-center">
             <div className="flex flex-col max-xs:items-center space-y-2">
               <div className="xs:space-y-5 flex max-xs:gap-5 gap-x-3 flex-col max-xs:items-start">
                 <div className="text-md text-gray-300">
@@ -235,7 +270,6 @@ export function Dashboard() {
                     )}
                   </button>
                 </div>
-
                 <div className="text-sm text-gray-400"></div>
               </div>
             </div>
@@ -274,81 +308,64 @@ export function Dashboard() {
             </div>
           </div>
         </div>
-        <div className="flex-grow py-8 px-5 max-xs:px-3 bg-[#18191de9] rounded-2xl md:rounded-3xl h-screen border-2 border-dashed border-[#363c52] border-opacity-40">
-          <div className="text-2xl font-bold mb-4 capitalize">portfolio</div>
-          <div>
-            <AssetListComponent
-              pricesArray={pricesArray}
-              balancesArray={balancesArray}
-              onDeposit={onOpenDepositModal}
-              onWithdraw={onOpenWithdrawModal}
-            />
-          </div>
-        </div>
-      </div>
-      <div className="lg:col-span-4 md:col-span-5 py-7 h-full bg-[#18191de9] rounded-2xl md:rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40">
-        <div className="capitalize flex px-7">
-          <h2 className="text-2xl">top movers</h2>
-        </div>
-        <div className="mt-5 p-5 max-h-screen h-full overflow-y-scroll overflow-x-hidden">
-          <div className="flex flex-col gap-3">
-            {isLoadingTopMovers
-              ? Array(26)
-                  .fill(0)
-                  .map((_, i) => (
-                    <div
-                      key={i}
-                      className="py-4 grid grid-cols-12 items-center gap-3"
-                    >
-                      <div className="col-span-6 flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52]" />
-                        <div className="space-y-2 flex-1">
-                          <div className="h-4 w-20 animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52] rounded" />
-                          <div className="h-3 w-12 animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52] rounded" />
-                        </div>
-                      </div>
-                      <div className="col-span-3 h-4 w-16 animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52] rounded" />
-                      <div className="col-span-3 h-4 w-16 animate-pulse bg-gradient-to-r from-[#1C1C28] to-[#363c52] rounded" />
-                    </div>
-                  ))
-              : topMovers.map((coin) => (
-                  <div
-                    key={coin.id}
-                    className="py-4 grid grid-cols-12 items-center justify-between gap-3"
-                  >
-                    <div className="col-span-6 flex items-center">
-                      <img
-                        src={coin.image}
-                        alt={coin.name}
-                        className="w-6 h-6 mr-2"
-                      />
-                      <div>
-                        <div className="text-md font-semibold">{coin.name}</div>
-                        <div className="text-sm text-gray-500">
-                          {coin.symbol.toUpperCase()}
-                        </div>
-                      </div>
-                    </div>
-                    <div
-                      className={`col-span-3 text-sm ${
-                        coin.price_change_percentage_24h >= 0
-                          ? "text-green-500"
-                          : "text-red-500"
-                      }`}
-                    >
-                      {coin.price_change_percentage_24h
-                        ? `${coin.price_change_percentage_24h.toFixed(2)}%`
-                        : "0.00%"}
-                    </div>
-                    <div className="col-span-3 text-sm font-semibold">
-                      ${format(coin.current_price)}
-                    </div>
+
+        {/* Trading Component with Chart */}
+        <div className="py-5 max-xs:py-2 px-5 max-xs:px-2 h-full glass rounded-2xl md:rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40 overflow-hidden">
+          <GradientBackgroundBackward />
+          {/* <div className="glass rounded-lg md:rounded-2xl py-6 px-6 h-full flex flex-col"> */}
+            <div className="flex flex-col space-y-3 mb-4">
+              <div className="flex justify-between items-start">
+                <div className="flex flex-col space-y-2">
+                  <div className="text-md text-gray-300">Trading Status</div>
+                  {/* <div className="text-[15px] font-bold space-x-2 transition-all text-green-400">
+                    <span>Active</span>
+                  </div> */}
+                </div>
+                <div className="text-right">
+                  <div className="text-sm text-gray-400">24h Change</div>
+                  <div className={`text-lg font-semibold ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+                    {isPositive ? '+' : ''}{primaryPriceChange.toFixed(2)}%
                   </div>
-                ))}
-          </div>
+                </div>
+              </div>
+              {/* <div className="text-sm text-gray-400">24h Volume: $2.4M</div> */}
+            </div>
+
+            <div className="flex-1 min-h-[180px] w-full">
+              <CryptoChart 
+                pricesArray={pricesArray}
+                priceChange24hArray={priceChange24hArray}
+                assetNames={assetNames}
+              />
+            </div>
+          {/* </div> */}
         </div>
       </div>
 
+      {/* Portfolio Section */}
+      <div className="py-8 px-5 max-xs:px-3 glass rounded-2xl md:rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40 overflow-hidden">
+        <GradientBackgroundBackward />
+        <div className="text-2xl font-bold mb-6 capitalize text-white">
+          Portfolio
+        </div>
+        <div>
+          <AssetListComponent
+            pricesArray={pricesArray}
+            balancesArray={balancesArray}
+            priceChange24hArray={priceChange24hArray}
+            onDeposit={onOpenDepositModal}
+            onWithdraw={onOpenWithdrawModal}
+          />
+        </div>
+      </div>
+
+      {/* Top Movers Section */}
+      <TopMovers
+        topMovers={topMovers}
+        isLoadingTopMovers={isLoadingTopMovers}
+      />
+
+      {/* Modal Section */}
       {selectedAsset && (
         <>
           <FundingPopUp
@@ -376,6 +393,7 @@ export function Dashboard() {
 interface AssetListsProps {
   pricesArray: number[];
   balancesArray: string[];
+  priceChange24hArray: number[];
   onDeposit: (asset: Asset) => void;
   onWithdraw: (asset: Asset) => void;
 }
@@ -383,53 +401,42 @@ const AssetListComponent = memo(
   function Component({
     pricesArray,
     balancesArray,
+    priceChange24hArray,
     onDeposit,
     onWithdraw,
   }: AssetListsProps) {
-    const [openAccordionIndex, setOpenAccordionIndex] = useState(0); // to toggle accordion, the index of the opened accordion
+    const [openAccordionIndex, setOpenAccordionIndex] = useState(0);
     const handleAccordionToggle = (index: number) => {
       setOpenAccordionIndex((prevIndex) => (prevIndex === index ? -1 : index));
     };
 
     return (
       <div className="mt-4">
-        <div className="grid grid-cols-12 items-center justify-between justify-items-start py-2 text-xs text-gray-500 capitalize">
-          <div className="col-span-4  max-lg:col-span-6">Asset</div>
-          <div className="col-span-2 max-lg:col-span-3 text-right">Price</div>
-          <div className="col-span-2  max-lg:col-span-3 text-right">
-            Balance
-          </div>
-          <div className="col-span-4 max-lg:sr-only text-right"></div>
-        </div>
-        <div className="flex flex-col gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {assetList.map((asset, index) => {
             const price = pricesArray[index]; // asset.priceID
             const userBalance = balancesArray[index] || "0"; // asset.vaultid
 
             return (
-              <div
-                key={asset.name}
-                className="relative hover:px-4 p-2 hover:border border-[#27272b] hover:border-[#27272b] rounded-2xl transition-all duration-300"
-              >
-                <GlowingEffect
+              <div key={asset.name} className="relative">
+                {/* <GlowingEffect
                   spread={2}
                   glow={true}
                   disabled={false}
                   proximity={64}
                   inactiveZone={0.01}
+                /> */}
+                <AssetComponent
+                  asset={asset}
+                  price={price}
+                  userBalance={userBalance}
+                  priceChange24h={priceChange24hArray[index] || 0}
+                  index={index}
+                  openAccordionIndex={openAccordionIndex}
+                  onAccordionToggle={handleAccordionToggle}
+                  onDeposit={onDeposit}
+                  onWithdraw={onWithdraw}
                 />
-                <div className="">
-                  <AssetComponent
-                    asset={asset}
-                    price={price}
-                    userBalance={userBalance}
-                    index={index}
-                    openAccordionIndex={openAccordionIndex}
-                    onAccordionToggle={handleAccordionToggle}
-                    onDeposit={onDeposit}
-                    onWithdraw={onWithdraw}
-                  />
-                </div>
               </div>
             );
           })}
@@ -442,61 +449,12 @@ const AssetListComponent = memo(
       JSON.stringify(prevProps.pricesArray) ==
         JSON.stringify(newProps.pricesArray) &&
       JSON.stringify(prevProps.balancesArray) ==
-        JSON.stringify(newProps.balancesArray)
+        JSON.stringify(newProps.balancesArray) &&
+      JSON.stringify(prevProps.priceChange24hArray) ==
+        JSON.stringify(newProps.priceChange24hArray)
     );
   }
 );
-
-// interface TopMoversProps {
-//   topMovers: CoinGeckoMarketData[];
-// }
-
-// const TopMoversComponent = memo(
-//   ({ topMovers }: TopMoversProps) => {
-//     return (
-//       <div className="mt-5 p-5 max-h-screen h-full overflow-y-scroll overflow-x-hidden">
-//         <div className="flex flex-col gap-3">
-//           {topMovers.map((coin) => (
-//             <div
-//               key={coin.id}
-//               className="py-4 grid grid-cols-12 items-center justify-between gap-3"
-//             >
-//               <div className="col-span-6 flex items-center">
-//                 <img
-//                   src={coin.image}
-//                   alt={coin.name}
-//                   className="w-6 h-6 mr-2"
-//                 />
-//                 <div>
-//                   <div className="text-md font-semibold">{coin.name}</div>
-//                   <div className="text-sm text-gray-500">
-//                     {coin.symbol.toUpperCase()}
-//                   </div>
-//                 </div>
-//               </div>
-//               <div
-//                 className={`col-span-3 text-sm ${
-//                   coin.price_change_percentage_24h >= 0
-//                     ? "text-green-500"
-//                     : "text-red-500"
-//                 }`}
-//               >
-//                 {coin.price_change_percentage_24h
-//                   ? `${coin.price_change_percentage_24h.toFixed(2)}%`
-//                   : "0.00%"}
-//               </div>
-//               <div className="col-span-3 text-sm font-semibold">
-//                 ${format(coin.current_price)}
-//               </div>
-//             </div>
-//           ))}
-//         </div>
-//       </div>
-//     );
-//   },
-//   (prevProps, nextProps) =>
-//     JSON.stringify(prevProps.topMovers) === JSON.stringify(nextProps.topMovers)
-// );
 
 const format = (price: number) => {
   if (!price) return "0.00";

@@ -52,7 +52,7 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
                 <span className="text-white font-bold text-sm uppercase tracking-wide">System Upgrade</span>
                 <Zap className="h-4 w-4 text-yellow-200 animate-bounce" />
               </div>
-              <p className="text-white font-extralight uppercase lg:text-base text-sm leading-relaxed drop-shadow-sm">
+              <p className="text-white font-extralight uppercase lg:text-base text-xs leading-relaxed drop-shadow-sm">
                 {message}
               </p>
             </div>
@@ -61,11 +61,11 @@ export const UpgradeNotification: React.FC<UpgradeNotificationProps> = ({
           <button
             type="button"
             onClick={handleDismiss}
-            className="ml-4 group relative inline-flex items-center justify-center w-8 h-8 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full transition-all duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 backdrop-blur-sm"
+            className="ml-4 group relative inline-flex items-center justify-center w-8 h-8  rounded-full transition-all duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 backdrop-blur-sm"
             aria-label="Dismiss notification"
           >
             <X className="h-4 w-4 text-white group-hover:text-gray-100 transition-colors duration-200" />
-            <div className="absolute inset-0 rounded-full bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
+            <div className="absolute inset-0 rounded-full transition-opacity duration-200"></div>
           </button>
         </div>
       </div>

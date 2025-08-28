@@ -61,12 +61,12 @@ export const PriceInput = ({
   };
 
   return (
-    <div>
-      <div className="flex justify-between text-sm mb-2">
-        <span className="text-gray-400">Current Price</span>{" "}
-        <span className="text-gray-400">{tickToPrice(lowestSellOffer)}</span>
+    <div className="space-y-3">
+      <div className="flex justify-between text-sm mb-3">
+        <span className="text-gray-400 font-medium">Current Price</span>{" "}
+        <span className="text-gray-400 font-medium">{tickToPrice(lowestSellOffer)}</span>
       </div>
-      <div className="flex items-center gap-2 bg-[#1C1C28] rounded-lg p-3">
+      <div className="flex items-center gap-3 glass rounded-xl p-4 border border-white/10 bg-white/5 backdrop-blur-sm">
         <input
           type="number"
           disabled={
@@ -79,7 +79,7 @@ export const PriceInput = ({
             if (Number(value) < 0) return;
             setLimitPrice(value);
           }}
-          className="flex-1 bg-transparent text-white outline-none text-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          className="flex-1 bg-transparent text-white outline-none text-lg font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none placeholder:text-gray-500"
         />
       </div>
     </div>

@@ -86,16 +86,16 @@ export const Pairs: React.FC<PairProps> = memo(
 
     return (
       <div
-        className={`flex items-center justify-between p-3 hover:px-4 rounded-lg cursor-pointer group transition-all duration-200 ${
-          isSelected ? "bg-[#0300ad18]" : ""
+        className={`flex items-center justify-between p-4 hover:bg-white/5 rounded-xl cursor-pointer group transition-all duration-200 ${
+          isSelected ? "bg-[#0300ad18] border border-[#0300AD]/30" : ""
         }`}
       >
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-4">
           {/* Favorite Button */}
           <button
             type="button"
             title="Favorite"
-            className="hover:scale-110 transition-transform focus:outline-none"
+            className="hover:scale-110 transition-transform focus:outline-none p-1 rounded-lg hover:bg-white/10"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -108,14 +108,14 @@ export const Pairs: React.FC<PairProps> = memo(
           </button>
 
           {/* Asset Icon with Loading State */}
-          <div className="relative w-6 h-6">
+          <div className="relative w-8 h-8">
             {isFirstLoad && !imageLoaded && (
-              <div className="absolute inset-0 bg-gray-700 rounded-full animate-pulse" />
+              <div className="absolute inset-0 bg-gray-700/50 rounded-full animate-pulse" />
             )}
             <img
               src={market.baseAsset.logoUrl || market.baseAsset.image}
               alt={market.baseAsset.symbol}
-              className="w-6 h-6 rounded-full"
+              className="w-8 h-8 rounded-full"
               onLoad={() => {
                 setImageLoaded(true);
                 setIsFirstLoad(false);
@@ -130,12 +130,12 @@ export const Pairs: React.FC<PairProps> = memo(
           </div>
           {/* Asset Symbols and Name */}
           <div>
-            <div className="font-medium text-white">
+            <div className="font-medium text-white text-sm">
               {" "}
               {market.baseAsset.symbol.toUpperCase()}/
               {market.quoteAsset.symbol.toUpperCase()}
             </div>
-            <div className="text-sm text-gray-400">
+            <div className="text-xs text-gray-400">
               {market.baseAsset.symbol}
             </div>
           </div>
@@ -143,12 +143,12 @@ export const Pairs: React.FC<PairProps> = memo(
 
         {/* Price and 24h Change */}
         <div className="text-right">
-          <div className="text-white font-medium">
+          <div className="text-white font-medium text-sm">
             {formatPrice(details.price)}
           </div>
           <div
-            className={`text-sm ${
-              details.price_change_24h >= 0 ? "text-green-500" : "text-red-500"
+            className={`text-xs font-medium ${
+              details.price_change_24h >= 0 ? "text-green-400" : "text-red-400"
             }`}
           >
             {formatPercent(details.price_change_24h)}%

@@ -100,16 +100,16 @@ export const UserStakes = ({
   };
 
   return (
-    <div className="bg-[#18191de9] rounded-3xl p-6 border-2 border-dashed border-[#363c52] border-opacity-40 min-h-10 h-full">
-      <h2 className="text-2xl font-bold mb-4">Stakes</h2>
+    <div className="glass rounded-2xl p-4 sm:p-5 lg:p-6 border-2 border-dashed border-[#363c52] border-opacity-40 min-h-10 h-full">
+      <h2 className="text-xl sm:text-2xl font-bold mb-4">Stakes</h2>
       {userStakes.length === 0 ? (
-        <div className="text-center text-gray-400 py-4">No stakes</div>
+        <div className="text-center text-gray-400 py-6">No stakes</div>
       ) : (
         userStakes.map((userStake) => {
           const [id, stake, feesEarned] = userStake;
           const index: number = userStakes.indexOf(userStake);
           return (
-            <div key={id}>
+            <div key={id} className="mb-4">
               <Stake
                 unStake={() => {
                   handleModalOpen(index);

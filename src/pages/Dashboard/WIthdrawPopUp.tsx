@@ -4,9 +4,9 @@ import { Asset } from "../../lists/marketlist";
 import { VaultActor } from "../../utils/Interfaces/vaultActor";
 import { parseUnits } from "ethers/lib/utils";
 import { Modal, Button, Icon } from "semantic-ui-react";
-import { IconButton } from "../../components/Sidebar";
 import Modal_Icon from "../../images/Modal_Icon.png";
 import Marketing_Campaign_1 from "../../images/Marketing_Campaign_1.png";
+import { IconButton } from "../../components/Navbar";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -122,9 +122,9 @@ export default function WithdrawPopUp({
       open={isOpen}
       onClose={onClose}
       size="tiny"
-      className="!bg-[#141416] p-5 !rounded-3xl"
+      className="!bg-[#0A1022]/90 !backdrop-blur-xl !rounded-3xl !border !border-white/10 !p-0"
     >
-      <Modal.Content className="!bg-transparent !text-white space-y-5">
+      <Modal.Content className="!bg-transparent !text-white !p-5 space-y-5">
         {view === "input" && (
           <>
             <div className="!flex justify-between content-center items-center mb-5 !bg-transparent !text-white">
@@ -140,12 +140,12 @@ export default function WithdrawPopUp({
                 <Icon name="close" size="small" className="pl-0.5" />
               </IconButton>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-2">
                   Cryptocurrency
                 </label>
-                <div className="bg-[#18191D] p-3 rounded-lg flex items-center">
+                <div className="glass rounded-xl border border-white/10 bg-white/5 p-3 flex items-center">
                   {asset.logoUrl && (
                     <img
                       src={asset.logoUrl}
@@ -166,7 +166,7 @@ export default function WithdrawPopUp({
                 <label className="block text-sm font-medium text-gray-400 mb-2">
                   Amount
                 </label>
-                <div className="bg-[#18191D] p-3 rounded-lg">
+                <div className="glass rounded-xl border border-white/10 bg-white/5 p-3">
                   <input
                     type="number"
                     value={withdrawAmount}
@@ -174,7 +174,7 @@ export default function WithdrawPopUp({
                     placeholder="0.0"
                     className="w-full bg-transparent border-none focus:outline-none text-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
-                  <div className="text-sm text-white flex justify-between mt-2">
+                  <div className="text-sm text-white flex justify-between mt-3">
                     <span className="text-white">
                       Available:{" "}
                       <span className="text-xs">

@@ -84,29 +84,43 @@ export default function Position({
 
   return (
     <>
-      <tr className="bg-[#18191d72] border border-[#27272b] rounded-lg">
+      <tr className="glass border border-white/10 rounded-xl hover:bg-white/5 transition-all duration-200">
         <td className="p-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <img
               src={market.baseAsset.logoUrl}
               alt={market.baseAsset.symbol}
-              className="w-6 h-6 rounded-full"
+              className="w-8 h-8 rounded-full"
             />
-            <span className="text-sm">{order.long ? "Long" : "Short"}</span>
+            <div className="flex flex-col">
+              <span className={`text-sm font-medium ${order.long ? 'text-green-400' : 'text-red-400'}`}>
+                {order.long ? "Long" : "Short"}
+              </span>
+              <span className="text-xs text-gray-400">{market.baseAsset.symbol}</span>
+            </div>
           </div>
         </td>
-        <td className="p-4">{positionSize()}</td>
         <td className="p-4">
-          {formatUnits(order.collateral_value, market.quoteAsset.decimals)}{" "}
-          {market.quoteAsset.symbol}
+          <div className="text-sm font-medium text-white">{positionSize()}</div>
         </td>
-        <td className="p-4">{tickToPrice(order.entry_tick)}</td>
-        <td className="p-4">{tickToPrice(markTick)}</td>
+        <td className="p-4">
+          <div className="text-sm font-medium text-white">
+            {formatUnits(order.collateral_value, market.quoteAsset.decimals)}{" "}
+            {market.quoteAsset.symbol}
+          </div>
+        </td>
+        <td className="p-4">
+          <div className="text-sm font-medium text-white">{tickToPrice(order.entry_tick)}</div>
+        </td>
+        <td className="p-4">
+          <div className="text-sm font-medium text-white">{tickToPrice(markTick)}</div>
+        </td>
         <td className="p-4 text-right">
           <button
             type="button"
             onClick={closePosition}
-            className="p-2 rounded-full text-sm transition-all duration-200"
+            disabled={isClosing}
+            className="p-3 rounded-xl text-sm transition-all duration-200 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 hover:border-red-500/50 text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span>
               {isClosing ? (
@@ -119,13 +133,13 @@ export default function Position({
         </td>
       </tr>
       {showNotification && (
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
           <div
-            className={`px-6 py-3 rounded-lg shadow-lg ${
+            className={`px-6 py-4 rounded-xl shadow-lg ${
               notificationMessage.includes("success")
                 ? "bg-green-500"
                 : "bg-red-500"
-            } text-white`}
+            } text-white font-medium`}
           >
             {notificationMessage}
           </div>

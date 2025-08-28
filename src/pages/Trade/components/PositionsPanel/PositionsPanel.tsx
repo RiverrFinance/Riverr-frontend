@@ -126,8 +126,8 @@ export default function PositionsPanel({ market, readAgent }: Props) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-4 pb-0 bg-[#18191D] sticky top-0 z-10">
-        <div className="relative p-1 bg-[#18191D]">
+      <div className="p-4 sm:p-6 pb-0 bg-transparent sticky top-0 z-10">
+        <div className="relative p-1 sm:p-2 bg-transparent">
           <div className="flex relative z-10">
             {(["Positions", "Orders"] as const).map((tab) => (
               <button
@@ -135,7 +135,7 @@ export default function PositionsPanel({ market, readAgent }: Props) {
                 title="tabs"
                 key={tab}
                 onClick={() => setCurrentTab(tab)}
-                className="flex-1 py-2 px-4 text-sm font-medium relative transition-colors duration-300"
+                className="flex-1 py-2 sm:py-3 px-3 sm:px-6 text-xs sm:text-sm font-medium relative transition-colors duration-300"
               >
                 <span
                   className={`relative z-10 ${
@@ -150,11 +150,9 @@ export default function PositionsPanel({ market, readAgent }: Props) {
             ))}
           </div>
           <div
-            className="absolute top-1 h-[calc(100%-8px)] w-[calc(50%-0px)] bg-[#0300ad18] border-b-2 border-[#0300AD] transition-transform duration-100 linear rounded-sm"
+            className="absolute top-1 sm:top-2 h-[calc(100%-8px)] sm:h-[calc(100%-16px)] w-[calc(50%-8px)] sm:w-[calc(50%-16px)] bg-[#0300ad18] border-b-2 border-[#0300AD] transition-transform duration-100 linear rounded-sm sm:rounded-lg"
             style={{
-              transform: `translateX(${
-                currentTab === "Positions" ? "0%" : "100%"
-              })`,
+              transform: `translateX(${currentTab === "Positions" ? "0%" : "100%"})`,
             }}
           />
         </div>
@@ -162,22 +160,22 @@ export default function PositionsPanel({ market, readAgent }: Props) {
 
       <div className="flex-1 overflow-x-auto">
         <div className="h-full overflow-y-auto scrollbar-custom">
-          <table className="w-full border-separate border-spacing-y-3">
+          <table className="w-full border-separate border-spacing-y-2 sm:border-spacing-y-4">
             <thead className="sticky top-0 z-10">
-              <tr className="text-gray-400">
-                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[150px]">
+              <tr className="text-gray-400 text-xs sm:text-sm">
+                <th className="p-3 sm:p-4 pb-4 sm:pb-6 text-left whitespace-nowrap min-w-[120px] sm:min-w-[150px]">
                   Position
                 </th>
-                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[120px]">
+                <th className="p-3 sm:p-4 pb-4 sm:pb-6 text-left whitespace-nowrap min-w-[100px] sm:min-w-[120px]">
                   Size
                 </th>
-                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[150px]">
+                <th className="p-3 sm:p-4 pb-4 sm:pb-6 text-left whitespace-nowrap min-w-[120px] sm:min-w-[150px]">
                   Collateral
                 </th>
-                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[150px]">
+                <th className="p-3 sm:p-4 pb-4 sm:pb-6 text-left whitespace-nowrap min-w-[120px] sm:min-w-[150px]">
                   Entry Price
                 </th>
-                <th className="p-4 pb-6 text-left whitespace-nowrap min-w-[150px]">
+                <th className="p-3 sm:p-4 pb-4 sm:pb-6 text-left whitespace-nowrap min-w-[120px] sm:min-w-[150px]">
                   Mark Price
                 </th>
               </tr>
@@ -185,7 +183,7 @@ export default function PositionsPanel({ market, readAgent }: Props) {
             <tbody className="overflow-y-auto">
               {positions.length === 0 && orders.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-8 text-gray-400">
+                  <td colSpan={8} className="text-center py-8 text-gray-400 text-sm">
                     No {currentTab.toLowerCase()} found
                   </td>
                 </tr>
