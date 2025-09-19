@@ -83,28 +83,37 @@ export const MarginInput = ({
   };
   return (
     <div>
-      <div className="flex justify-between text-sm mb-2">
-        <span className="text-gray-400">Collateral</span>
-        <span className="text-white">
-          Available:{" "}
-          {`${formatUnits(userMarginBalance, market.quoteAsset.decimals)}  ${
-            market.quoteAsset.symbol
-          }`}
-        </span>
-      </div>
-      <div className="flex items-center gap-2 bg-[#1C1C28] rounded-lg p-3">
-        <input
-          disabled={!market.market_id}
-          type="number"
-          value={value}
-          onChange={(e) => {
-            let { value } = e.target;
-            onCollateralChange(value);
-          }}
-          className="flex-1 bg-transparent text-white outline-none text-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-          placeholder="0.00"
-        />
-        <div>{market.quoteAsset.symbol}</div>
+      <div className="flex items-center gap-3 glass rounded-xl p-4 border border-white/10 bg-white/5 backdrop-blur-sm">
+        <div className="flex flex-col flex-1 space-y-3">
+          <span className="text-gray-400 text-sm mb-1">Collateral</span>
+          <input
+            disabled={!market.market_id}
+            type="number"
+            value={value}
+            onChange={(e) => {
+              let { value } = e.target;
+              onCollateralChange(value);
+            }}
+            className="bg-transparent text-white outline-none text-2xl font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none placeholder:text-gray-500"
+            placeholder="0.00"
+          />
+          <span className="text-gray-400 text-sm mt-1">
+            Available:{" "}
+            {`${formatUnits(userMarginBalance, market.quoteAsset.decimals)}  ${
+              market.quoteAsset.symbol
+            }`}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {market.baseAsset.logoUrl && (
+            <img
+              src={market.quoteAsset.logoUrl}
+              alt={market.quoteAsset.symbol}
+              className="w-8 h-8 rounded-full"
+            />
+          )}
+          <span className="text-white font-medium">{market.quoteAsset.symbol}</span>
+        </div>
       </div>
     </div>
   );

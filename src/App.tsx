@@ -4,6 +4,8 @@ import { Trade } from "./pages/Trade/Trade";
 import { Earn } from "./pages/Earn/Earn";
 import { Sidebar } from "./components/Sidebar";
 import { Toaster } from "sonner";
+import { Pools } from "./pages/Pool/Pools";
+import { PoolDetails } from "./pages/Pool/PoolDetails";
 import "semantic-ui-css/semantic.min.css";
 import "@nfid/identitykit/react/styles.css";
 import { IdentityKitProvider } from "@nfid/identitykit/react";
@@ -37,6 +39,8 @@ const SubApp = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/trade" element={<Trade />} />
           <Route path="/earn" element={<Earn />} />
+          <Route path="/pools" element={<Pools />} />
+          <Route path="/pools/:marketId" element={<PoolDetails />} />
         </Routes>
       </Sidebar>
     </BrowserRouter>

@@ -208,197 +208,284 @@ export default function FundingPopUp({
       open={isOpen}
       onClose={onClose}
       size="tiny"
-      className="!bg-[#0A1022]/90 !backdrop-blur-xl !rounded-3xl !border !border-white/10 !p-0"
+      className="!bg-transparent !p-0"
+      dimmer={{
+        className: "!bg-black/60 !backdrop-blur-sm",
+      }}
     >
-      <Modal.Content className="!bg-transparent !text-white !p-5 space-y-5">
-        {view === "input" && (
-          <>
-            <div className="!flex justify-between content-center items-center mb-5 !bg-transparent !text-white">
-              <div className="text-xl font-bold flex items-center gap-2 w-full">
-                <img src={Modal_Icon} alt="" className="h-10 w-10" />
-                <span>Deposit</span>
-              </div>
-              <IconButton
-                onClick={onClose}
-                className="text-gray-400 !rounded-xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5 !px-2"
-                title=""
-              >
-                <Icon name="close" size="small" className="pl-0.5" />
-              </IconButton>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Cryptocurrency
-                </label>
-                <div className="glass rounded-xl border border-white/10 bg-white/5 p-3 flex items-center">
-                  {asset.logoUrl && (
-                    <img
-                      src={asset.logoUrl}
-                      alt={asset.name}
-                      className="w-6 h-6 rounded-full mr-2"
-                    />
-                  )}
-                  <div>
-                    <span className="font-medium capitalize">{asset.name}</span>
-                    <span className="text-xs text-gray-400 ml-2">
-                      {asset.symbol}
-                    </span>
+      <Modal.Content className="!bg-transparent !text-white !p-0 !shadow-none !border-none">
+        <div className="glass !bg-[#09051bfd] backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl max-w-md mx-auto">
+          <div className="p-6 sm:p-8">
+            <div className="flex flex-col items-center justify-center text-center space-y-6">
+              {currentAction ? (
+                // Loading State
+                <div className="space-y-4">
+                  <div className="relative">
+                    <div className="w-20 h-20 rounded-full glass bg-[#0300AD]/10 border border-[#0300AD]/20 flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0300AD]" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-semibold text-white">
+                      {currentAction}
+                    </h3>
+                    <p className="text-gray-400 text-sm">
+                      Processing transaction...
+                    </p>
                   </div>
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Amount
-                </label>
-                <div className="glass rounded-xl border border-white/10 bg-white/5 p-3">
-                  <input
-                    type="number"
-                    value={depositAmount}
-                    onChange={(e) => onAmountUpdate(e.target.value)}
-                    placeholder="0.0"
-                    className="w-full bg-transparent border-none focus:outline-none text-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
-                  <div className="text-sm text-white flex justify-between mt-3">
-                    <span className="text-white">
-                      Balance:{" "}
-                      <span className="text-xs">
-                        {formatUnits(userTokenBalance, asset.decimals)}{" "}
-                        {asset.symbol}
-                      </span>
-                    </span>
-                    {error && <span className="text-red-500">{error}</span>}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 accent-[#23262F]"
-                    onChange={() => setIsChecked(!isChecked)}
-                  />
-                  <span className="text-sm text-gray-500">
-                    I agree with the terms and conditions of the platform's
-                    deposit service.
-                  </span>
-                </label>
-              </div>
-              <Button
-                type="button"
-                onClick={proceedToPreview}
-                disabled={error !== null || depositAmount === "" || !isChecked}
-                className="!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !flex !items-center !gap-2 !justify-center !w-full !border !border-[#c2c0c0] hover:!-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] overflow-hidden transition-all duration-500 bg-transparent hover:border-t hover:border-b hover:border-blue-400/50"
-              >
-                Deposit
-              </Button>
-            </div>
-          </>
-        )}
-        {view === "preview" && (
-          <>
-            <div className="flex items-center justify-items-center mb-5">
-              <button
-                title="arrow left"
-                type="button"
-                onClick={goBackToInput}
-                className="text-gray-400 hover:text-white mr-3"
-              >
-                <Icon name="arrow left" />
-              </button>
-              <span className="text-xl font-bold">Funding Preview</span>
-            </div>
-
-            <div className="text-center pt-5">
-              <h2 className="text-3xl font-bold mb-2">
-                {depositAmount} {asset.symbol}
-              </h2>
-              {/* <p className="text-gray-400">
-                You will deposit{" "}
-                <span className="text-green-600">${dollarValue}</span>
-              </p> */}
-
-              <div className="my-8 py-5">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-400">Deposit</span>
-                  <span className="font-semibold flex items-center capitalize">
-                    {asset.logoUrl && (
+              ) : txError ? (
+                // Error State
+                <div className="space-y-6">
+                  <div className="relative">
+                    <div className="glass bg-gradient-to-br from-red-500/10 to-rose-600/10 border border-red-500/20 rounded-2xl p-6 shadow-lg backdrop-blur-sm">
                       <img
-                        src={asset.logoUrl}
-                        alt={asset.name}
-                        className="w-4 h-4 rounded-full mr-1"
+                        src={Marketing_Campaign_1}
+                        alt="Error"
+                        className="w-24 h-24 mx-auto opacity-50"
                       />
-                    )}
-                    {asset.name}{" "}
-                    <span className="text-gray-400 ml-1 text-xs">
-                      {asset.symbol}
-                    </span>
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <Button
-              type="button"
-              onClick={fundAccount}
-              disabled={isLoading}
-              className={`!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !flex !items-center !gap-2 !justify-center !w-full !border !border-[#c2c0c0] hover:!-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] overflow-hidden transition-all duration-500 bg-transparent hover:border-t hover:border-b hover:border-blue-400/50
-                ${
-                  isLoading
-                    ? "bg-[#0300ad5c] text-gray-400 cursor-not-allowed"
-                    : "bg-[#0300ad] hover:bg-[#0000003d] text-white"
-                }
-              `}
-            >
-              {isLoading ? <span>{currentAction}</span> : "Deposit"}
-            </Button>
-          </>
-        )}
-        {view === "transaction result" && (
-          <div className="flex flex-col justify-items-center">
-            <div className="flex justify-between items-center">
-              <div />
-              <IconButton
-                onClick={onClose}
-                className="text-gray-400 !rounded-xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5 !px-2"
-                title=""
-              >
-                <Icon name="close" size="small" className="pl-1" />
-              </IconButton>
-            </div>
-            <div className="flex flex-col items-center space-y-3">
-              {txError !== null ? (
-                <>
-                  <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
-                    <Icon
-                      name="times circle"
-                      size="large"
-                      color="red"
-                      className="pl-1"
-                    />
+                    </div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                      <div className="glass bg-[#16182e]/80 backdrop-blur-sm rounded-full p-3 border border-red-500/20">
+                        <AlertCircle className="w-8 h-8 text-red-400" />
+                      </div>
+                    </div>
                   </div>
-                  <h2 className="text-xl font-semibold">{txError}</h2>
-                  {/* <p className="text-sm text-gray-400">{txError}</p> */}
+
+                  <div className="space-y-3">
+                    <h3 className="text-3xl font-bold text-white uppercase">
+                      Transaction Failed
+                    </h3>
+                    <p className="text-gray-400 text-sm">
+                      Your transaction could not be processed.
+                    </p>
+                  </div>
+
+                  <div className="glass rounded-xl p-5 bg-red-500/5 border border-red-500/20 backdrop-blur-sm space-y-4">
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-gray-400 text-sm font-medium">
+                        Error Details
+                      </span>
+                      <span className="text-red-400 text-sm font-medium">
+                        Failed
+                      </span>
+                    </div>
+                    <div className="h-px bg-gradient-to-r from-transparent via-red-500/10 to-transparent" />
+                    <div className="py-2">
+                      <p className="text-red-400 text-sm text-center leading-relaxed">
+                        {txError}
+                      </p>
+                    </div>
+                  </div>
+
                   <Button
                     onClick={goBackToInput}
-                    className="!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !flex !items-center !gap-2 !justify-center !w-full !border !border-[#c2c0c0] hover:!-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] overflow-hidden transition-all duration-500 bg-transparent hover:border-t hover:border-b hover:border-blue-400/50"
+                    className="!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !flex !items-center !gap-2 !justify-center !w-full !border !border-[#c2c0c0] hover:!-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD]"
                   >
                     Try Again
                   </Button>
-                </>
+                </div>
+              ) : view === "transaction result" ? (
+                // Success State
+                <div className="space-y-6">
+                  <div className="relative">
+                    <div className="glass bg-gradient-to-br from-green-500/10 to-emerald-600/10 border border-green-500/20 rounded-2xl p-6 shadow-lg backdrop-blur-sm">
+                      <img
+                        src={Marketing_Campaign_1}
+                        alt="Success"
+                        className="w-24 h-24 mx-auto"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h3 className="text-3xl font-bold text-white uppercase">
+                      Transaction Success
+                    </h3>
+                    <p className="text-gray-400 text-sm">Deposit successful</p>
+                  </div>
+
+                  <div className="glass rounded-xl p-5 bg-[#0300AD]/5 border border-[#0300AD]/20 backdrop-blur-sm space-y-4">
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-gray-400 text-sm font-medium">
+                        Amount
+                      </span>
+                      <div className="flex items-center gap-2 text-white font-semibold text-sm">
+                        <img
+                          src={asset.logoUrl}
+                          alt={asset.symbol}
+                          className="w-4 h-4 rounded-full"
+                        />
+                        <span>
+                          {depositAmount} {asset.symbol}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ) : (
+                // Input/Preview Forms (keep existing code)
                 <>
-                  <img src={Marketing_Campaign_1} alt="" />
-                  <h2>
-                    {depositAmount} {asset.symbol}
-                  </h2>
-                  <p className="text-sm text-gray-400">Deposit Successful</p>
+                  {view === "input" && (
+                    <>
+                      <div className="!flex justify-between content-center items-center mb-5 !bg-transparent !text-white">
+                        <div className="text-xl font-bold flex items-center gap-2 w-full">
+                          <img src={Modal_Icon} alt="" className="h-10 w-10" />
+                          <span>Deposit</span>
+                        </div>
+                        <IconButton
+                          onClick={onClose}
+                          className="text-gray-400 !rounded-xl hover:text-white hover:!translate-x-0 hover:-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] !p-1.5 !px-2"
+                          title=""
+                        >
+                          <Icon name="close" size="small" className="pl-0.5" />
+                        </IconButton>
+                      </div>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-400 mb-2">
+                            Cryptocurrency
+                          </label>
+                          <div className="glass rounded-xl border border-white/10 bg-white/5 p-3 flex items-center">
+                            {asset.logoUrl && (
+                              <img
+                                src={asset.logoUrl}
+                                alt={asset.name}
+                                className="w-6 h-6 rounded-full mr-2"
+                              />
+                            )}
+                            <div>
+                              <span className="font-medium capitalize">
+                                {asset.name}
+                              </span>
+                              <span className="text-xs text-gray-400 ml-2">
+                                {asset.symbol}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-400 mb-2">
+                            Amount
+                          </label>
+                          <div className="glass rounded-xl border border-white/10 bg-white/5 p-3">
+                            <input
+                              type="number"
+                              value={depositAmount}
+                              onChange={(e) => onAmountUpdate(e.target.value)}
+                              placeholder="0.0"
+                              className="w-full bg-transparent border-none focus:outline-none text-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            />
+                            <div className="text-sm text-white flex justify-between mt-3">
+                              <span className="text-white">
+                                Balance:{" "}
+                                <span className="text-xs">
+                                  {formatUnits(
+                                    userTokenBalance,
+                                    asset.decimals
+                                  )}{" "}
+                                  {asset.symbol}
+                                </span>
+                              </span>
+                              {error && (
+                                <span className="text-red-500">{error}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mb-6">
+                          <label className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 accent-[#23262F]"
+                              onChange={() => setIsChecked(!isChecked)}
+                            />
+                            <span className="text-sm text-gray-500">
+                              I agree with the terms and conditions of the
+                              platform's deposit service.
+                            </span>
+                          </label>
+                        </div>
+                        <Button
+                          type="button"
+                          onClick={proceedToPreview}
+                          disabled={
+                            error !== null || depositAmount === "" || !isChecked
+                          }
+                          className="!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !flex !items-center !gap-2 !justify-center !w-full !border !border-[#c2c0c0] hover:!-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] overflow-hidden transition-all duration-500 bg-transparent hover:border-t hover:border-b hover:border-blue-400/50"
+                        >
+                          Deposit
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                  {view === "preview" && (
+                    <>
+                      <div className="flex items-center justify-items-center mb-5">
+                        <button
+                          title="arrow left"
+                          type="button"
+                          onClick={goBackToInput}
+                          className="text-gray-400 hover:text-white mr-3"
+                        >
+                          <Icon name="arrow left" />
+                        </button>
+                        <span className="text-xl font-bold">
+                          Funding Preview
+                        </span>
+                      </div>
+
+                      <div className="text-center pt-5">
+                        <h2 className="text-3xl font-bold mb-2">
+                          {depositAmount} {asset.symbol}
+                        </h2>
+                        {/* <p className="text-gray-400">
+                          You will deposit{" "}
+                          <span className="text-green-600">${dollarValue}</span>
+                        </p> */}
+
+                        <div className="my-8 py-5">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-gray-400">Deposit</span>
+                            <span className="font-semibold flex items-center capitalize">
+                              {asset.logoUrl && (
+                                <img
+                                  src={asset.logoUrl}
+                                  alt={asset.name}
+                                  className="w-4 h-4 rounded-full mr-1"
+                                />
+                              )}
+                              {asset.name}{" "}
+                              <span className="text-gray-400 ml-1 text-xs">
+                                {asset.symbol}
+                              </span>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={fundAccount}
+                        disabled={isLoading}
+                        className={`!bg-[#0300ad] hover:!bg-[#0000003d] !text-white !text-sm !font-normal !py-3 !rounded-full !flex !items-center !gap-2 !justify-center !w-full !border !border-[#c2c0c0] hover:!-translate-y-0.5 hover:!shadow-[0_2px_0_0_#0300AD] overflow-hidden transition-all duration-500 bg-transparent hover:border-t hover:border-b hover:border-blue-400/50
+                          ${
+                            isLoading
+                              ? "bg-[#0300ad5c] text-gray-400 cursor-not-allowed"
+                              : "bg-[#0300ad] hover:bg-[#0000003d] text-white"
+                          }
+                        `}
+                      >
+                        {isLoading ? <span>{currentAction}</span> : "Deposit"}
+                      </Button>
+                    </>
+                  )}
                 </>
               )}
             </div>
           </div>
-        )}
+        </div>
       </Modal.Content>
     </Modal>
   );

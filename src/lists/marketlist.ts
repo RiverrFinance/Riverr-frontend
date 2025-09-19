@@ -1,4 +1,5 @@
 export interface Market {
+  // id: number;
   baseAsset: Asset;
   quoteAsset: Asset;
   market_id?: string;
@@ -65,6 +66,7 @@ export const quoteCurrencies: Array<Asset> = [assetList[0], assetList[1]];
 
 export const markets: Array<Market> = [
   {
+    // id: 1,
     baseAsset: assetList[2],
     quoteAsset: quoteCurrencies[0],
     chartId: "xmiu5-jqaaa-aaaag-qbz7q-cai",
@@ -72,21 +74,27 @@ export const markets: Array<Market> = [
     isFavorite: false,
   },
   {
+    // id: 2,
     baseAsset: assetList[3],
     quoteAsset: quoteCurrencies[0],
     chartId: "angxa-baaaa-aaaag-qcvnq-cai",
+    market_id: "eth-icp-market-id",
     isFavorite: false,
   },
   {
+    // id: 3,
     baseAsset: assetList[2],
     quoteAsset: quoteCurrencies[1],
     chartId: "xmiu5-jqaaa-aaaag-qbz7q-cai",
+    market_id: "btc-usdt-market-id",
     isFavorite: false,
   },
   {
+    // id: 4,
     baseAsset: assetList[3],
     quoteAsset: quoteCurrencies[1],
     chartId: "angxa-baaaa-aaaag-qcvnq-cai",
+    market_id: "eth-usdt-market-id",
     isFavorite: false,
   },
 ];

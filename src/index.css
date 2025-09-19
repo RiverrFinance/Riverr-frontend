@@ -266,7 +266,7 @@ body {
 /* Reusable glass effect for cards/sections */
 .glass {
   background: #03050b51;
-  backdrop-filter: blur(0px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(0px);
+  border: 1px solid #ffffff14;
 }

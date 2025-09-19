@@ -122,24 +122,30 @@
   }
 }
 
+/* Custom scrollbar styles */
+.scrollbar-custom {
+  scrollbar-width: thin;
+  scrollbar-color: #4B5563 transparent;
+}
+
 .scrollbar-custom::-webkit-scrollbar {
-  height: 6px;
   width: 6px;
+  height: 6px;
 }
 
 .scrollbar-custom::-webkit-scrollbar-track {
-  background: #18191D;
-  border-radius: 4px;
+  background: transparent;
 }
 
 .scrollbar-custom::-webkit-scrollbar-thumb {
-  background: #363c52;
-  border-radius: 4px;
+  background-color: #4B5563;
+  border-radius: 3px;
 }
 
 .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-  background: #0300AD;
+  background-color: #6B7280;
 }
+
 
 /* For Firefox */
 .scrollbar-custom {
@@ -250,4 +256,95 @@
 
 .ui.selection.dropdown > .text.active {
   color: #ffffff !important;
+}
+
+/* Animation for slide up notification */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Glass effect for better visual hierarchy */
+.glass {
+  background: #ffffff05;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive table utilities */
+@media (max-width: 640px) {
+  .table-mobile-compact td {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .table-mobile-compact .mobile-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
+
+.position-row:hover {
+  background: rgba(16, 185, 129, 0.05);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.order-row:hover {
+  background: rgba(59, 130, 246, 0.05);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Status indicators */
+.status-long {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-short {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Loading skeleton for better UX */
+.skeleton {
+  background: linear-gradient(90deg, #374151 25%, #4B5563 50%, #374151 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .hide-md {
+    display: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .hide-sm {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .hide-lg {
+    display: none !important;
+  }
 }

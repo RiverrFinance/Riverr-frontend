@@ -1,10 +1,6 @@
-import { AreaChart, Area, ResponsiveContainer } from 'recharts';
+import { AreaChart as RechartsAreaChart, Area, ResponsiveContainer } from 'recharts';
 
-interface AreaChartProps {
-  isPositive: boolean;
-}
-
-export const CryptoAreaChart = ({ isPositive }: AreaChartProps) => {
+export const CryptoAreaChart = ({ isPositive }: { isPositive: boolean }) => {
   const generatePriceData = (isPositive: boolean) => {
     const baseValue = 100;
     const volatility = 15;
@@ -29,9 +25,9 @@ export const CryptoAreaChart = ({ isPositive }: AreaChartProps) => {
     : "url(#negativeGradient)";
 
   return (
-    <div className="w-20 h-12 relative">
+    <div className="w-24 h-14 sm:w-32 sm:h-16 relative">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart
+        <RechartsAreaChart
           data={data}
           margin={{ top: 2, right: 2, left: 2, bottom: 2 }}
         >
@@ -56,7 +52,7 @@ export const CryptoAreaChart = ({ isPositive }: AreaChartProps) => {
             dot={false}
             activeDot={false}
           />
-        </AreaChart>
+        </RechartsAreaChart>
       </ResponsiveContainer>
     </div>
   );

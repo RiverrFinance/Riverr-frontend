@@ -34,10 +34,15 @@ const navLinks = [
     icon: <BarChart2 className="w-4 h-4" />,
   },
   {
-    path: "/earn",
-    label: "Earn",
-    icon: <PiggyBank className="w-4 h-4" />,
+    path: "/pools",
+    label: "Pools",
+    icon: <Globe className="w-4 h-4" />,
   },
+  // {
+  //   path: "/earn",
+  //   label: "Earn",
+  //   icon: <PiggyBank className="w-4 h-4" />,
+  // },
 ];
 
 export interface NavbarProps {

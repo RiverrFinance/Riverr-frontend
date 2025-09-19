@@ -259,36 +259,43 @@ export default function ManageLeverage({
 
         <div className="grid gap-3 lg:gap-6">
           <div className="space-y-2 lg:space-y-3">
-            <label className="text-xs lg:text-sm font-medium text-gray-400">
-              Amount
-            </label>
-            <div className="flex items-center glass rounded-lg p-3 lg:p-4 border border-white/10">
-              <input
-                type="text"
-                className="flex-1 bg-transparent border-none focus:outline-none text-sm lg:text-base text-white w-full"
-                placeholder="0.00"
-                value={referenceAmount}
-                onChange={(e) =>
-                  activeTab === "Deposit"
-                    ? onAmountDepositChange(e.target.value)
-                    : onAmountWithdrawChange(e.target.value)
-                }
-                disabled={!readWriteAgent}
-              />
-              <div className="flex items-center gap-1 lg:gap-2 text-gray-400 text-sm lg:text-base">
-                {selectedAsset.symbol}
+            <div className="flex items-center gap-3 glass rounded-xl p-4 border border-white/10 bg-white/5 backdrop-blur-sm">
+              <div className="flex flex-col flex-1 space-y-3">
+                <span className="text-gray-400 text-xs lg:text-sm">Amount</span>
+                <input
+                  type="text"
+                  className="bg-transparent text-white outline-none text-lg lg:text-2xl font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none placeholder:text-gray-500"
+                  placeholder="0.00"
+                  value={referenceAmount}
+                  onChange={(e) =>
+                    activeTab === "Deposit"
+                      ? onAmountDepositChange(e.target.value)
+                      : onAmountWithdrawChange(e.target.value)
+                  }
+                  disabled={!readWriteAgent}
+                />
+                <span className="text-gray-400 text-xs lg:text-sm">
+                  Available: {formatUnits(
+                    activeTab === "Deposit" ? useMarginBalance : usevTokenBalance,
+                    selectedAsset.decimals
+                  )} {activeTab === "Withdraw" ? "Q" : ""}{selectedAsset.symbol}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {selectedAsset.logoUrl && (
+                  <img
+                    src={selectedAsset.logoUrl}
+                    alt={selectedAsset.symbol}
+                    className="w-8 h-8 rounded-full"
+                  />
+                )}
+                <span className="text-white font-medium">
+                  {activeTab === "Withdraw" ? "Q" : ""}
+                  {selectedAsset.symbol}
+                </span>
                 <Icon name="chevron down" className="text-xs lg:text-sm" />
               </div>
             </div>
-            <p className="text-xs lg:text-sm text-white">
-              Available:{" "}
-              {formatUnits(
-                activeTab === "Deposit" ? useMarginBalance : usevTokenBalance,
-                selectedAsset.decimals
-              )}{" "}
-              {activeTab === "Withdraw" ? "Q" : ""}
-              {selectedAsset.symbol}
-            </p>
             {error && (
               <p className="text-xs lg:text-sm text-red-500">{error}</p>
             )}

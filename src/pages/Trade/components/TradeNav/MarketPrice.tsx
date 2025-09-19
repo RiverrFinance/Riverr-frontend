@@ -2,6 +2,13 @@ import { memo, useEffect, useState } from "react";
 import { fetchDetails } from "../../../../utils/utilFunction";
 import { Market } from "../../../../lists/marketlist";
 import { SECOND } from "../../../../utils/constants";
+import { TrendingUp, TrendingDown } from "lucide-react";
+import {
+  getStaticOpenInterest,
+  getStaticAvailableLiquidity,
+  getStaticNetRate,
+  formatMillions,
+} from "../../../../utils/metrics";
 
 interface PriceDetails {
   price: number;
@@ -49,22 +56,120 @@ const MarketPrice = memo(({ market }: { market: Market }) => {
     }
   };
 
+  const openInterest = getStaticOpenInterest();
+  const availableLiquidity = getStaticAvailableLiquidity();
+  const netRate = getStaticNetRate();
+
   return (
-    <div className="flex items-center space-x-8 max-sm:space-x-4 text-sm text-gray-400 max-sm:text-xs">
-      <div className="glass rounded-xl p-3 border border-white/10 bg-white/5 backdrop-blur-sm min-w-[80px]">
-        <div className="text-xs text-gray-400 mb-1 uppercase tracking-wide">Price</div>
-        <div className="text-white font-semibold text-lg max-sm:text-sm">
-          {formatPrice(details.price)}
-        </div>
+    <div className="flex items-center gap-6 text-sm text-gray-300">
+      {/* PRICE */}
+      <div className="flex flex-col">
+        <span className="text-gray-400 text-xs uppercase tracking-wide mb-1">
+          PRICE
+        </span>
+        <span className="text-white font-medium">
+          ${formatPrice(details.price)}
+        </span>
       </div>
-      <div className="glass rounded-xl p-3 border border-white/10 bg-white/5 backdrop-blur-sm min-w-[80px]">
-        <div className="text-xs text-gray-400 mb-1 uppercase tracking-wide">24h Change</div>
-        <div
-          className={`font-semibold text-lg max-sm:text-sm ${
+
+      {/* 24H CHANGE */}
+      <div className="flex flex-col">
+        <span className="text-gray-400 text-xs uppercase tracking-wide mb-1">
+          24H CHANGE
+        </span>
+        <span
+          className={`font-medium ${
             details.price_change_24h >= 0 ? "text-green-400" : "text-red-400"
           }`}
         >
+          {details.price_change_24h >= 0 ? "+" : ""}
           {formatPercent(details.price_change_24h)}%
+        </span>
+      </div>
+
+      {/* OPEN INTEREST */}
+      <div className="flex flex-col">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-gray-400 text-xs uppercase tracking-wide">
+            OPEN INTEREST
+          </span>
+          <div className="flex items-center gap-1">
+            <span className="text-green-400 text-xs">
+              ({openInterest.long}%
+            </span>
+            <span className="text-gray-400 text-xs">/</span>
+            <span className="text-red-400 text-xs">{openInterest.short}%)</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <TrendingUp className="w-3 h-3 text-green-400" />
+            <span className="text-green-400 font-medium">{formatMillions(openInterest.longAmountMillions)}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <TrendingDown className="w-3 h-3 text-red-400" />
+            <span className="text-red-400 font-medium">{formatMillions(openInterest.shortAmountMillions)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* AVAILABLE LIQUIDITY */}
+      <div className="flex flex-col">
+        <span className="text-gray-400 text-xs uppercase tracking-wide mb-1">
+          AVAILABLE LIQUIDITY
+        </span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <TrendingUp className="w-3 h-3 text-green-400" />
+            <span className="text-green-400 font-medium">{formatMillions(availableLiquidity.longLiquidityMillions)}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <TrendingDown className="w-3 h-3 text-red-400" />
+            <span className="text-red-400 font-medium">{formatMillions(availableLiquidity.shortLiquidityMillions)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* NET RATE */}
+      <div className="flex flex-col">
+        <span className="text-gray-400 text-xs uppercase tracking-wide mb-1">
+          NET RATE / 1H
+        </span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            {parseFloat(netRate.hourlyPercent) >= 0 ? (
+              <TrendingUp className="w-3 h-3 text-green-400" />
+            ) : (
+              <TrendingDown className="w-3 h-3 text-red-400" />
+            )}
+            <span
+              className={`font-medium text-sm ${
+                parseFloat(netRate.hourlyPercent) >= 0
+                  ? "text-green-400"
+                  : "text-red-400"
+              }`}
+            >
+              {parseFloat(netRate.hourlyPercent) >= 0 ? "+" : ""}
+              {netRate.hourlyPercent}%
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            {parseFloat(netRate.dailyPercent) >= 0 ? (
+              <TrendingUp className="w-3 h-3 text-green-400" />
+            ) : (
+              <TrendingDown className="w-3 h-3 text-red-400" />
+            )}
+            <span
+              className={`text-xs ${
+                parseFloat(netRate.dailyPercent) >= 0
+                  ? "text-green-400"
+                  : "text-red-400"
+              }`}
+            >
+              {parseFloat(netRate.dailyPercent) >= 0 ? "+" : ""}
+              {netRate.dailyPercent}%
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -83,7 +188,7 @@ const formatPrice = (price: number | string) => {
 };
 
 const formatPercent = (percent: number | string) => {
-  if (typeof percent === "string") return percent; 
+  if (typeof percent === "string") return percent;
   if (!percent) return "0.00";
   return percent.toFixed(2);
 };
