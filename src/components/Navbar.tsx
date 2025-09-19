@@ -14,6 +14,7 @@ import {
   PiggyBank,
   Globe,
   Bell,
+  Bitcoin,
 } from "lucide-react";
 
 import LogoImg from "../images/Logo.svg";
@@ -37,6 +38,11 @@ const navLinks = [
     path: "/earn",
     label: "Earn",
     icon: <PiggyBank className="w-4 h-4" />,
+  },
+    {
+    path: "/bitcoin_integration",
+    label: "Bitcoin",
+    icon: <Bitcoin className="w-4 h-4" />,
   },
 ];
 

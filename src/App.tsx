@@ -8,6 +8,7 @@ import "semantic-ui-css/semantic.min.css";
 import "@nfid/identitykit/react/styles.css";
 import { IdentityKitProvider } from "@nfid/identitykit/react";
 import { NFIDW, InternetIdentity } from "@nfid/identitykit";
+import Bitcoin from "./pages/Bitcoin/Bitcoin";
 
 function App() {
   return (
@@ -37,6 +38,7 @@ const SubApp = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/trade" element={<Trade />} />
           <Route path="/earn" element={<Earn />} />
+          <Route path="/bitcoin_integration" element={<Bitcoin />} />
         </Routes>
       </Sidebar>
     </BrowserRouter>
