@@ -40,9 +40,9 @@ export const AssetComponent = function AssetComponent({
 
   // line chart
   const renderLineChart = (isPositive: boolean) => {
-    const color = isPositive ? 'text-green-400' : 'text-red-400';
-    const strokeColor = isPositive ? 'stroke-green-400' : 'stroke-red-400';
-    
+    const color = isPositive ? "text-green-400" : "text-red-400";
+    const strokeColor = isPositive ? "stroke-green-400" : "stroke-red-400";
+
     return (
       <div className="flex items-center h-8">
         <svg className="w-12 h-6" viewBox="0 0 50 24">
@@ -62,7 +62,7 @@ export const AssetComponent = function AssetComponent({
 
   return (
     <div className="mb-4">
-      <div 
+      <div
         className="glass rounded-2xl p-6 border border-white/10 hover:border-white/20 transition-all duration-300 cursor-pointer group relative"
         onClick={() => onAccordionToggle(index)}
       >
@@ -77,11 +77,11 @@ export const AssetComponent = function AssetComponent({
                 className="w-8 h-8 rounded-full mr-2"
               />
             )}
-            
+
             {/* Currency details */}
             <div>
               <div className="text-lg font-semibold text-white">
-                {asset.symbol.toUpperCase()}
+                {asset.symbol}
               </div>
               <div className="text-xs capitalize text-gray-400">
                 {asset.name}
@@ -91,42 +91,45 @@ export const AssetComponent = function AssetComponent({
 
           {/* Status indicator */}
           <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${
-              isPositiveChange ? 'bg-green-400' : 'bg-red-400'
-            }`} />
-            <div className={`text-xs font-medium ${
-              isPositiveChange ? 'text-green-400' : 'text-red-400'
-            }`}>
-              {isPositiveChange ? '↗' : '↘'}
+            <div
+              className={`w-2 h-2 rounded-full ${
+                isPositiveChange ? "bg-green-400" : "bg-red-400"
+              }`}
+            />
+            <div
+              className={`text-xs font-medium ${
+                isPositiveChange ? "text-green-400" : "text-red-400"
+              }`}
+            >
+              {isPositiveChange ? "↗" : "↘"}
             </div>
           </div>
         </div>
 
         {/* Balance Amount */}
-        <div className="text-3xl font-bold text-white mb-4">
-          {userBalance}
-        </div>
+        <div className="text-3xl font-bold text-white mb-4">{userBalance}</div>
 
         {/* Bottom row - Change indicators and chart */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* Price */}
-            <div className="text-sm text-white">
-              ${formatPrice(price)}
-            </div>
-            
+            <div className="text-sm text-white">${formatPrice(price)}</div>
+
             {/* Percentage change pill */}
-            <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-              isPositiveChange
-                ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                : 'bg-red-500/20 text-red-400 border border-red-500/30'
-            }`}>
-              {isPositiveChange ? '+' : ''}{priceChange24h.toFixed(2)}%
+            <div
+              className={`px-3 py-1 rounded-full text-xs font-medium ${
+                isPositiveChange
+                  ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                  : "bg-red-500/20 text-red-400 border border-red-500/30"
+              }`}
+            >
+              {isPositiveChange ? "+" : ""}
+              {priceChange24h.toFixed(2)}%
             </div>
           </div>
 
           {/* Chart */}
-          <div className={isPositiveChange ? 'text-green-400' : 'text-red-400'}>
+          <div className={isPositiveChange ? "text-green-400" : "text-red-400"}>
             {renderLineChart(isPositiveChange)}
           </div>
         </div>
@@ -144,30 +147,30 @@ export const AssetComponent = function AssetComponent({
       )}
 
       {/* Expanded Actions */}
-      <div 
+      <div
         className={`glass rounded-2xl p-4 border border-white/10 bg-white/5 backdrop-blur-sm transition-all duration-500 ease-out ${
-          isAccordionOpen 
-            ? 'opacity-100 max-h-32 translate-y-0' 
-            : 'opacity-0 max-h-0 translate-y-4 overflow-hidden'
+          isAccordionOpen
+            ? "opacity-100 max-h-32 translate-y-0"
+            : "opacity-0 max-h-0 translate-y-4 overflow-hidden"
         }`}
       >
-          <div className="flex gap-3">
-            <IconButton
-              onClick={() => onDeposit(asset)}
-              title="Deposit"
+        <div className="flex gap-3">
+          <IconButton
+            onClick={() => onDeposit(asset)}
+            title="Deposit"
             className="flex-1 bg-gradient-to-r from-blue-600/15 to-blue-700/15 hover:from-blue-600/30 hover:to-blue-700/30 text-blue-300 hover:text-blue-200 text-sm font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm hover:shadow-blue-500/15 border border-blue-500/20 backdrop-blur-sm"
-            >
-              <ArrowDownRight className="w-4 h-4" />
-            </IconButton>
-            <IconButton
-              onClick={() => onWithdraw(asset)}
-              title="Withdraw"
+          >
+            <ArrowDownRight className="w-4 h-4" />
+          </IconButton>
+          <IconButton
+            onClick={() => onWithdraw(asset)}
+            title="Withdraw"
             className="flex-1 bg-gradient-to-r from-gray-600/15 to-gray-700/15 hover:from-gray-600/30 hover:to-gray-700/30 text-gray-300 hover:text-gray-200 text-sm font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm hover:shadow-gray-500/15 border border-gray-500/20 backdrop-blur-sm"
-            >
-              <ArrowUpRight className="w-4 h-4" />
-            </IconButton>
-          </div>
+          >
+            <ArrowUpRight className="w-4 h-4" />
+          </IconButton>
         </div>
+      </div>
     </div>
   );
 };
