@@ -26,7 +26,7 @@ const SubApp = () => {
   return (
     <BrowserRouter>
       <Toaster
-        position="top-right"
+        position="bottom-right"
         richColors
         closeButton
         theme="dark"

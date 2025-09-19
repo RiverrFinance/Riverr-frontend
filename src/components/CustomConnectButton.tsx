@@ -16,7 +16,7 @@ export const CustomConnectButton: React.FC<CustomConnectButtonProps> = ({
       onClick={onClick}
       className="bg-gradient-to-r from-[#0300AD] to-[#19195c] hover:from-[#02007a] hover:to-[#16213e] shadow-lg hover:shadow-xl border border-[#0300AD]/30 text-white px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
       disabled={loading || disabled}
-      aria-busy={!!loading}
+      // aria-busy={!!loading}
       {...props}
     >
       {loading ? (
@@ -70,7 +70,7 @@ export const CustomConnectedButton: React.FC<CustomConnectedButtonProps> = ({
         onClick={() => setDropdownOpen((open) => !open)}
         className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] hover:from-[#0f3460] hover:to-[#1a1a2e] text-white px-4 py-2.5 rounded-xl transition-all duration-300 flex items-center gap-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed border border-[#0300AD]/30 shadow-lg hover:shadow-xl"
         disabled={loading || disabled}
-        aria-busy={loading}
+        // aria-busy={loading}
         {...props}
       >
         {loading && (
