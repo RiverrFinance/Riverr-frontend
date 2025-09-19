@@ -197,7 +197,7 @@ export default function BitcoinICPExchange() {
             {(payAmount || receiveAmount) && (
               <div className="mt-4 p-3">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-400">Exchange Rate</span>
+                  <span className="text-gray-400">Fee</span>
                   <span className="text-white">
                     1 {payToken} = {payToken === "BTC" ? "1500" : "0.000667"}{" "}
                     {receiveToken}
