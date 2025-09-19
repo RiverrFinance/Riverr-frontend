@@ -9,6 +9,8 @@ import { formatUnits, parseUnits } from "ethers/lib/utils";
 import FundingPopUp from "./FundingPopUp";
 import WithdrawPopUp from "./WIthdrawPopUp";
 import { MinterActor } from "../../utils/Interfaces/tokenActor";
+
+// export default App;
 import { Principal } from "@dfinity/principal";
 import { Eye, EyeOff, Droplets, Loader } from "lucide-react";
 import { ICP_API_HOST, SECOND } from "../../utils/constants";
@@ -18,7 +20,7 @@ import {
 } from "../../components/GradientBackground";
 import TopMovers from "./TopMovers";
 import LineChart from "../../components/LineChart";
-import CryptoChart from "./CryptoChart"; 
+import CryptoChart from "./CryptoChart";
 
 interface PriceDetails {
   price: number;
@@ -43,6 +45,7 @@ interface CoinGeckoMarketData {
 
 export function Dashboard() {
   const readWriteAgent = useAgent();
+
   const { user } = useAuth();
   const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
   const [pricesArray, setPricesArray] = useState<number[]>([]);
@@ -61,6 +64,8 @@ export function Dashboard() {
   const [showBalances, setShowBalances] = useState(true);
   const [isClaimingFaucet, setIsClaimingFaucet] = useState(false);
   const [isLoadingTopMovers, setIsLoadingTopMovers] = useState(true);
+
+  //console.log(getProviders());
 
   useEffect(() => {
     if (readWriteAgent) {
@@ -86,9 +91,9 @@ export function Dashboard() {
   }, [readWriteAgent]);
 
   useEffect(() => {
-    // fetchAndSetTopMovers();
-    //  const interval = setInterval(fetchAndSetTopMovers, 100 * SECOND); // Fetch every 35s
-    //  return () => clearInterval(interval);
+    fetchAndSetTopMovers();
+    const interval = setInterval(fetchAndSetTopMovers, 100 * SECOND); // Fetch every 35s
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -237,8 +242,7 @@ export function Dashboard() {
   const primaryPriceChange = getPrimaryPriceChange();
   const isPositive = primaryPriceChange >= 0;
 
-  const assetNames = assetList.map(asset => asset.name);
-
+  const assetNames = assetList.map((asset) => asset.name);
 
   return (
     <div className="max-h-fit bg-transparent rounded-3xl grid grid-cols-1 gap-6">
@@ -283,7 +287,7 @@ export function Dashboard() {
                     : ""
                 }`}
                 onClick={receiveFaucet}
-                disabled={!readWriteAgent || isClaimingFaucet}
+                // disabled={!readWriteAgent || isClaimingFaucet}
               >
                 {isClaimingFaucet ? (
                   <Loader className="w-4 h-4 animate-spin" />
@@ -313,32 +317,42 @@ export function Dashboard() {
         <div className="py-5 max-xs:py-2 px-5 max-xs:px-2 h-full glass rounded-2xl md:rounded-3xl border-2 border-dashed border-[#363c52] border-opacity-40 overflow-hidden">
           <GradientBackgroundBackward />
           {/* <div className="glass rounded-lg md:rounded-2xl py-6 px-6 h-full flex flex-col"> */}
-            <div className="flex flex-col space-y-3 mb-4">
-              <div className="flex justify-between items-start">
-                <div className="flex flex-col space-y-2">
-                  <div className="text-md text-gray-300">Trading Status: <span className="text-white text-xs">ICP</span></div>
-                  <div className="text-sm text-gray-400">Price: ${format(pricesArray[0] || 0)}</div>
-                  {/* <div className="text-[15px] font-bold space-x-2 transition-all text-green-400">
+          <div className="flex flex-col space-y-3 mb-4">
+            <div className="flex justify-between items-start">
+              <div className="flex flex-col space-y-2">
+                <div className="text-md text-gray-300">
+                  Trading Status:{" "}
+                  <span className="text-white text-xs">ICP</span>
+                </div>
+                <div className="text-sm text-gray-400">
+                  Price: ${format(pricesArray[0] || 0)}
+                </div>
+                {/* <div className="text-[15px] font-bold space-x-2 transition-all text-green-400">
                     <span>Active</span>
                   </div> */}
-                </div>
-                <div className="text-right">
-                  <div className="text-sm text-gray-400">24h Change</div>
-                  <div className={`text-lg font-semibold ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
-                    {isPositive ? '+' : ''}{primaryPriceChange.toFixed(2)}%
-                  </div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm text-gray-400">24h Change</div>
+                <div
+                  className={`text-lg font-semibold ${
+                    isPositive ? "text-green-400" : "text-red-400"
+                  }`}
+                >
+                  {isPositive ? "+" : ""}
+                  {primaryPriceChange.toFixed(2)}%
                 </div>
               </div>
-              {/* <div className="text-sm text-gray-400">24h Volume: $2.4M</div> */}
             </div>
+            {/* <div className="text-sm text-gray-400">24h Volume: $2.4M</div> */}
+          </div>
 
-            <div className="flex-1 w-full">
-              <CryptoChart 
-                pricesArray={pricesArray}
-                priceChange24hArray={priceChange24hArray}
-                assetNames={assetNames}
-              />
-            </div>
+          <div className="flex-1 w-full">
+            <CryptoChart
+              pricesArray={pricesArray}
+              priceChange24hArray={priceChange24hArray}
+              assetNames={assetNames}
+            />
+          </div>
           {/* </div> */}
         </div>
       </div>

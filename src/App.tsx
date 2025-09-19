@@ -13,7 +13,7 @@ import Bitcoin from "./pages/Bitcoin/Bitcoin";
 function App() {
   return (
     <IdentityKitProvider
-      signers={[NFIDW, InternetIdentity]}
+      signers={[NFIDW]}
       authType="ACCOUNTS"
       windowOpenerFeatures="top=100px,left=1500rem,width=500px,height=600px"
     >

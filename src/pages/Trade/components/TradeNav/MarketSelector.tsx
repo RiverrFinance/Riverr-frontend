@@ -149,8 +149,8 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                 )}
                 <div className="flex items-center">
                   <span className="max-sm:text-sm">
-                    {selectedMarket.baseAsset.symbol.toUpperCase()} /{" "}
-                    {selectedMarket.quoteAsset.symbol.toUpperCase()}
+                    {selectedMarket.baseAsset.symbol} /{" "}
+                    {selectedMarket.quoteAsset.symbol}
                   </span>
 
                   <ChevronDown className="w-5 h-5 ml-2" />

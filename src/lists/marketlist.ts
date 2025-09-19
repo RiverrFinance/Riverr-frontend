@@ -42,11 +42,11 @@ export const assetList: Asset[] = [
   },
   {
     priceID: "BTC",
-    symbol: "BTC",
+    symbol: "ckBTC",
     name: "bitcoin",
     vaultID: undefined,
     decimals: 6,
-    canisterID: "mxzaz-hqaaa-aaaar-qaada-cai",
+    canisterID: "mc6ru-gyaaa-aaaar-qaaaq-cai",
     logoUrl:
       "https://assets.coingecko.com/coins/images/1/small/bitcoin.png?1696501408",
   },
