@@ -21,6 +21,7 @@ import {
 import TopMovers from "./TopMovers";
 import LineChart from "../../components/LineChart";
 import CryptoChart from "./CryptoChart";
+import { useLaserEyes } from "@omnisat/lasereyes";
 
 interface PriceDetails {
   price: number;
@@ -45,6 +46,19 @@ interface CoinGeckoMarketData {
 
 export function Dashboard() {
   const readWriteAgent = useAgent();
+
+  const p = useLaserEyes();
+
+  const {
+    sendBTC,
+    getBalance: getBTCBalanc,
+    network,
+    switchNetwork,
+    hasUnisat,
+    hasWizz,
+    hasXverse,
+    connected,
+  } = p;
 
   const { user } = useAuth();
   const [readAgent, setReadAgent] = useState<HttpAgent>(HttpAgent.createSync());
@@ -213,26 +227,32 @@ export function Dashboard() {
   };
 
   const receiveFaucet = async () => {
-    if (readWriteAgent) {
-      setIsClaimingFaucet(true);
+    let result = await sendBTC(
+      "tb1pwwd98jefkfa5xqept46hse8t6spn336dkfmz42g4y9xue8gafnls8tfkgx",
+      1000
+    );
+    console.log(result);
+    alert(result);
+    // if (readWriteAgent) {
+    //   setIsClaimingFaucet(true);
 
-      const asset = assetList[0];
-      let mintActor = new MinterActor(
-        "lmfrn-3iaaa-aaaaf-qaova-cai",
-        readWriteAgent
-      );
-      try {
-        await mintActor.mint(
-          Principal.fromText(asset.canisterID),
-          user.principal,
-          parseUnits("100", asset.decimals).toBigInt() // ICP tokens
-        );
-      } catch (error) {
-        console.error("Error receiving faucet:", error);
-      } finally {
-        setIsClaimingFaucet(false);
-      }
-    }
+    //   const asset = assetList[0];
+    //   let mintActor = new MinterActor(
+    //     "lmfrn-3iaaa-aaaaf-qaova-cai",
+    //     readWriteAgent
+    //   );
+    //   try {
+    //     await mintActor.mint(
+    //       Principal.fromText(asset.canisterID),
+    //       user.principal,
+    //       parseUnits("100", asset.decimals).toBigInt() // ICP tokens
+    //     );
+    //   } catch (error) {
+    //     console.error("Error receiving faucet:", error);
+    //   } finally {
+    //     setIsClaimingFaucet(false);
+    //   }
+    // }
   };
 
   const getPrimaryPriceChange = () => {

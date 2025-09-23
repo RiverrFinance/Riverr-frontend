@@ -47,8 +47,7 @@ export const assetList: Asset[] = [
     vaultID: undefined,
     decimals: 6,
     canisterID: "mc6ru-gyaaa-aaaar-qaaaq-cai",
-    logoUrl:
-      "https://assets.coingecko.com/coins/images/1/small/bitcoin.png?1696501408",
+    logoUrl: "https://s2.coinmarketcap.com/static/img/coins/64x64/28909.png",
   },
   {
     priceID: "ETH",
