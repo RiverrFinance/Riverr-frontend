@@ -18,11 +18,20 @@ import { Agent, HttpAgent } from "@dfinity/agent";
 import { ICP_API_HOST } from "../../utils/constants";
 import { CKBTCMinterActor } from "../../utils/Interfaces/mintckBTCActor";
 import { Principal } from "@dfinity/principal";
+import { Ed25519KeyIdentity } from "@dfinity/identity";
 // for deposit BTC
 /// if change is amount in ,just check for if balance is sufficient and update the amount out
 /// if change is amount_out ,get the requireed amount in and check for sufficiency in deposit balance
 ///
+async function prop_agent(): Promise<Agent> {
+  let new_identity = Ed25519KeyIdentity.generate();
 
+  let agent = await HttpAgent.create({
+    identity: new_identity,
+  });
+
+  return agent;
+}
 const ckBTC_MINTER_CANISTER_ID = "ml52i-qqaaa-aaaar-qaaba-cai";
 const BTC_IMAGE_URL =
   "https://assets.coingecko.com/coins/images/1/small/bitcoin.png?1696501408";
@@ -85,9 +94,14 @@ export default function BitcoinckBTCBridge() {
     bitcoin_fee: 0n,
   });
 
-  const ckBTCMinterActor = new CKBTCMinterActor(
+  const ckBTCMinterReadActor = new CKBTCMinterActor(
     ckBTC_MINTER_CANISTER_ID,
     readAgent
+  );
+
+  const ckBTCMinterWriteActor = new CKBTCMinterActor(
+    ckBTC_MINTER_CANISTER_ID,
+    readWriteAgent
   );
 
   const connectBitcoinWallet = async () => {
@@ -106,7 +120,7 @@ export default function BitcoinckBTCBridge() {
 
   const handleSetDepositFee = async () => {
     try {
-      let fee = await ckBTCMinterActor.getDepositFee();
+      let fee = await ckBTCMinterReadActor.getDepositFee();
       setDepositFee(fee);
     } catch (error) {
       console.error(error);
@@ -138,7 +152,7 @@ export default function BitcoinckBTCBridge() {
   };
 
   const handleSetWithdrawalFee = async (amount: bigint) => {
-    let fee = await ckBTCMinterActor.getWithdrawalFeeEstimate(amount);
+    let fee = await ckBTCMinterReadActor.getWithdrawalFeeEstimate(amount);
     setWithdrawalFee(fee);
   };
 
@@ -171,7 +185,12 @@ export default function BitcoinckBTCBridge() {
 
   useEffect(() => {
     if (mode == "withdrawBTC") {
-      handleSetWithdrawalFee(parseUnits(amounts.amountIn, 8).toBigInt());
+      handleSetWithdrawalFee(
+        parseUnits(
+          amounts.amountIn == "" ? "0" : amounts.amountIn,
+          8
+        ).toBigInt()
+      );
     } else {
       handleSetDepositFee(); // redundant as it can be called once
     }
@@ -179,7 +198,7 @@ export default function BitcoinckBTCBridge() {
 
   useEffect(() => {
     balanceCheckCallback();
-  }, [withdrawalFee, depositFee]);
+  }, [amounts, withdrawalFee, depositFee]);
 
   useEffect(() => {
     handleSetDepositFee();
@@ -224,13 +243,18 @@ export default function BitcoinckBTCBridge() {
       }
 
       if (mode === "depositBTC") {
-        let depositAddress = await ckBTCMinterActor.getBTCAddress(
+        let agent = await prop_agent();
+        let ckBTCMinterWriteActor = new CKBTCMinterActor(
+          ckBTC_MINTER_CANISTER_ID,
+          agent
+        );
+        let depositAddress = await ckBTCMinterWriteActor.getBTCAddress(
           user.principal,
           []
         );
 
         let tx_hash = await sendBTC(depositAddress, amount);
-        // tx_hash and user.principal to backend
+        // tx_hash
         console.log(tx_hash);
       } else {
         let tokenActor = new TokenActor(assetList[2].canisterID, readAgent);
@@ -240,13 +264,12 @@ export default function BitcoinckBTCBridge() {
           Principal.fromText(ckBTC_MINTER_CANISTER_ID)
         );
         if (approval_tx) {
-          let result = await ckBTCMinterActor.retrieveBTCWithApproval(
+          let result = await ckBTCMinterWriteActor.retrieveBTCWithApproval(
             btcAddress,
             BigInt(amount)
           );
           if ("Ok" in result) {
-            let blockIndex = result.Ok.block_index;
-
+            let val = result.Ok.block_index;
             // push to backend
           } else {
             console.log(result.Err);
@@ -259,6 +282,8 @@ export default function BitcoinckBTCBridge() {
       console.error(error);
     }
   };
+
+  console.log(mode);
 
   return (
     <div className="flex items-center justify-center w-full h-full lg:px-4">
@@ -283,7 +308,6 @@ export default function BitcoinckBTCBridge() {
                     ? "border border-white/10 hover:border hover:border-[#0300AD]/60"
                     : "border border-[#363c52]/40 bg-[#363c52]/40"
                 }`}
-              onClick={() => setMode("depositBTC")}
             >
               <div className="flex justify-between mb-1">
                 <label className="text-lg max-sm:text-sm text-gray-400">
@@ -336,7 +360,6 @@ export default function BitcoinckBTCBridge() {
                     ? "border border-white/10 hover:border hover:border-[#0300AD]/60"
                     : "border border-[#363c52]/40 bg-[#363c52]/40"
                 }`}
-              onClick={() => setMode("withdrawBTC")}
             >
               <div className="flex justify-between mb-1">
                 <label className="text-lg max-sm:text-sm text-gray-400">
@@ -416,11 +439,7 @@ const ConnectBTCWalletButton = ({ handleConnect }: ConnecytBTCButtonProps) => {
       onClick={handleConnect}
       className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] hover:from-[#0f3460] hover:to-[#1a1a2e] disabled:from-gray-600 disabled:to-gray-600/90 border border-[#0300AD]/30 shadow-lg hover:shadow-xl rounded-3xl flex items-center gap-2 px-4 py-4 cursor-pointer transition-all duration-300 disabled:cursor-not-allowed"
     >
-      <img
-        src={assetList[2].logoUrl}
-        alt="BTC"
-        className="w-6 h-6 rounded-full"
-      />
+      <img src={BTC_IMAGE_URL} alt="BTC" className="w-6 h-6 rounded-full" />
       <span className="text-base font-semibold text-white">
         {connected
           ? address.slice(0, 6) + "..." + address.slice(-4)
