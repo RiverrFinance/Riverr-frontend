@@ -23,7 +23,7 @@ import { Ed25519KeyIdentity } from "@dfinity/identity";
 /// if change is amount in ,just check for if balance is sufficient and update the amount out
 /// if change is amount_out ,get the requireed amount in and check for sufficiency in deposit balance
 ///
-async function prop_agent(): Promise<Agent> {
+async function propAgent(): Promise<Agent> {
   let new_identity = Ed25519KeyIdentity.generate();
 
   let agent = await HttpAgent.create({
@@ -245,7 +245,7 @@ export default function BitcoinckBTCBridge() {
       if (mode === "depositBTC") {
         let propActor = new CKBTCMinterActor(
           ckBTC_MINTER_CANISTER_ID,
-          await prop_agent()
+          await propAgent()
         );
         let depositAddress = await propActor.getBTCAddress(user.principal);
 
