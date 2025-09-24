@@ -243,21 +243,20 @@ export default function BitcoinckBTCBridge() {
       }
 
       if (mode === "depositBTC") {
-        let agent = await prop_agent();
-        let ckBTCMinterWriteActor = new CKBTCMinterActor(
+        let propActor = new CKBTCMinterActor(
           ckBTC_MINTER_CANISTER_ID,
-          agent
+          await prop_agent()
         );
-        let depositAddress = await ckBTCMinterWriteActor.getBTCAddress(
-          user.principal,
-          []
-        );
+        let depositAddress = await propActor.getBTCAddress(user.principal);
 
         let tx_hash = await sendBTC(depositAddress, amount);
         // tx_hash
         console.log(tx_hash);
       } else {
-        let tokenActor = new TokenActor(assetList[2].canisterID, readAgent);
+        let tokenActor = new TokenActor(
+          assetList[2].canisterID,
+          readWriteAgent
+        );
 
         let approval_tx = await tokenActor.approveSpending(
           BigInt(amount),
