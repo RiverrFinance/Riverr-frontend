@@ -281,7 +281,7 @@ export const PoolDetails = ({
                 {/* Main Trading Section */}
                 <div className="p-3 sm:p-4 lg:p-6 space-y-4">
                   {/* Trading Inputs Section */}
-                  <div className="space-y-3 sm:space-y-4">
+                  <div className="space-y-1">
                     {/* Pay Input */}
                     <div className="flex items-center gap-2 sm:gap-3 glass rounded-xl p-3 sm:p-4 border border-white/10 bg-white/5 backdrop-blur-sm">
                       <div className="flex flex-col flex-1 space-y-2 sm:space-y-3  overflow-hidden">

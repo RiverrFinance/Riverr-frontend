@@ -68,18 +68,18 @@ export const PoolRow = ({
       </div>
 
       {/* TVL  */}
-      <div className="col-span-1 sm:col-span-2 lg:col-span-2 text-right lg:text-left">
+      <div className="col-span-1 sm:col-span-2 lg:col-span-2 text-right lg:text-left ml-3">
         <div className="text-white font-semibold text-xs sm:text-sm lg:text-base">${tvl}m</div>
         <div className="text-gray-500 text-xs hidden lg:block">({(parseFloat(tvl) * 0.8).toFixed(1)} GM)</div>
       </div>
 
       {/* Reserved Factor */}
-      <div className="hidden lg:block col-span-2">
-        <div className="text-white font-semibold text-sm lg:text-base">{reserved}%</div>
+      <div className="hidden lg:block col-span-2 ml-3">
+        <div className="text-white font-semibold text-sm lg:text-base">{reserved}</div>
       </div>
 
       {/* Total Open Interest */}
-      <div className="hidden sm:flex col-span-2 lg:col-span-2 items-center justify-center lg:justify-start gap-1 sm:gap-2">
+      <div className="hidden sm:flex col-span-2 lg:col-span-2 items-center justify-center lg:justify-start gap-1 sm:gap-2 ml-3">
         <div className="flex items-center gap-1">
           <TrendingUp className="w-3 h-3 text-green-400" />
           <span className="text-green-400 font-medium text-xs sm:text-sm">{oi.long}%</span>

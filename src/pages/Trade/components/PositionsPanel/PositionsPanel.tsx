@@ -11,7 +11,7 @@ import { Market } from "../../../../lists/marketlist";
 import Position from "./Position";
 import Order from "./Order";
 import { SECOND } from "../../../../utils/constants";
-import { TrendingUp, TrendingDown, BarChart3, Clock, ChevronDown } from "lucide-react";
+import { TrendingUp, TrendingDown, BarChart3, Clock } from "lucide-react";
 
 const maxSubAccount = 4;
 

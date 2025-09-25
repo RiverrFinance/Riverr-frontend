@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Star } from "lucide-react";
 import { Market } from "../../../../lists/marketlist";
 import { fetchDetails } from "../../../../utils/utilFunction";
 import {
@@ -17,10 +17,10 @@ interface PriceDetails {
 
 export const Pairs: React.FC<{
   market: Market;
-  favorites: Set<string>;
-  isSelected?: boolean;
+  favorites: boolean;
   onToggleFavorite: (marketId: string) => void;
-}> = ({ market, favorites, isSelected, onToggleFavorite }) => {
+}> = ({ market, favorites, onToggleFavorite }) => {
+
   const [details, setDetails] = useState<PriceDetails>({
     price: 0.0,
     price_change_24h: 0.0,
@@ -66,14 +66,16 @@ export const Pairs: React.FC<{
   // Static-like large USD helpers derived from shared utilities
   const getOpenInterestUSD = () => {
     const oi = getStaticOpenInterest();
-    const totalMillions = parseFloat(oi.longAmountMillions) + parseFloat(oi.shortAmountMillions);
+    const totalMillions =
+      parseFloat(oi.longAmountMillions) + parseFloat(oi.shortAmountMillions);
     return formatLargeUSD(totalMillions * 1_000_000);
   };
 
   const getAvailableLiquidityUSD = () => {
     const liq = getStaticAvailableLiquidity();
     const totalMillions =
-      parseFloat(liq.longLiquidityMillions) + parseFloat(liq.shortLiquidityMillions);
+      parseFloat(liq.longLiquidityMillions) +
+      parseFloat(liq.shortLiquidityMillions);
     return formatLargeUSD(totalMillions * 1_000_000);
   };
 
@@ -93,14 +95,7 @@ export const Pairs: React.FC<{
   };
 
   return (
-    <div
-      className={`grid grid-cols-6 gap-4 items-center p-4 hover:bg-white/5 rounded-xl cursor-pointer group transition-all duration-200 
-
-      `}
-      //         ${
-      //   isSelected ? "bg-[#0300ad18] border border-[#0300AD]/30" : ""
-      // }
-    >
+    <div className={`grid grid-cols-6 gap-4 items-center p-4 hover:bg-white/5 cursor-pointer group transition-all duration-200 `}>
       {/* Market */}
       <div className="col-span-2 flex items-center space-x-3">
         <button
@@ -111,13 +106,11 @@ export const Pairs: React.FC<{
             e.stopPropagation();
             if (market.market_id) onToggleFavorite(market.market_id);
           }}
-          className={`w-5 h-5 flex items-center justify-center rounded transition-colors ${
-            market.market_id && favorites.has(market.market_id)
-              ? "text-yellow-400"
-              : "text-gray-400 hover:text-white"
+          className={`transition-all duration-200 p-1 rounded hover:bg-white/10 ${
+            favorites ? "text-yellow-400" : "text-gray-600 hover:text-gray-400"
           }`}
         >
-          ★
+          <Star size={14} className="" fill={favorites ? 'currentColor' : 'none'} />
         </button>
         <div className="relative w-7 h-7">
           <img
@@ -164,7 +157,8 @@ export const Pairs: React.FC<{
             <TrendingDown className="w-3 h-3" />
           )}
           <span>
-            {details.price_change_24h >= 0 ? "+" : "-"}{formatPercent(details.price_change_24h)}%
+            {details.price_change_24h >= 0 ? "+" : "-"}
+            {formatPercent(details.price_change_24h)}%
           </span>
         </div>
       </div>

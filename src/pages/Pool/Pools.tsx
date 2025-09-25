@@ -9,13 +9,13 @@ export const  Pools = () => {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("All");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPagePagination, setCurrentPagePagination] = useState(1);
   const [selectedMarket, setSelectedMarket] = useState<Market | null>(null);
   const itemsPerPage = 10;
 
   // Create unique identifier for each market using combination of base and quote assets (this is for the favorite function)
   const getMarketUniqueId = (market: Market): string => {
-    return `${market.baseAsset.priceID}-${market.quoteAsset.priceID}-${market.chartId}`;
+    return `${market.baseAsset.priceID} - ${market.quoteAsset.priceID}- ${market.chartId}`; // this means each market is uniquely identified by its base, quote assets and chart ID
   };
 
   const tabs = [
@@ -74,8 +74,8 @@ export const  Pools = () => {
 
   const totalPages = Math.ceil(filteredMarkets.length / itemsPerPage);
   const paginatedMarkets = filteredMarkets.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    (currentPagePagination - 1) * itemsPerPage,
+    currentPagePagination * itemsPerPage
   );
 
   const handleRowClick = (market: Market) => {
@@ -111,7 +111,7 @@ export const  Pools = () => {
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
-                  setCurrentPage(1);
+                  setCurrentPagePagination(1);
                 }}
                 placeholder="Search Pools"
                 className="w-full glass bg-[#16182e] border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-[#4f60ff] transition-colors text-base shadow-sm"
@@ -124,7 +124,7 @@ export const  Pools = () => {
                   key={tab}
                   onClick={() => {
                     setActiveTab(tab);
-                    setCurrentPage(1);
+                    setCurrentPagePagination(1);
                   }}
                   className={`px-4 py-2.5 rounded-lg font-semibold whitespace-nowrap transition-all text-base border border-white/10 shadow-sm ${
                     activeTab === tab
@@ -222,12 +222,12 @@ export const  Pools = () => {
             {totalPages > 1 && (
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mx-5">
                 <div className="text-gray-400 text-sm">
-                  Showing {Math.min((currentPage - 1) * itemsPerPage + 1, filteredMarkets.length)} to {Math.min(currentPage * itemsPerPage, filteredMarkets.length)} of {filteredMarkets.length} pools
+                  Showing {Math.min((currentPagePagination - 1) * itemsPerPage + 1, filteredMarkets.length)} to {Math.min(currentPagePagination * itemsPerPage, filteredMarkets.length)} of {filteredMarkets.length} pools
                 </div>
                 <Pagination
-                  page={currentPage}
+                  page={currentPagePagination}
                   pageCount={totalPages}
-                  onPageChange={setCurrentPage}
+                  onPageChange={setCurrentPagePagination}
                 />
               </div>
             )}

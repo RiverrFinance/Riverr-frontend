@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { ChevronDown, Search } from "lucide-react";
 import { Pairs } from "./Pairs";
 import { Asset, Market, quoteCurrencies } from "../../../../lists/marketlist";
@@ -27,57 +27,67 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("All");
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  // set keyword means to store unique values only
 
-  // All tabs including quote currencies
-  const allTabs = [
+  const getMarketUniqueId = (market: Market): string => {
+    return `${market.baseAsset.priceID} - ${market.quoteAsset.priceID}- ${market.chartId}`; // this means each market is uniquely identified by its base, quote assets and chart ID
+  };
+  
+  const tabs = [
     "All",
     "Favorites",
     ...quoteCurrencies.map((c) => c.symbol.toUpperCase()),
   ];
 
   const toggleFavorite = useCallback((marketId: string) => {
-    console.log("toggleFavorite in MarketSelector", marketId);
-    setFavorites((prev) => {
-      const next = new Set(prev);
-      if (next.has(marketId)) next.delete(marketId);
-      else next.add(marketId);
-      return next;
+    setFavorites(prev => {
+      const newFavorites = new Set(prev);
+      if (newFavorites.has(marketId)) {
+        newFavorites.delete(marketId);
+      } else {
+        newFavorites.add(marketId);
+      }
+      return newFavorites;
     });
   }, []);
 
-  useEffect(() => {
-    // Initialize with empty favorites set
-    setFavorites(new Set());
-  }, []);
+  // useMemo is used to memoize the filtered markets based on the search query and active tab 
+  const filteredMarkets = useMemo(() => {
+    let filtered = [...markets];
 
-  const filteredMarkets = markets.filter((market) => {
-    const matchesSearch =
-      (market.market_id || "")
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      market.baseAsset.symbol
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      market.quoteAsset.symbol
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+    // Search filter
+    if (searchQuery) {
+      const searchLower = searchQuery.toLowerCase();
+      filtered = filtered.filter(market => {
+        const uniqueId = getMarketUniqueId(market);
+        return (
+          market.baseAsset.symbol.toLowerCase().includes(searchLower) ||
+          market.baseAsset.name.toLowerCase().includes(searchLower) ||
+          uniqueId.toLowerCase().includes(searchLower)
+        );
+      });
+    }
 
+    // Tab filter
     if (activeTab === "Favorites") {
-      return favorites.has(market.market_id || "") && matchesSearch;
+      filtered = filtered.filter(m => {
+        const uniqueId = getMarketUniqueId(m);
+        return favorites.has(uniqueId);
+      });
+    } else if (activeTab !== "All") {
+      const selectedQuoteCurrency = quoteCurrencies.find(
+        c => c.symbol.toUpperCase() === activeTab
+      );
+
+      if (selectedQuoteCurrency) {
+        filtered = filtered.filter(m => m.quoteAsset.priceID === selectedQuoteCurrency.priceID);
+      }
     }
 
-    const selectedQuoteCurrency = quoteCurrencies.find(
-      (c) => c.symbol.toUpperCase() === activeTab
-    );
+    return filtered;
+  }, [searchQuery, activeTab, favorites]);
 
-    if (selectedQuoteCurrency) {
-      const matchesQuoteCurrency =
-        market.quoteAsset.priceID === selectedQuoteCurrency.priceID;
-      return matchesQuoteCurrency && matchesSearch;
-    }
-
-    return matchesSearch;
-  });
+  // The above useMemo hook ensures that filteredMarkets is recalculated only when searchQuery, activeTab, or favorites change.
 
   return (
     <div className="relative glass px-6 py-4 rounded-2xl">
@@ -145,20 +155,20 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
 
                 {/* Filtering Tabs */}
                 <div className="relative p-2 mx-4 mb-4">
-                  <div className="flex z-10 overflow-x-auto">
-                    {allTabs.map((tab) => (
+                  <div className="flex gap-7 z-10 overflow-x-auto">
+                    {tabs.map(tab => (
                       <button
+                        type="button"
                         key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className="flex-shrink-0 py-3 px-4 text-sm font-medium relative z-10"
+                        onClick={() => {
+                          setActiveTab(tab);
+                        }}
+                        className={`px-3 py-1.5 whitespace-nowrap transition-transform text-sm shadow-lg flex justify-center items-center gap-2 relative group rounded-md ${
+                          activeTab === tab
+                            ? 'bg-white/15 text-white shadow-lg'
+                            : 'text-gray-400/40 hover:bg-white/5 hover:text-white'
+                        }`}
                       >
-                        <span
-                          className={`relative flex items-center gap-2 ${
-                            activeTab === tab
-                              ? "text-white"
-                              : "text-gray-400 hover:text-white"
-                          }`}
-                        >
                           {quoteCurrencies.find(
                             (c) => c.symbol.toUpperCase() === tab
                           )?.logoUrl && (
@@ -174,31 +184,13 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                           )}
                           {tab}
                           {tab === "Favorites" && favorites.size > 0 && (
-                            <span className="ml-2 bg-yellow-500 text-black text-[10px] px-1.5 py-0.5 rounded-full">
+                            <span className="bg-yellow-500 text-black text-[8px] px-1.5 py-0.1 rounded-full">
                               {favorites.size}
                             </span>
                           )}
-                        </span>
                       </button>
                     ))}
                   </div>
-
-                  {/* Fixed sliding background */}
-                  <div
-                    className="absolute top-0 h-full bg-[#0300ad18] border-b-2 border-[#0300AD] transition-transform duration-300 ease-in-out rounded-lg"
-                    style={{
-                      width: `${
-                        allTabs
-                          .map((tab) => tab.length)
-                          .reduce((a, b) => Math.max(a, b)) *
-                          8 +
-                        32
-                      }px`,
-                      transform: `translateX(${
-                        allTabs.indexOf(activeTab) * (100 / allTabs.length)
-                      }%)`,
-                    }}
-                  />
                 </div>
 
                 {/* Column Headers */}
@@ -215,23 +207,25 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                 {/* List of Pairs (Filtered) */}
                 <div className="max-h-60 overflow-y-auto">
                   {filteredMarkets.length > 0 ? (
-                    filteredMarkets.map((market) => (
-                      <div
-                        key={market.chartId}
-                        onClick={() => {
-                          onMarketSelect(market);
-                          setIsDropdownOpen(false);
-                        }}
-                        className="hover:bg-white/5 transition-colors cursor-pointer"
-                      >
-                        <Pairs
-                          market={market}
-                          favorites={favorites}
-                          isSelected={selectedMarket.chartId === market.chartId}
-                          onToggleFavorite={(id) => toggleFavorite(id)}
-                        />
-                      </div>
-                    ))
+                    filteredMarkets.map(market => {
+                      const uniqueId = getMarketUniqueId(market);
+                      return (
+                        <div
+                          key={market.market_id}
+                          onClick={() => {
+                            onMarketSelect(market);
+                            setIsDropdownOpen(false);
+                          }}
+                          className="hover:bg-white/5 transition-colors cursor-pointer"
+                        >
+                          <Pairs
+                            market={market}
+                            favorites={favorites.has(uniqueId)}
+                            onToggleFavorite={() => toggleFavorite(uniqueId)}
+                          />
+                        </div>
+                      )
+                    })
                   ) : (
                     <div className="p-4 text-center text-gray-400">
                       {activeTab === "Favorites"

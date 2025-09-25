@@ -11,7 +11,6 @@ import {
 import {
   Home,
   BarChart2,
-  PiggyBank,
   Globe,
   Bell,
 } from "lucide-react";
@@ -137,10 +136,6 @@ export const Navbar: React.FC<NavbarProps> = ({ isMobile, isCheckIfMobileIs480, 
 
   const IconContent = () => (
     <>
-      {/* Language Globe Icon */}
-      {/* <IconButton title="" className="" onClick={() => {}}>
-        <Globe className="w-4 h-4" />
-      </IconButton> */}
 
       {/* Notification Bell Icon */}
       <IconButton title="" className="" onClick={() => {}}>
