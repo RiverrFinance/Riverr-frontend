@@ -107,20 +107,6 @@ export default function BitcoinckBTCBridge() {
     readWriteAgent
   );
 
-  // const connectBitcoinWallet = async () => {
-  //   if (hasUnisat) {
-  //     await setLaserEyes(p, UNISAT);
-  //   } else if (hasWizz) {
-  //     await setLaserEyes(p, WIZZ);
-  //   } else if (hasXverse) {
-  //     await setLaserEyes(p, XVERSE);
-  //   }
-
-  //   if (network !== TESTNET4) {
-  //     await switchNetwork(TESTNET4);
-  //   }
-  // };
-
   const handleSetDepositFee = async () => {
     try {
       let fee = await ckBTCMinterReadActor.getDepositFee();
@@ -253,22 +239,31 @@ export default function BitcoinckBTCBridge() {
     try {
       let updateResponse;
       if (isDeposit) {
-        updateResponse = await fetch("/api/ckbtc/update-balance", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            principal: user.principal,
-            subaccount: null,
-          }),
-        });
+        updateResponse = await fetch(
+          "https://quotex-backend.onrender.com/api/ckbtc/update-balance",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              principal: user.principal,
+              subaccount: null,
+            }),
+          }
+        );
+        const depositData = await updateResponse.json();
+        // console.log("Deposit Data:", depositData);
       } else {
-        updateResponse = await fetch(`/api/ckbtc/status/${blockIndex}`);
+        updateResponse = await fetch(
+          `https://quotex-backend.onrender.com/api/ckbtc/status/${blockIndex}`
+        );
         const statusData = await updateResponse.json();
+        console.log("Status Data:", statusData);
       }
 
       const updateData = await updateResponse.json();
+      // console.log("Update Data:", updateData);
 
       if (updateData.status == "pending") {
         return;
@@ -276,7 +271,7 @@ export default function BitcoinckBTCBridge() {
         setHasPendingTx(false);
         await setBTCBalances();
         await setckBTCBalances();
-        if (updateData.status === "success") {
+        if (updateData.status === "successful") {
           toast.dismiss("pending-tx");
           toast.success(
             `Transaction Successful 
@@ -287,7 +282,7 @@ export default function BitcoinckBTCBridge() {
           );
 
           return;
-        } else if (updateData.status === "failure") {
+        } else if (updateData.status === "failed") {
           //   console.log("✅ ckBTC Minting Success:", updateData.data);
           toast.dismiss("pending-tx");
 
@@ -572,11 +567,12 @@ export default function BitcoinckBTCBridge() {
             {/* Action Button */}
             <div className="mt-4 pt-5">
               {/* <button
+                type="button"
                 className="bg-[#0300AD] text-white py-2 px-4 rounded-lg"
                 onClick={handleTx}
               >
                 Connect Now
-              </button> */}
+              </button>  */}
               <BitcoinActionButton handleConfirm={handleTx} error={error} />
             </div>
           </div>
@@ -585,24 +581,3 @@ export default function BitcoinckBTCBridge() {
     </div>
   );
 }
-
-// type ConnecytBTCButtonProps = {
-//   handleConnect: () => void;
-// };
-// const ConnectBTCWalletButton = ({ handleConnect }: ConnecytBTCButtonProps) => {
-//   const { address, connected } = useLaserEyes();
-//   return (
-//     <button
-//       type="button"
-//       onClick={handleConnect}
-//       className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] hover:from-[#0f3460] hover:to-[#1a1a2e] disabled:from-gray-600 disabled:to-gray-600/90 border border-[#0300AD]/30 shadow-lg hover:shadow-xl rounded-3xl flex items-center gap-2 px-4 py-4 cursor-pointer transition-all duration-300 disabled:cursor-not-allowed"
-//     >
-//       <img src={BTC_IMAGE_URL} alt="BTC" className="w-6 h-6 rounded-full" />
-//       <span className="text-base font-semibold text-white">
-//         {connected
-//           ? address.slice(0, 6) + "..." + address.slice(-4)
-//           : "Connect Bitcoin"}
-//       </span>
-//     </button>
-//   );
-// };

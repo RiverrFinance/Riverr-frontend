@@ -13,3 +13,11 @@ export const fetchTopMovers = async (ids: string) => {
     //  console.log(`this error occured ${err}`);
   }
 };
+
+// export const fetchBitcoinData = async (id: number) => {
+//   try {
+//     return await fetch(
+//       `https://quotex-backend.onrender.com/api/ckbtc/withdraw/${id}`
+//     );
+//   } catch {}
+// };
