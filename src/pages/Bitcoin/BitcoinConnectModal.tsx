@@ -23,7 +23,7 @@ const WALLET_DOWNLOAD_LINKS = {
     "https://chromewebstore.google.com/detail/xverse-bitcoin-crypto-wal/idnnbdplmphpflfnlkomgpfbpcgelopg?hl=en-GB&authuser=0&pli=1",
 };
 
-type WalletType = 'unisat' | 'wizz' | 'xverse';
+type WalletType = "unisat" | "wizz" | "xverse";
 
 interface WalletInfo {
   name: string;
@@ -43,7 +43,7 @@ export const BitcoinConnectModal: React.FC<BitcoinConnectModalProps> = ({
   onClose,
 }) => {
   const [connecting, setConnecting] = useState<WalletType | null>(null);
-  
+
   const { setLaserEyes } = useSiwbIdentity();
   const p = useLaserEyes();
   const { hasUnisat, hasWizz, hasXverse, network, switchNetwork } = useLaserEyes();
@@ -61,24 +61,24 @@ export const BitcoinConnectModal: React.FC<BitcoinConnectModalProps> = ({
       logo: WALLET_LOGOS.wizz,
       downloadLink: WALLET_DOWNLOAD_LINKS.wizz,
       isInstalled: hasWizz,
-      walletConstant: WIZZ
+      walletConstant: WIZZ,
     },
     xverse: {
       name: "Xverse",
       logo: WALLET_LOGOS.xverse,
       downloadLink: WALLET_DOWNLOAD_LINKS.xverse,
       isInstalled: hasXverse,
-      walletConstant: XVERSE
-    }
+      walletConstant: XVERSE,
+    },
   };
 
   const connectWallet = async (walletType: WalletType) => {
     const wallet = wallets[walletType];
-    
+
     if (!wallet.isInstalled) {
       toast.error(`${wallet.name} not installed`, {
         description: "Please install the wallet extension first",
-        duration: 3000
+        duration: 3000,
       });
       return;
     }
@@ -88,22 +88,21 @@ export const BitcoinConnectModal: React.FC<BitcoinConnectModalProps> = ({
     try {
       // Connect to the wallet
       await setLaserEyes(p, wallet.walletConstant);
-      
+
       if (network !== TESTNET4) {
         await switchNetwork(TESTNET4);
       }
 
       toast.success(`Connected to ${wallet.name}!`, {
-        duration: 3000
+        duration: 3000,
       });
-      
+
       onClose();
-      
     } catch (error) {
       console.error(`${wallet.name} connection error:`, error);
       toast.error(`Failed to connect to ${wallet.name}`, {
         description: error.message || "Connection failed",
-        duration: 4000
+        duration: 4000,
       });
     } finally {
       setConnecting(null);
@@ -111,7 +110,7 @@ export const BitcoinConnectModal: React.FC<BitcoinConnectModalProps> = ({
   };
 
   const openDownloadLink = (walletType: WalletType) => {
-    window.open(wallets[walletType].downloadLink, '_blank');
+    window.open(wallets[walletType].downloadLink, "_blank");
   };
 
   if (!open) return null;
@@ -153,16 +152,21 @@ export const BitcoinConnectModal: React.FC<BitcoinConnectModalProps> = ({
             <label className="block text-sm font-medium text-gray-400 mb-4">
               Choose a wallet to connect to the Bitcoin network
             </label>
-            
+
             {Object.entries(wallets).map(([key, wallet]) => (
               <div
                 key={key}
                 className={`glass rounded-xl border border-white/10 bg-white/5 p-4 mb-3 cursor-pointer transition-all duration-200
-                  ${wallet.isInstalled 
-                    ? 'hover:border-[#0300AD]/60 hover:bg-white/10' 
-                    : 'opacity-60'
+                  ${
+                    wallet.isInstalled
+                      ? "hover:border-[#0300AD]/60 hover:bg-white/10"
+                      : "opacity-60"
                   }`}
-                onClick={() => wallet.isInstalled ? connectWallet(key as WalletType) : openDownloadLink(key as WalletType)}
+                onClick={() =>
+                  wallet.isInstalled
+                    ? connectWallet(key as WalletType)
+                    : openDownloadLink(key as WalletType)
+                }
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -172,26 +176,35 @@ export const BitcoinConnectModal: React.FC<BitcoinConnectModalProps> = ({
                         alt={wallet.name}
                         className="w-6 h-6 rounded-full object-contain"
                         onError={(e) => {
-                          e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23ffffff' viewBox='0 0 24 24'%3E%3Cpath d='M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z'/%3E%3C/svg%3E";
+                          e.currentTarget.src =
+                            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23ffffff' viewBox='0 0 24 24'%3E%3Cpath d='M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z'/%3E%3C/svg%3E";
                         }}
                       />
                     </div>
-                    
+
                     <div className="flex flex-col">
                       <span className="font-medium text-base capitalize">
                         {wallet.name}
                       </span>
-                      <span className={`text-xs ${wallet.isInstalled ? 'text-green-400' : 'text-gray-500'}`}>
-                        {wallet.isInstalled ? 'Ready to connect' : 'Click to install extension'}
+                      <span
+                        className={`text-xs ${
+                          wallet.isInstalled
+                            ? "text-green-400"
+                            : "text-gray-500"
+                        }`}
+                      >
+                        {wallet.isInstalled
+                          ? "Ready to connect"
+                          : "Click to install extension"}
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     {connecting === key && (
                       <Icon name="spinner" loading className="text-[#0300AD]" />
                     )}
-                    
+
                     {wallet.isInstalled ? (
                       <Icon name="chevron right" className="text-gray-400" />
                     ) : (
