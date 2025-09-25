@@ -1,4 +1,4 @@
-import { ConnectWallet, useAgent, useAuth } from "@nfid/identitykit/react";
+import { ConnectWallet, useAuth } from "@nfid/identitykit/react";
 import { assetList } from "../../lists/marketlist";
 import { useLaserEyes } from "@omnisat/lasereyes";
 
@@ -36,5 +36,4 @@ export function BitcoinActionButton({ handleConfirm, error }: Props) {
     </button>
   );
 
-  // Bitcoin connect button
 }

@@ -270,3 +270,21 @@ body {
   -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
+.bitcoin-connect-modal .ui.modal {
+  background: #12131a !important;
+}
+
+.bitcoin-connect-modal .ui.modal > .header {
+  background: #12131a !important;
+  color: white !important;
+  border-bottom: 1px solid #363c52 !important;
+}
+
+.bitcoin-connect-modal .ui.modal > .content {
+  background: #12131a !important;
+  color: white !important;
+}
+
+.bitcoin-connect-modal .ui.dimmer {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ArrowDownUp } from "lucide-react";
 import { BitcoinActionButton } from "./BitcoinActionButton";
+import { ConnectBTCWalletButton } from "./BitcoinWalletButton";
 import { toast } from "sonner";
 import { assetList } from "../../lists/marketlist";
 import { useSiwbIdentity } from "ic-siwb-lasereyes-connector";
@@ -19,6 +20,7 @@ import { ICP_API_HOST } from "../../utils/constants";
 import { CKBTCMinterActor } from "../../utils/Interfaces/mintckBTCActor";
 import { Principal } from "@dfinity/principal";
 import { Ed25519KeyIdentity } from "@dfinity/identity";
+import { data } from "react-router-dom";
 // for deposit BTC
 /// if change is amount in ,just check for if balance is sufficient and update the amount out
 /// if change is amount_out ,get the requireed amount in and check for sufficiency in deposit balance
@@ -104,19 +106,19 @@ export default function BitcoinckBTCBridge() {
     readWriteAgent
   );
 
-  const connectBitcoinWallet = async () => {
-    if (hasUnisat) {
-      await setLaserEyes(p, UNISAT);
-    } else if (hasWizz) {
-      await setLaserEyes(p, WIZZ);
-    } else if (hasXverse) {
-      await setLaserEyes(p, XVERSE);
-    }
+  // const connectBitcoinWallet = async () => {
+  //   if (hasUnisat) {
+  //     await setLaserEyes(p, UNISAT);
+  //   } else if (hasWizz) {
+  //     await setLaserEyes(p, WIZZ);
+  //   } else if (hasXverse) {
+  //     await setLaserEyes(p, XVERSE);
+  //   }
 
-    if (network !== TESTNET4) {
-      await switchNetwork(TESTNET4);
-    }
-  };
+  //   if (network !== TESTNET4) {
+  //     await switchNetwork(TESTNET4);
+  //   }
+  // };
 
   const handleSetDepositFee = async () => {
     try {
@@ -233,6 +235,57 @@ export default function BitcoinckBTCBridge() {
     };
   }, [readWriteAgent]);
 
+  // const handleTx = async () => {
+  //   try {
+  //     let amount: number;
+  //     if (amounts.amountIn == "" || amounts.amountIn == "0") {
+  //       return;
+  //     } else {
+  //       amount = parseUnits(amounts.amountIn, 8).toNumber();
+  //     }
+
+  //     if (mode === "depositBTC") {
+  //       let propActor = new CKBTCMinterActor(
+  //         ckBTC_MINTER_CANISTER_ID,
+  //         await propAgent()
+  //       );
+  //       let depositAddress = await propActor.getBTCAddress(user.principal);
+
+  //       let tx_hash = await sendBTC(depositAddress, amount);
+  //       // tx_hash
+
+  //       console.log(tx_hash);
+  //     } else {
+  //       let tokenActor = new TokenActor(
+  //         assetList[2].canisterID,
+  //         readWriteAgent
+  //       );
+
+  //       let approval_tx = await tokenActor.approveSpending(
+  //         BigInt(amount),
+  //         Principal.fromText(ckBTC_MINTER_CANISTER_ID)
+  //       );
+  //       if (approval_tx) {
+  //         let result = await ckBTCMinterWriteActor.retrieveBTCWithApproval(
+  //           btcAddress,
+  //           BigInt(amount)
+  //         );
+  //         if ("Ok" in result) {
+  //           let val = result.Ok.block_index;
+  //           // push to backend
+            
+  //         } else {
+  //           console.log(result.Err);
+  //         }
+  //       } else {
+  //         console.log("Approval failed");
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+
   const handleTx = async () => {
     try {
       let amount: number;
@@ -243,45 +296,257 @@ export default function BitcoinckBTCBridge() {
       }
 
       if (mode === "depositBTC") {
-        let propActor = new CKBTCMinterActor(
-          ckBTC_MINTER_CANISTER_ID,
-          await propAgent()
-        );
-        let depositAddress = await propActor.getBTCAddress(user.principal);
+        // Show processing toast
+        const loadingToast = toast.loading("Initiating Bitcoin deposit...", {
+          duration: Infinity
+        });
 
-        let tx_hash = await sendBTC(depositAddress, amount);
-        // tx_hash
-        console.log(tx_hash);
-      } else {
-        let tokenActor = new TokenActor(
-          assetList[2].canisterID,
-          readWriteAgent
-        );
-
-        let approval_tx = await tokenActor.approveSpending(
-          BigInt(amount),
-          Principal.fromText(ckBTC_MINTER_CANISTER_ID)
-        );
-        if (approval_tx) {
-          let result = await ckBTCMinterWriteActor.retrieveBTCWithApproval(
-            btcAddress,
-            BigInt(amount)
+        try {
+          // Get deposit address using existing actor
+          let propActor = new CKBTCMinterActor(
+            ckBTC_MINTER_CANISTER_ID,
+            await propAgent()
           );
-          if ("Ok" in result) {
-            let val = result.Ok.block_index;
-            // push to backend
+          let depositAddress = await propActor.getBTCAddress(user.principal);
+
+          // Update toast
+          toast.dismiss(loadingToast);
+          toast.loading("Sending Bitcoin transaction...", {
+            duration: Infinity,
+            id: "btc-tx"
+          });
+
+          // Send BTC transaction
+          let tx_hash = await sendBTC(depositAddress, amount);
+          
+          // Update toast
+          toast.dismiss("btc-tx");
+          toast.loading("Waiting for Bitcoin confirmation...", {
+            duration: Infinity,
+            id: "btc-confirm"
+          });
+
+          // Poll for balance update (Bitcoin confirmation and ckBTC minting)
+          const pollForMinting = async () => {
+            while (true) {
+              try {
+                const updateResponse = await fetch('/api/ckbtc/update-balance', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    principal: user.principal,
+                    subaccount: null
+                  })
+                });
+                
+                const updateData = await updateResponse.json();
+                console.log("🔄 Update Balance API Response:", {
+                  status: updateData.status,
+                  data: updateData,
+                  message: updateData.message || "N/A"
+                });
+                
+                if (updateData.status === "success" && updateData.data.minted_amount > 0) {
+                  // Success
+                  console.log("✅ ckBTC Minting Success:", updateData.data);
+                  toast.dismiss("btc-confirm");
+                  toast.success(`Successfully deposited ${formatUnits(updateData.data.minted_amount, 8)} ckBTC!`, {
+                    description: `Transaction: ${tx_hash}`,
+                    duration: 5000
+                  });
+                  
+                  // Refresh balances
+                  setBTCBalances();
+                  setckBTCBalances();
+                  
+                  // Clear form
+                  setAmounts({ amountIn: "", amountOut: "" });
+                  return;
+                }
+                
+                console.log("⏳ Still waiting for ckBTC minting...", {
+                  status: updateData.status,
+                  minted_amount: updateData.data?.minted_amount || "N/A"
+                });
+                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+                
+              } catch (pollError) {
+                console.error("❌ Polling error:", pollError);
+                await new Promise(resolve => setTimeout(resolve, 5000));
+              }
+            }
+          };
+
+          // Start polling
+          pollForMinting();
+
+        } catch (error) {
+          toast.dismiss(loadingToast);
+          toast.dismiss("btc-tx");
+          toast.dismiss("btc-confirm");
+          
+          console.error("Deposit error:", error);
+          toast.error("Deposit failed", {
+            description: error.message || "Failed to process Bitcoin deposit",
+            duration: 5000
+          });
+        }
+
+      } else {
+        // Withdrawal flow
+        const loadingToast = toast.loading("Initiating ckBTC withdrawal...", {
+          duration: Infinity
+        });
+
+        try {
+          let tokenActor = new TokenActor(
+            assetList[2].canisterID,
+            readWriteAgent
+          );
+
+          // Update toast
+          toast.dismiss(loadingToast);
+          toast.loading("Approving ckBTC spending...", {
+            duration: Infinity,
+            id: "approve-tx"
+          });
+
+          let approval_tx = await tokenActor.approveSpending(
+            BigInt(amount),
+            Principal.fromText(ckBTC_MINTER_CANISTER_ID)
+          );
+
+          if (approval_tx) {
+            // Update toast
+            toast.dismiss("approve-tx");
+            toast.loading("Processing withdrawal...", {
+              duration: Infinity,
+              id: "withdraw-tx"
+            });
+
+            let result = await ckBTCMinterWriteActor.retrieveBTCWithApproval(
+              btcAddress,
+              BigInt(amount)
+            );
+
+            if ("Ok" in result) {
+              let blockIndex = result.Ok.block_index;
+              
+              // Update toast
+              toast.dismiss("withdraw-tx");
+              toast.loading("Waiting for Bitcoin network confirmation...", {
+                duration: Infinity,
+                id: "btc-network"
+              });
+
+              // Poll for withdrawal status
+              const pollWithdrawalStatus = async () => {
+                while (true) {
+                  try {
+                    const statusResponse = await fetch(`/api/ckbtc/status/${blockIndex}`);
+                    const statusData = await statusResponse.json();
+                    
+                    console.log("🔄 Withdrawal Status API Response:", {
+                      status: statusData.status,
+                      data: statusData.data,
+                      message: statusData.message || "N/A"
+                    });
+
+                    if (statusData.status === "success") {
+                      const txStatus = statusData.data.status;
+
+                      console.log("📊 Transaction Status:", {
+                        status: txStatus,
+                        txid: statusData.data.txid || "N/A",
+                        block_index: statusData.data.block_index
+                      });
+
+                      if (txStatus === "Confirmed" || txStatus === "confirmed") {
+                        // Success
+                        console.log("✅ Withdrawal Confirmed:", statusData.data);
+                        toast.dismiss("btc-network");
+                        toast.success("Withdrawal completed successfully!", {
+                          description: statusData.data.txid ? `Bitcoin TX: ${statusData.data.txid}` : "Your Bitcoin has been sent",
+                          duration: 8000
+                        });
+                        
+                        // Refresh balances
+                        setBTCBalances();
+                        setckBTCBalances();
+                        
+                        // Clear form
+                        setAmounts({ amountIn: "", amountOut: "" });
+                        return;
+                        
+                      } else if (txStatus === "Failed" || txStatus === "failed") {
+                        // Failed
+                        console.error("❌ Withdrawal Failed:", statusData.data);
+                        toast.dismiss("btc-network");
+                        toast.error("Withdrawal failed", {
+                          description: "The Bitcoin transaction could not be completed",
+                          duration: 5000
+                        });
+                        return;
+                      } else {
+                        // Still pending
+                        console.log("⏳ Withdrawal still pending...", { txStatus, data: statusData.data });
+                      }
+                    } else {
+                      console.log("⚠️ API returned non-success status:", {
+                        status: statusData.status,
+                        message: statusData.message || "N/A"
+                      });
+                    }
+
+                    await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+
+                  } catch (pollError) {
+                    console.error("❌ Status polling error:", pollError);
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                  }
+                }
+              };
+
+              // Start polling
+              pollWithdrawalStatus();
+
+            } else {
+              throw new Error(
+                typeof result.Err === "string"
+                  ? result.Err
+                  : result.Err
+                  ? JSON.stringify(result.Err)
+                  : "Withdrawal transaction failed"
+              );
+            }
+
           } else {
-            console.log(result.Err);
+            throw new Error("Token approval failed");
           }
-        } else {
-          console.log("Approval failed");
+
+        } catch (error) {
+          toast.dismiss(loadingToast);
+          toast.dismiss("approve-tx");
+          toast.dismiss("withdraw-tx");
+          toast.dismiss("btc-network");
+          
+          console.error("Withdrawal error:", error);
+          toast.error("Withdrawal failed", {
+            description: error.message || "Failed to process ckBTC withdrawal",
+            duration: 5000
+          });
         }
       }
     } catch (error) {
-      console.error(error);
+      console.error("Transaction error:", error);
+      toast.error("Transaction failed", {
+        description: "An unexpected error occurred",
+        duration: 5000
+      });
     }
   };
-
   console.log(mode);
 
   return (
@@ -294,7 +559,7 @@ export default function BitcoinckBTCBridge() {
             <h2 className="text-xl font-semibold text-white">
               BTC/ckBTC Bridge
             </h2>
-            <ConnectBTCWalletButton handleConnect={connectBitcoinWallet} />
+            <ConnectBTCWalletButton  />
           </div>
 
           {/* Swap Container */}
@@ -418,6 +683,11 @@ export default function BitcoinckBTCBridge() {
 
             {/* Action Button */}
             <div className="mt-4 pt-5">
+              {/* <button className="bg-[#0300AD] text-white py-2 px-4 rounded-lg"
+                onClick={handleTx}
+              >
+                Connect Now
+              </button> */}
               <BitcoinActionButton handleConfirm={handleTx} error={error} />
             </div>
           </div>
@@ -427,23 +697,23 @@ export default function BitcoinckBTCBridge() {
   );
 }
 
-type ConnecytBTCButtonProps = {
-  handleConnect: () => void;
-};
-const ConnectBTCWalletButton = ({ handleConnect }: ConnecytBTCButtonProps) => {
-  const { address, connected } = useLaserEyes();
-  return (
-    <button
-      type="button"
-      onClick={handleConnect}
-      className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] hover:from-[#0f3460] hover:to-[#1a1a2e] disabled:from-gray-600 disabled:to-gray-600/90 border border-[#0300AD]/30 shadow-lg hover:shadow-xl rounded-3xl flex items-center gap-2 px-4 py-4 cursor-pointer transition-all duration-300 disabled:cursor-not-allowed"
-    >
-      <img src={BTC_IMAGE_URL} alt="BTC" className="w-6 h-6 rounded-full" />
-      <span className="text-base font-semibold text-white">
-        {connected
-          ? address.slice(0, 6) + "..." + address.slice(-4)
-          : "Connect Bitcoin"}
-      </span>
-    </button>
-  );
-};
+// type ConnecytBTCButtonProps = {
+//   handleConnect: () => void;
+// };
+// const ConnectBTCWalletButton = ({ handleConnect }: ConnecytBTCButtonProps) => {
+//   const { address, connected } = useLaserEyes();
+//   return (
+//     <button
+//       type="button"
+//       onClick={handleConnect}
+//       className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] hover:from-[#0f3460] hover:to-[#1a1a2e] disabled:from-gray-600 disabled:to-gray-600/90 border border-[#0300AD]/30 shadow-lg hover:shadow-xl rounded-3xl flex items-center gap-2 px-4 py-4 cursor-pointer transition-all duration-300 disabled:cursor-not-allowed"
+//     >
+//       <img src={BTC_IMAGE_URL} alt="BTC" className="w-6 h-6 rounded-full" />
+//       <span className="text-base font-semibold text-white">
+//         {connected
+//           ? address.slice(0, 6) + "..." + address.slice(-4)
+//           : "Connect Bitcoin"}
+//       </span>
+//     </button>
+//   );
+// };
