@@ -271,7 +271,7 @@ export default function BitcoinckBTCBridge() {
         setHasPendingTx(false);
         await setBTCBalances();
         await setckBTCBalances();
-        if (updateData.status === "successful") {
+        if (updateData.status === "confirmed") {
           toast.dismiss("pending-tx");
           toast.success(
             `Transaction Successful 
