@@ -40,7 +40,15 @@ const SubApp = () => {
           <Route path="/trade" element={<Trade />} />
           <Route path="/earn" element={<Earn />} />
           <Route path="/pools" element={<Pools />} />
-          <Route path="/pools/:marketId" element={<PoolDetails />} />
+          <Route
+            path="/pools/:marketId"
+            element={
+              <PoolDetails
+                market={{} as any} 
+                onBack={() => {}}  
+              />
+            }
+          />
         </Routes>
       </Sidebar>
     </BrowserRouter>
